@@ -147,12 +147,8 @@ class Service:
         validate the arguments passed to the service during initialization to be sure we don't pass not defined arguments.
         """
         errors = []
-        # actor might be update so use the schema from the actor not the one stored in the service.
-        template = self.aysrepo.templateGet(self.model.dbobj.actorName)
+        schema = j.data.capnp.getSchemaFromText(self.model.dbobj.dataSchema)
 
-        j.data.capnp.resetSchema(j.data.capnp.getId(template.schemaCapnpText))
-
-        schema = j.data.capnp.getSchemaFromText(template.schemaCapnpText)
         for field in args:
             normalizedfieldname = j.data.text.sanitize_key(field)
             if normalizedfieldname not in schema.schema.fieldnames:
@@ -161,8 +157,9 @@ class Service:
                     service="%s!%s" % (self.model.role, self.model.dbobj.name)))
 
         if errors:
-            msg = "The arguments passed to the service %s|%s contains the following errors: \n" % (self.model.role, self.model.dbobj.name) + "\n".join(errors)
-            msg += '\nDataSchema : {}'.format(template.schemaCapnpText)
+            msg = "The arguments passed to the service %s|%s contains the following errors: \n" % \
+                  (self.model.role, self.model.dbobj.name) + "\n".join(errors)
+            msg += '\nDataSchema : {}'.format(self.model.dbobj.dataSchema)
             raise j.exceptions.Input(msg)
 
     async def _initParent(self, actor, args):

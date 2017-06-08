@@ -117,11 +117,17 @@ class Actor():
         self._initTimeouts(template)
         self._initEvents(template)
 
-        repo = self.aysrepo
-        svs = repo.servicesFind(actor=self.model.name)
+        services = self.aysrepo.servicesFind(actor=self.model.name)
 
         if self.model.dbobj.serviceDataSchema != template.schemaCapnpText:
+            # update schema in the actor itself
             self.model.dbobj.serviceDataSchema = template.schemaCapnpText
+            # update existsing service schema
+            for service in services:
+                service.model.dbobj.dataSchema = self.model.dbobj.serviceDataSchema
+                service.model._data = None  # force recreation of the capnp data object.
+                # no need to manually copy the data cause they are still in the service.model.dbobj.data
+                # setting _data to know force to recreate the capnp msg and fill it with content of service.model.dbobj.data
             self.processChange("dataschema")
 
         if self.model.dbobj.dataUI != template.dataUI:
@@ -131,9 +137,7 @@ class Actor():
         self.saveToFS()
         self.model.save()
 
-        for s in svs:
-            # should we keep the old schema of all service or update them??
-            # s.model.dbobj.serviceDataSchema = template.schemaCapnpText
+        for s in services:
             dirtyservice = False
             for action in self.model.dbobj.actions:
                 if action.period > 0:
