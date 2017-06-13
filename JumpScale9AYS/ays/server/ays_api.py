@@ -423,7 +423,7 @@ async def executeBlueprint(request, blueprint, repository):
         return json({'error':"No blueprint found with this name '{}'".format(blueprint)}, 404)
 
     try:
-        await repo.blueprintExecute(path=bp.path)
+        runId = await repo.blueprintExecute(path=bp.path)
 
     except j.exceptions.Input as inputEx:
         error_msg = "Input Exception : \n %s" % str(inputEx)
@@ -435,7 +435,7 @@ async def executeBlueprint(request, blueprint, repository):
         j.atyourservice.server.logger.exception(error_msg)
         return json({'error': str(e)}, 500)
 
-    return json({'msg':'Blueprint {} executed'.format(blueprint)})
+    return json({'msg': 'Blueprint {} executed'.format(blueprint), 'processchange runId': runId})
 
 async def updateBlueprint(request, blueprint, repository):
     '''

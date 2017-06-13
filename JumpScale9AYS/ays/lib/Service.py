@@ -575,10 +575,8 @@ class Service:
 
         # execute the processChange method if it exists
         if 'processChange' in self.model.actions.keys():
-            args.update({'changeCategory': changeCategory})
-            job = self.getJob("processChange", args=args)
-            args = job.executeInProcess()
-            job.model.save()
+            action = self.model.actions['processChange']
+            action.state = 'changed'
 
     async def processEvent(self, channel=None, command=None, secret=None, tags={}, payload=None):
         coros = []
