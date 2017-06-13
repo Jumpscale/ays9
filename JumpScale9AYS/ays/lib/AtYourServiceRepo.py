@@ -520,8 +520,12 @@ class AtYourServiceRepo():
             await bp.load(role=role, instance=instance)
 
         await self.init(role=role, instance=instance)
-
+        actions = self.findScheduledActions('changed')
+        run = self.runCreate(actions)
+        run = run.model.objectGet()
+        await self.run_scheduler.add(run)
         print("blueprint done")
+        return run.model.key
 
     def blueprintGet(self, bname):
         bpath = j.sal.fs.joinPaths(self.path, 'blueprints', bname)
@@ -597,7 +601,7 @@ class AtYourServiceRepo():
                     jobs.add(job)
         return list(jobs)
 
-    def findScheduledActions(self):
+    def findScheduledActions(self, required_state="scheduled"):
         """
         Walk over all servies and look for action with state scheduled.
         It then creates actions chains for all schedules actions.
@@ -627,7 +631,7 @@ class AtYourServiceRepo():
                 if is_producer_in_error(service, action):
                     continue
 
-                if str(obj.state) == "scheduled":
+                if str(obj.state) == required_state:
                     if service not in result:
                         result[service] = list()
                     action_chain = list()
