@@ -264,6 +264,7 @@ class TemplateRepo():
             if not j.sal.fs.exists(template.path):
                 self.logger.info("template {} doesnt exists anymore, unload".format(template))
                 del(self._templates[template.name])
+                j.atyourservice.server.watcher.remove_watch(template.path.encode(), superficial=True)
 
     @property
     def templates(self):

@@ -36,6 +36,11 @@ class ActorTemplate():
             self.giturl = ""
             self.gitpath = ""
 
+        # use inotify to watch for the template changes
+        watcher = j.atyourservice.server.watcher
+        watcher_mask = j.atyourservice.server.watcher_mask
+        watcher.add_watch(path.encode(), watcher_mask)
+
     @property
     def role(self):
         return self.name.split('.')[0]

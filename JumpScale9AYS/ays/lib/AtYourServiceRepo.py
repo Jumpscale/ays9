@@ -67,6 +67,7 @@ class AtYourServiceRepoCollection:
                 repo_path = dirname if filename in ['.ays', '.git'] else full_path
                 self.logger.debug("AYS repo removed {}".format(full_path))
                 self._repos.pop(repo_path, None)
+                j.atyourservice.server.watcher.remove_watch(repo_path.encode(), superficial=True)
 
     def loadRepo(self, path):
         ayspath = j.sal.fs.joinPaths(path, ".ays")
@@ -169,6 +170,12 @@ class AtYourServiceRepo():
         j.atyourservice.server._loadActionBase()
 
         self._load_services()
+
+        # use inotify to watch for the template changes
+        self.logger.info("AYS repo added {}".format(path))
+        watcher = j.atyourservice.server.watcher
+        watcher_mask = j.atyourservice.server.watcher_mask
+        watcher.add_watch(path.encode(), watcher_mask)
 
     @property
     def db(self):
