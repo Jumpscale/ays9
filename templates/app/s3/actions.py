@@ -160,9 +160,10 @@ def install(job):
     machineip = nodevm.model.data.ipPublic
     # ip2num
     machineuniquenumber = j.sal.nettools.ip_to_num(machineip)
-
-    fqdn = "{appname}-{num}.gigapps.io".format(appname=service.model.data.hostprefix, num=machineuniquenumber)
-    httpdomain = "http://{appname}-{num}.gigapps.io".format(appname=service.model.data.hostprefix, num=machineuniquenumber)
+    fqdn = service.model.data.fqdn
+    if not fqdn:
+        fqdn = "{appname}-{num}.gigapps.io".format(appname=service.model.data.hostprefix, num=machineuniquenumber)
+    httpdomain = "http://{fqdn}".format(fqdn=fqdn)
     if service.model.data.enablehttps is False:
         httpdomain = httpdomain.replace("https", "http")
     else:
