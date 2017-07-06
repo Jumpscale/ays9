@@ -1,0 +1,7 @@
+simpleactor__tservice:
+
+actions:
+  - action: firstact
+    actor: simpleactor
+  - action: secondact
+    actor: simpleactor

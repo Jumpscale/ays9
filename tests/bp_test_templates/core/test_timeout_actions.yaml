@@ -1,0 +1,4 @@
+test_timeout_actions__tservice:
+
+actions:
+   - action: 'test'

@@ -1,0 +1,8 @@
+# test models are deleted correctly after repo destroy
+
+test_validate_delete_models__instance:
+
+actions:
+   - action: 'install'
+   - action: 'test'
+     actor: "test_validate_delete_models"

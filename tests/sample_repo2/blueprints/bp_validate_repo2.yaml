@@ -1,0 +1,6 @@
+validate_repo2__instance:
+
+actions:
+  - action: 'install'
+  - action: 'test'
+    actor: 'validate_repo2'

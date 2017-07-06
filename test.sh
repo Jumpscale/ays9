@@ -15,3 +15,7 @@ for schema in $(find -name schema.capnp); do
   echo "Validating $schema"
   capnp compile -oc++ $schema
 done
+
+# running testsuite
+echo "Running ays tests"
+js9 "import testrunner; testrunner.main()"

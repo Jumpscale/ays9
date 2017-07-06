@@ -1,0 +1,14 @@
+test_auto_behavior__auto_parent:
+
+test_auto_behavior__0min:
+
+test_auto_behavior__2min:
+
+
+test_auto_behavior2__min2:
+
+
+actions:
+   - action: 'install'
+   - action: 'test'
+     actor: "test_auto_behavior"

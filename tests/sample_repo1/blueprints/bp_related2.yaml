@@ -1,0 +1,7 @@
+datacenter__ovh_germany1:
+  location: 'germany'
+  description: 'ovh_germany1'
+
+
+actions:
+    - action: 'install'

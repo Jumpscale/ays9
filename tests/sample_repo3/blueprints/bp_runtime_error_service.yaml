@@ -1,0 +1,10 @@
+runtime_error_service__instance:
+
+actions:
+  - action: 'install'
+  - action: 'test'
+    actor: 'runtime_error_service'
+  - action: 'test2'
+    actor: 'runtime_error_service'
+  - action: 'test3'
+    actor: 'runtime_error_service'

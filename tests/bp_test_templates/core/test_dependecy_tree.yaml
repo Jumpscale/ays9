@@ -1,0 +1,16 @@
+sshkey__main:
+vdcfarm__parent:
+
+test_dependency_tree__parent:
+   vdcfarm: parent
+   sshkeys:
+      - main
+
+test_dependency_tree__consumers:
+   sshkeys:
+      - main
+
+actions:
+   - action: 'install'
+   - action: 'test'
+     actor: "test_dependency_tree"

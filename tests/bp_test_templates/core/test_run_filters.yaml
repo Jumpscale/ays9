@@ -1,0 +1,14 @@
+test_run_filter1__main:
+
+test_run_filter2__main:
+
+test_run_filters__main:
+
+
+
+actions:
+  - action: 'install'
+  - action: 'test'
+    actor: 'test_run_filter1'
+  - action: 'test'
+    actor: 'test_run_filters'

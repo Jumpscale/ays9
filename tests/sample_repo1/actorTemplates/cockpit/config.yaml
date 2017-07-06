@@ -1,0 +1,10 @@
+doc:
+  property:
+  - description: ''
+  - datacenter: ''
+links:
+  parent:
+    auto: false
+    optional: false
+    role: datacenter
+recurring: []

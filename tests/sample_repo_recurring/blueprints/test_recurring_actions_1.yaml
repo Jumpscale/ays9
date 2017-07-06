@@ -1,0 +1,6 @@
+test_recurring_actions_1__instance:
+
+actions:
+    - action: 'install'
+    - action: 'execution_gt_period'
+      actor: 'test_recurring_actions_1'

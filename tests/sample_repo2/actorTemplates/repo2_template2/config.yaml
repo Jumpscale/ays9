@@ -1,0 +1,12 @@
+doc:
+  property:
+  - description: ''
+  - repo2Template1: ''
+links:
+  consume:
+  - argname: repo2Template1
+    auto: false
+    max: 100
+    min: '1'
+    role: repo2_template1
+recurring: []

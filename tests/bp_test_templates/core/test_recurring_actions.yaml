@@ -1,0 +1,5 @@
+# 'QA SERVICE' (THE TEMPLATE SHOULD HAS THIS LINE)
+test_recurring_actions__instance:
+
+actions:
+  - action: 'test'

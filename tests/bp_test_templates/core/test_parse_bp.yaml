@@ -1,0 +1,12 @@
+test_parse_bp__with_defaultvalue:
+
+test_parse_bp__without_defaultvalue:
+  description: 'another description'
+
+test_parse_bp__with_special_characters:
+  description: 'Können Sie mir behilflich sein?'
+
+actions:
+   - action: 'install'
+   - action: 'test'
+     actor: "test_parse_bp"

@@ -1,0 +1,4 @@
+sample1__valid:
+    field: 'foo'
+    fieldWithDot: 'foo'
+    fieldWithUnderscore: 'foo'

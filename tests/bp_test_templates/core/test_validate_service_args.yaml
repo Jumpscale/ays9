@@ -1,0 +1,7 @@
+# 'QA SERVICE' (THE TEMPLATE SHOULD HAS THIS LINE)
+test_validate_service_args__instance:
+
+actions:
+  - action: 'install'
+  - action: 'test'
+    actor: 'test_validate_service_args'

@@ -1,0 +1,12 @@
+doc:
+  property:
+  - datacenter: ''
+  - description: ''
+links:
+  consume:
+  - argname: datacenter
+    auto: false
+    max: 100
+    min: '1'
+    role: datacenter
+recurring: []

@@ -1,0 +1,3 @@
+timeouts:
+    - firstact: 5s
+    - secondact: 5s

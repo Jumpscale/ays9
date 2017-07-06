@@ -1,0 +1,8 @@
+# test the created models are correct and populated with the correct properties
+
+test_validate_models__instance:
+
+actions:
+   - action: 'install'
+   - action: 'test'
+     actor: "test_validate_models"

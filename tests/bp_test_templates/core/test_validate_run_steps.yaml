@@ -1,0 +1,7 @@
+# 'QA SERVICE' (THE TEMPLATE SHOULD HAS THIS LINE)
+test_validate_run_steps__main:
+
+actions:
+    - action: 'install'
+    - action: 'test'
+      actor: 'test_validate_run_steps'

@@ -1,0 +1,9 @@
+
+# 'QA SERVICE' (THE TEMPLATE SHOULD HAS THIS LINE)
+test_validate_ays_update__instance:
+
+
+actions:
+    - action: 'install'
+    - action: 'test'
+      actor: 'test_validate_ays_update'

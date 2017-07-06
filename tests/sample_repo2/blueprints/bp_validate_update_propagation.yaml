@@ -1,0 +1,13 @@
+datacenter__instance:
+    location: 'germany'
+    description: 'REPLACEME'
+
+
+repo2_template1__instance:
+    datacenter: 'instance'
+
+repo2_template2__instance:
+    repo2_template1: 'instance'
+
+actions:
+    - action: 'install'
