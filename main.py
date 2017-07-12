@@ -50,11 +50,11 @@ def main(host, port, log, dev):
         if j.atyourservice.server.dev_mode:
             j.atyourservice.server.logger.info("development mode enabled")
 
-        # Generate/Load ays_repos ssh key which will be used to auto push repos changes
-        key_path = j.tools.prefab.local.ssh.keygen(name='ays_repos_key')
-        if not j.sal.process.checkProcessRunning('ssh-agent'):
-            j.sal.process.execute('eval `ssh-agent`')
-        j.tools.prefab.local.ssh.sshagent_add(path=key_path.split(".pub")[0])
+        if not dev:
+            # Generate/Load ays_repos ssh key which will be used to auto push repos changes
+            local_prefab = j.tools.prefab.local
+            key_path = local_prefab.ssh.keygen(name='ays_repos_key').split(".pub")[0]
+            j.do.SSHKeysLoad(key_path)
 
         j.atyourservice.server._start(loop=loop)
 

@@ -13,9 +13,11 @@ Usage: ays start [OPTIONS]
 Options:
   -b, --bind TEXT     listening address
   -p, --port INTEGER  listening port
-  --debug             enable debug logging
+  --log               Set log level
+  --dev               enable development mode
   --help              Show this message and exit.
 ```
+The use of development mode for now is to disable auto push for ays repo changes only. It may be used for other features in the future
 
 ```toml
 !!!

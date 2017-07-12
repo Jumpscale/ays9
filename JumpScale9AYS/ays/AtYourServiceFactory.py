@@ -35,7 +35,7 @@ class AtYourServiceFactory:
         self.aysRepos = None
         self._cleanupHandle = None
 
-    def start(self, bind='127.0.0.1', port=5000, log='info'):
+    def start(self, bind='127.0.0.1', port=5000, log='info', dev=False):
         """
         start an ays service on your local platform
         """
@@ -43,8 +43,10 @@ class AtYourServiceFactory:
             sname = j.tools.prefab.local.tmux.getSessions()[0]
         except:
             sname = "main"
-        cmd = "cd {codedir}/github/jumpscale/ays9; python3 main.py --host {host} --port {port} --log {log}".format(
-            codedir=j.dirs.CODEDIR, host=bind, port=port, log=log)
+        cmd = "cd {codedir}/github/jumpscale/ays9; python3 main.py --host {host} --port {port} --log {log}"
+        if dev:
+            cmd += " --dev "
+        cmd = cmd.format(codedir=j.dirs.CODEDIR, host=bind, port=port, log=log)
         print("Starting AtYourService server in a tmux session")
         # execute ays in tmux with wait=0 because of the check ok output with ays will never be true
         rc, out = j.tools.prefab.local.tmux.executeInScreen(sname, "ays", cmd, reset=True, wait=0)

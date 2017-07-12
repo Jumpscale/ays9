@@ -687,16 +687,17 @@ class AtYourServiceRepo():
         except Exception as e:
             self.logger.warning("AYS Repo auto commit failed: {}".format(e))
 
-        if push and self.git.repo.remotes and "git@" in self.git.repo.remotes[0].url:
-            try:
-                self.git.repo.git.push('--all')
-                self.logger.info("Auto Push done successfully")
-            except Exception as e:
-                self.logger.warning("Auto Push failed: {}".format(e))
-        else:
-            self.logger.warning(
-                "Auto Push skipped, please make sure that you are using ssh url as a remote to be able to auto push"
-            )
+        if push and not j.atyourservice.server.dev_mode:
+            if self.git.repo.remotes and "git@" in self.git.repo.remotes[0].url:
+                try:
+                    self.git.repo.git.push('--all')
+                    self.logger.info("Auto Push done successfully")
+                except Exception as e:
+                    self.logger.warning("Auto Push failed: {}".format(e))
+            else:
+                self.logger.warning(
+                    "Auto Push skipped, please make sure that you are using ssh url as a remote to be able to auto push"
+                )
 
     def __str__(self):
         return("aysrepo:%s" % (self.path))
