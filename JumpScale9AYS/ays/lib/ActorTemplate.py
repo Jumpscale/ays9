@@ -98,6 +98,10 @@ class ActorTemplate():
         return ""
 
     @property
+    def longjobsConfig(self):
+        return self.configDict.get("longjobs", {})
+
+    @property
     def recurringConfig(self):
         return self.configDict.get("recurring", {})
 

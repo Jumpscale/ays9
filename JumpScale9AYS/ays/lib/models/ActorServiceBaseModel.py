@@ -158,6 +158,19 @@ class ActorServiceBaseModel(ModelBaseWithData):
         return recurrings
 
     @property
+    def actionsLongRunning(self):
+        """
+        return dict
+            key = action name
+            val = recurring model
+        """
+        longjobs = {}
+        for obj in self.dbobj.actions:
+            if obj.timeout == 0:  # long and not gonna timeout.
+                longjobs[obj.name] = obj
+        return longjobs
+
+    @property
     def actionsEvents(self):
         """
         return dict
