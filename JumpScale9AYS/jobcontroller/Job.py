@@ -315,7 +315,7 @@ class Job:
         """
         return self.execute()
 
-    def execute(self, sameloop=False):
+    def execute(self):
         """
         this method returns a future
         you need to await it to schedule it the event loop.
@@ -327,7 +327,7 @@ class Job:
         if self.model.dbobj.debug is False:
             self.model.dbobj.debug = self.sourceLoader.source.find('ipdb') != -1 or \
                                      self.sourceLoader.source.find('IPython') != -1
-        if sameloop is False:
+        if self.service.model.actions[self.action.dbobj.name].longjob is False:
             self._future = self._loop.run_in_executor(None, self.method, self)
         else:
             # THIS FEATURE IS VERY DANGEROUS: USE with CARE or you END UP with a blocked AYS.
