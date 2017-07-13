@@ -1,19 +1,15 @@
 from js9 import j
-
 from JumpScale9AYS.ays.lib.TemplateRepo import TemplateRepoCollection
 from JumpScale9AYS.ays.lib import ActionsBase
 from JumpScale9AYS.ays.lib.AtYourServiceRepo import AtYourServiceRepoCollection
 from JumpScale9AYS.ays.lib.AtYourServiceTester import AtYourServiceTester
-
-import colored_traceback
-import os
-import sys
-import threading
-if "." not in sys.path:
-    sys.path.append(".")
-
 import inspect
 import asyncio
+import colored_traceback
+import sys
+
+if "." not in sys.path:
+    sys.path.append(".")
 
 colored_traceback.add_hook(always=True)
 

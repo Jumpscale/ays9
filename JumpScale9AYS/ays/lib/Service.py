@@ -1,5 +1,5 @@
 from js9 import j
-from JumpScale9AYS.ays.lib.Recurring import RecurringTask
+from JumpScale9AYS.ays.lib.Recurring import RecurringTask, LongRunningTask
 import asyncio
 
 
@@ -13,8 +13,8 @@ class Service:
         self._schema = None
         self._path = ""
         self._loop = loop or asyncio.get_event_loop()
-        self._recurring_tasks = {} # for recurring jobs
-
+        self._recurring_tasks = {}  # for recurring jobs
+        self._longrunning_tasks = {}  # for long running jobs.
         self.aysrepo = aysrepo
         self.logger = j.logger.get('j.atyourservice.server.service')
 
@@ -25,6 +25,7 @@ class Service:
             await self._initFromActor(actor=actor, args=args, name=name, context=context)
             self.aysrepo.db.services.services[self.model.key] = self
             self._ensure_recurring()
+            self._ensure_longjobs()
             return self
         except Exception as e:
             # cleanup if init fails
@@ -88,7 +89,8 @@ class Service:
                 period=action.period,
                 log=action.log,
                 isJob=action.isJob,
-                timeout=action.timeout
+                timeout=action.timeout,
+                longjob=action.longjob
             )
 
         # events
@@ -747,6 +749,15 @@ class Service:
         parents.pop()
         return
 
+    def _ensure_longjobs(self):
+        for action, info in self.model.actionsLongRunning.items():
+            self.logger.info("Starting long running job {} with {} ".format(action, info))
+            if action not in self._longrunning_tasks:
+                task = LongRunningTask(service=self, action=action)
+                task.start()
+                self._longrunning_tasks[action] = task
+
+
     def _ensure_recurring(self):
         """
         this method is added to the event loop after service creation
@@ -788,6 +799,9 @@ class Service:
         for k in list(self._recurring_tasks.keys()):
             self._recurring_tasks[k].stop()
             del self._recurring_tasks[k]
+        for k in list(self._longrunning_tasks.keys()):
+            self._longrunning_tasks[k].stop()
+            del self._longrunning_tasks[k]
 
     def __eq__(self, service):
         if not service:

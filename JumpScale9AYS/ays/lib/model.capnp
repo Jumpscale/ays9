@@ -50,6 +50,8 @@ struct Actor {
     state @4 :ActionState;
     isJob @5 :Bool;
     timeout @6 :UInt32;
+    longjob @7 :Bool = false;
+
   }
 
   eventFilters @6 :List(EventFilter);
@@ -160,6 +162,8 @@ struct Service {
     isJob @6 :Bool;
     timeout @7 :UInt32;
     errorNr @8 :UInt8; # count the number of time we retry this action and failed.
+    longjob @9 :Bool = false;
+
   }
 
   #list of filter statements, when match call service.executeActionService("processEvent",event)

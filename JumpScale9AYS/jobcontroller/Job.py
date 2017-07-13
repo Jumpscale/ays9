@@ -315,7 +315,7 @@ class Job:
         """
         return self.execute()
 
-    def execute(self):
+    def execute(self, sameloop=False):
         """
         this method returns a future
         you need to await it to schedule it the event loop.
@@ -327,8 +327,14 @@ class Job:
         if self.model.dbobj.debug is False:
             self.model.dbobj.debug = self.sourceLoader.source.find('ipdb') != -1 or \
                                      self.sourceLoader.source.find('IPython') != -1
+        if sameloop is False:
+            self._future = self._loop.run_in_executor(None, self.method, self)
+        else:
+            # import ipdb; ipdb.set_trace()
 
-        self._future = self._loop.run_in_executor(None, self.method, self)
+            self._future = self._loop.create_task(self.method(self))
+
+            print("self.__future reached")
         # register callback to deal with logs and state of the job after execution
         self._future.add_done_callback(functools.partial(_execute_cb, self))
 
