@@ -648,7 +648,7 @@ def generatetoken(clientid, clientsecret, organization=None, validity=None):
 @click.option('--bind', '-b', default='127.0.0.1', help='listening address')
 @click.option('--port', '-p', default=5000, help='listening port')
 @click.option('--log', '-l', default="info", help='set log level (error, warning, info, debug)')
-@click.option('--dev', '-d', is_flag=True, default=False, help='Run ')
+@click.option('--dev', '-d', is_flag=True, default=False, help='Run AYS in development mode')
 def start(bind, port, log, dev):
     """
     start an ays service in tmux
