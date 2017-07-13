@@ -690,6 +690,10 @@ class AtYourServiceRepo():
         if push and not j.atyourservice.server.dev_mode:
             if self.git.repo.remotes and "git@" in self.git.repo.remotes[0].url:
                 try:
+                    local_prefab = j.tools.prefab.local
+                    key_path = local_prefab.ssh.keygen(name='ays_repos_key').split(".pub")[0]
+                    if not j.do.SSHAgentCheckKeyIsLoaded(key_path):
+                        j.do.SSHKeysLoad(key_path)
                     self.git.repo.git.push('--all')
                     self.logger.info("Auto Push done successfully")
                 except Exception as e:
