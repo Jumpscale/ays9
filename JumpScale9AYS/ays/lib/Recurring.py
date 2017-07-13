@@ -62,14 +62,8 @@ class LongRunningTask(RecurringTask):
         try:
             # create job
             self._job = self.service.getJob(actionName=self.action)
-            self.logger.info("in run long task")
-            # compute how long we need to sleep before next execution
-            # wait for right time
-            await asyncio.sleep(1)
-            self.logger.info("after asyncio sleep")
             # execute
-            await self._job.execute(sameloop=True)
-            self.logger.info("after long job execute")
+            await self._job.execute()
             # update last exection time
         except asyncio.CancelledError:
             self.logger.info("LongRunningTask for {}:{} is cancelled".format(self.service, self.action))
