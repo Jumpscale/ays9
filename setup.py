@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 from setuptools.command.install import install as _install
 from setuptools.command.develop import develop as _develop
 import os
@@ -36,15 +36,25 @@ class develop(_develop):
         self.execute(_post_install, (libname, libpath), msg="Running post install task")
 
 
+long_description = ""
+try:
+    from pypandoc import convert
+    long_description = convert("README.md", 'rst')
+except ImportError:
+    long_description = ""
+
+
 setup(
     name='JumpScale9AYS',
     version='9.0.3',
     description='Automation framework for cloud workloads ays lib',
+    long_description=long_description,
     url='https://github.com/Jumpscale/ays9',
     author='GreenItGlobe',
     author_email='info@gig.tech',
     license='Apache',
-    packages=['JumpScale9AYS'],
+    packages=find_packages(),
+    include_package_data=True,
     install_requires=[
         'JumpScale9>=9.0.3',
         'JumpScale9Lib>=9.0.3',

@@ -2,4 +2,8 @@
 name = "{{NAME}}"
 description = ""
 depends = []
-theme = "hugo-future-imperfect"
+theme = "hugo_theme_beg"
+SectionPagesMenu = "main"
+pluralizeListTitles = false
+disablepathtolower = true
+
