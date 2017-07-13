@@ -38,6 +38,7 @@ class Service:
         self.model = model
         self.aysrepo.db.services.services[self.model.key] = self
         self._ensure_recurring()
+        self._ensure_longjobs()
         return self
 
     @classmethod
@@ -45,7 +46,8 @@ class Service:
         self = cls(aysrepo=aysrepo)
         self._loadFromFS(path)
         self.aysrepo.db.services.services[self.model.key] = self
-        self._ensure_recurring()
+        self._ensure_recurring
+        self._ensure_longjobs()
         return self
 
     @property
