@@ -330,11 +330,16 @@ class Job:
         if sameloop is False:
             self._future = self._loop.run_in_executor(None, self.method, self)
         else:
-            # import ipdb; ipdb.set_trace()
+            # THIS FEATURE IS VERY DANGEROUS: USE with CARE or you END UP with a blocked AYS.
 
+            # typical definition:
+            # def longjob(job):
+            #     async def inner(job):
+            #         ## code here
+            #     return inner(job)
+            # self.method here is longjob and u need to call it with job to get the coroutine object returned `inner`
             self._future = self._loop.create_task(self.method(self))
 
-            print("self.__future reached")
         # register callback to deal with logs and state of the job after execution
         self._future.add_done_callback(functools.partial(_execute_cb, self))
 
@@ -353,7 +358,6 @@ class Job:
             self._future.remove_done_callback(_execute_cb)
             self._future.cancel()
             self.logger.info("job {} cancelled".format(self))
-
 
     def str_error(self, error):
         out = 'Error of %s:' % str(self)
