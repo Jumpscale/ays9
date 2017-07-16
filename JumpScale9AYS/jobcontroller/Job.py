@@ -191,7 +191,6 @@ class Job:
         self._logHandler = None
         self.logger = None
 
-
     @property
     def action(self):
         if self._action is None:
@@ -327,7 +326,7 @@ class Job:
         if self.model.dbobj.debug is False:
             self.model.dbobj.debug = self.sourceLoader.source.find('ipdb') != -1 or \
                                      self.sourceLoader.source.find('IPython') != -1
-        if self.service.model.actions[self.action.dbobj.name].longjob is False:
+        if j.atyourservice.server.dev_mode or self.service.model.actions[self.action.dbobj.name].longjob is False:
             self._future = self._loop.run_in_executor(None, self.method, self)
         else:
             # THIS FEATURE IS VERY DANGEROUS: USE with CARE or you END UP with a blocked AYS.
