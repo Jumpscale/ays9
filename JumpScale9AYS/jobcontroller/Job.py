@@ -331,13 +331,14 @@ class Job:
             self._future = self._loop.run_in_executor(None, self.method, self)
         else:
             # THIS FEATURE IS VERY DANGEROUS: USE with CARE or you END UP with a blocked AYS.
-
+            # CODE IN `inner` coroutine defined must be fully async or ays main thread will block.
             # typical definition:
             # def longjob(job):
             #     async def inner(job):
             #         ## code here
             #     return inner(job)
             # self.method here is longjob and u need to call it with job to get the coroutine object returned `inner`
+
             self._future = self._loop.create_task(self.method(self))
 
         # register callback to deal with logs and state of the job after execution
