@@ -23,16 +23,15 @@ def long2(job):
         loop = get_event_loop()
         redis = await aioredis.create_redis(('localhost', 6379), loop=loop)
         while True:
-            print("Checking for shouldstop key: ")
+            job.logger.info("Checking for shouldstop key: ")
             val = await redis.get('shouldstop')
-            print("VAL IS: ", val)
             if val == b"1":
-                print("Should stop executing now.")
+                job.logger.info("Should stop executing now.")
                 redis.close()
                 await redis.wait_closed()
                 break
             await sleep(1)
-        print("Completed execution of long job long2")
+        job.logger.info("Completed execution of long job long2")
     return inner(job)
 
 ```
