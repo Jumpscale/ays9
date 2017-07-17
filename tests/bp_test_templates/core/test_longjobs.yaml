@@ -1,0 +1,4 @@
+test_longjobs_actions__tlj:
+
+actions:
+  - action: test
