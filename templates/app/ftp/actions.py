@@ -11,7 +11,7 @@ def install(job):
     Installing ftpserver
     """
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     ftp_path = '/mnt/storage/'
     if not prefab.core.isLinux:
         raise RuntimeError('unfortunetly support is available for linux systems only.')
@@ -39,7 +39,7 @@ def start(job):
     start ftp server
     """
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     prefab.apps.pyftpserver.start()
 
 def stop(job):
@@ -47,5 +47,5 @@ def stop(job):
     stop ftp server
     """
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     prefab.apps.pyftpserver.stop()

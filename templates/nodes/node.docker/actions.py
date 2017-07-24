@@ -37,7 +37,7 @@ def install(job):
         }
     }
 
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     base = j.sal.fs.joinPaths('/var', 'dockers', service.name)
     prefab.core.dir_ensure(base)
@@ -99,7 +99,7 @@ def install(job):
 
 def start(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     docker_id = service.model.data.id
     if docker_id is None or docker_id == '':
@@ -134,7 +134,7 @@ def start(job):
 
 def stop(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     docker_id = service.model.data.id
     if docker_id is None or docker_id == '':
@@ -145,7 +145,7 @@ def stop(job):
 
 def uninstall(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     docker_id = service.model.data.id
     if docker_id is None or docker_id == '':

@@ -23,7 +23,7 @@ def test(job):
 
         log.info('Check that tidb server is running on port 3306')
         tidbos = repo.servicesFind(actor='os.ssh.ubuntu', name='tidb')[0]
-        out = tidbos.executor.prefab.core.run("ps aux |  grep -o -F 'tidb-server -P 3306' -m 1")
+        out = tidbos.executor.get_prefab().core.run("ps aux |  grep -o -F 'tidb-server -P 3306' -m 1")
         if out[1] != 'tidb-server -P 3306':
             service.model.data.result = 'FAILED : {} {}'.format('test_owncloud_install', str(sys.exc_info()[:2]))
             service.save()
@@ -32,31 +32,31 @@ def test(job):
         # Check that nginx is running
         ocos = repo.servicesFind(actor="os.ssh.ubuntu", name="owncloud")[0]
         ngx_ms = 'nginx: master process /opt/jumpscale8/apps/nginx/bin/nginx -c /optvar/cfg/nginx/etc/nginx.conf'
-        out = ocos.executor.prefab.core.run("ps aux | grep -o -F -m 1 '{}' ".format(ngx_ms))
+        out = ocos.executor.get_prefab().core.run("ps aux | grep -o -F -m 1 '{}' ".format(ngx_ms))
         if out[1] != "{}".format(ngx_ms):
             service.model.data.result = 'FAILED : {} {}'.format('test_owncloud_install', str(sys.exc_info()[:2]))
             service.save()
             return
 
         log.info('Check that the owncloud site in enabled in nginx')
-        out = ocos.executor.prefab.core.run("ls /optvar/cfg/nginx/etc/sites-enabled")
+        out = ocos.executor.get_prefab().core.run("ls /optvar/cfg/nginx/etc/sites-enabled")
         if out[1] != fqdn:
             service.model.data.result = 'FAILED : {} {}'.format('test_owncloud_install', str(sys.exc_info()[:2]))
             service.save()
             return
 
         log.info('Check that the pid for the nginx don\'t change')
-        out = ocos.executor.prefab.core.run("sv status nginx | awk '{print$4}'")
+        out = ocos.executor.get_prefab().core.run("sv status nginx | awk '{print$4}'")
         time.sleep(1)
-        out2 = ocos.executor.prefab.core.run("sv status nginx | awk '{print$4}'")
+        out2 = ocos.executor.get_prefab().core.run("sv status nginx | awk '{print$4}'")
         if out[1] != out2[1]:
             service.model.data.result = 'FAILED : {} {}'.format('test_owncloud_install', str(sys.exc_info()[:2]))
             service.save()
             return
 
         log.info('Check if the owncloud site can respond back')
-        ocos.executor.prefab.core.run('echo "127.0.0.1 %s" >> /etc/hosts' % fqdn)
-        out = ocos.executor.prefab.core.run("curl %s -L | grep -o -F -m 1 'GreenITGlobe'" % fqdn)
+        ocos.executor.get_prefab().core.run('echo "127.0.0.1 %s" >> /etc/hosts' % fqdn)
+        out = ocos.executor.get_prefab().core.run("curl %s -L | grep -o -F -m 1 'GreenITGlobe'" % fqdn)
         if out[1] != 'GreenITGlobe':
             service.model.data.result = 'FAILED : {} {}'.format('test_owncloud_install', str(sys.exc_info()[:2]))
             service.save()

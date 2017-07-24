@@ -5,7 +5,7 @@ def install(job):
     """
     service = job.service
 
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     prefab.core.dir_ensure(service.model.data.storageData)
     prefab.core.dir_ensure(service.model.data.storageMeta)
 

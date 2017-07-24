@@ -52,7 +52,7 @@ def test(job):
         			failures.append("Unexpected state [%s] of action [processChange] for service[%s!%s]. Expected [%s]" % (action_state, 
         				actor, service_name, expected_process_change_action_before_update))
 
-        job.service.executor.prefab.core.run(replace_cmd)
+        job.service.executor.get_prefab().core.run(replace_cmd)
 
         repo.blueprintExecute(path=bp_path)
         for actor in actors:
@@ -72,6 +72,6 @@ def test(job):
     finally:
         job.service.save()
         replace_cmd = 'sed -i s/%s/%s/g %s' % (replacement_str, original_str, bp_path)
-        job.service.executor.prefab.core.run(replace_cmd)
+        job.service.executor.get_prefab().core.run(replace_cmd)
         for repo in repos:
             repo.destroy()

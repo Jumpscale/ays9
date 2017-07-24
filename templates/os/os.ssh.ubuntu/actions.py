@@ -33,7 +33,7 @@ def install(job):
                                             login=node.model.data.sshLogin, passwd=password,
                                             allow_agent=True, look_for_keys=True, timeout=5, usecache=False,
                                             passphrase=passphrase, key_filename=key_path)
-    executor.prefab.ssh.authorize("root", sshkey.model.data.keyPub)
+    executor.get_prefab().ssh.authorize("root", sshkey.model.data.keyPub)
     service.saveAll()
 
 

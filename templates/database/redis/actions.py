@@ -1,6 +1,6 @@
 def install(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     prefab.apps.redis.install()
     prefab.apps.redis.start(
@@ -14,7 +14,7 @@ def install(job):
 
 def start(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     prefab.apps.redis.install()
     prefab.apps.redis.start(
@@ -28,5 +28,5 @@ def start(job):
 
 def stop(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     prefab.apps.redis.stop(job.service.name)

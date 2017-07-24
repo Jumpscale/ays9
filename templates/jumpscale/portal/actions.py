@@ -1,7 +1,7 @@
 
 def install(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     prefab.core.run("js 'j'", profile=True)
 
     cfg = prefab.core.file_read('$TEMPLATEDIR/cfg/portal/config.hrd')
@@ -97,7 +97,7 @@ def install(job):
 
 def start(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     cmd = prefab.core.replace('jspython portal_start.py')
     wd = prefab.core.replace('$JSAPPSDIR/portals/main')
     pm = prefab.processmanager.get('tmux')
@@ -106,6 +106,6 @@ def start(job):
 
 def stop(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     pm = prefab.processmanager.get('tmux')
     pm.stop('portal_%s' % service.name)

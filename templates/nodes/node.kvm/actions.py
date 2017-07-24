@@ -1,5 +1,5 @@
 def install(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     data = job.service.model.data
     name = job.service.name
 
@@ -30,7 +30,7 @@ def install(job):
 
 
 def start(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     data = job.service.model.data
     name = job.service.name
 
@@ -49,7 +49,7 @@ def start(job):
     job.service.saveAll()
 
 def stop(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     data = job.service.model.data
     name = job.service.name
 
@@ -64,7 +64,7 @@ def stop(job):
     job.service.saveAll()
 
 def uninstall(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     name = job.service.name
 
     vm = prefab.systemservices.kvm.machines.get_by_name(name)

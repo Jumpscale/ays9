@@ -18,7 +18,7 @@ def init_actions_(service, args):
     }
 
 def install(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     data = job.service.model.data
 
     prefab.systemservices.kvm.disks.download_image(url=data.url, overwrite=data.overwrite)
@@ -27,7 +27,7 @@ def install(job):
     job.service.saveAll()
 
 def uninstall(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     data = job.service.model.data
     name = data.url.split('/')[-1]
     path = prefab.systemservices.kvm.image_get_path(name)

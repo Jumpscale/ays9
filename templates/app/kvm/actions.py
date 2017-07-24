@@ -1,5 +1,5 @@
 def install(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     # install kvm
     prefab.systemservices.kvm.install()
     # start libvirt-bin
@@ -10,7 +10,7 @@ def install(job):
 
 
 def start(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
 
     services_to_start = ['libvirt-bin', 'virtlogd']
     for service in services_to_start:
@@ -24,7 +24,7 @@ def start(job):
     job.service.saveAll()
 
 def stop(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
 
     services_to_start = ['libvirt-bin', 'virtlogd']
     for service in services_to_start:
@@ -39,7 +39,7 @@ def stop(job):
 
 
 def uninstall(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     prefab.systemservices.kvm.uninstall()
 
     job.service.model.actions['install'].state = 'new'

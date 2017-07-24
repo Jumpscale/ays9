@@ -3,7 +3,7 @@ def install(job):
     import yaml
 
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     args = service.model.data
 
     # Install dependencies

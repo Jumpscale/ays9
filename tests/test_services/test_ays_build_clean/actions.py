@@ -19,7 +19,7 @@ def install(job):
     else:
         raise j.exceptions.AYSNotFound("Can't find os service")
 
-    prefab = host_os.executor.prefab
+    prefab = host_os.executor.get_prefab()
     import ipdb;ipdb.set_trace
     if prefab.core.dir_exists('/mnt/building/opt')
     	prefab.core.dir_remove('/mnt/building/opt')

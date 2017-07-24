@@ -1,6 +1,6 @@
 def install(job):
     service = job.service
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
 
     name = "caddy_%s" % service.name
     proxies_dir = prefab.core.replace('$JSCFGDIR/caddy/%s/proxies' % name)
@@ -53,10 +53,10 @@ def install(job):
 
 
 def start(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     prefab.processmanager.start("caddy_%s" % job.service.name)
 
 
 def stop(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     prefab.processmanager.stop("caddy_%s" % job.service.name)

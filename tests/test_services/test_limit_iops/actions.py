@@ -16,7 +16,7 @@ def test(job):
         log.info('Test started')
         service = job.service
         vm_os = service.producers.get('os')[0]
-        vm_exe = vm_os.executor.prefab
+        vm_exe = vm_os.executor.get_prefab()
 
         log.info('Install fio')
         vm_exe.core.run('apt-get update')

@@ -1,5 +1,5 @@
 def install(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
 
     # For now we download FS from there. when we have proper VM image it will be installed already
     if not prefab.core.command_check('fs'):
@@ -9,7 +9,7 @@ def install(job):
 
 
 def start(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     service = job.service
     actor = service.aysrepo.actorGet(name=service.model.dbobj.actorName)
 
@@ -60,7 +60,7 @@ def start(job):
 
 
 def stop(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     service = job.service
     actor = service.aysrepo.actorGet(name=service.model.dbobj.actorName)
 
@@ -88,7 +88,7 @@ def processChange(job):
 
 def start_flist(job):
     args = job.model.args
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
 
     prefab.core.dir_ensure('$JSCFGDIR/fs/flists')
     flist_content = j.sal.fs.fileGetContents(args['flist'])
@@ -133,7 +133,7 @@ def start_flist(job):
 
 
 def stop_flist(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     args = job.model.args
 
     flist_name = j.sal.fs.getBaseName(args['flist'])

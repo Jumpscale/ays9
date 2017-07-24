@@ -23,7 +23,7 @@ def test(job):
         s3 = repo.servicesFind(actor='s3')[0]
         fqdn = s3.model.data.fqdn
         s3vm = repo.servicesFind(actor='os.ssh.ubuntu', name='s3vm')[0]
-        s3vm_exe = s3vm.executor.prefab
+        s3vm_exe = s3vm.executor.get_prefab()
 
         log.info('Install s3cmd on the s3_vm and connecting it to s3 server')
         s3vm_exe.core.run('echo "Y" | apt-get install s3cmd')

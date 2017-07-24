@@ -15,7 +15,7 @@ def install(job):
     make sure docker is properly installed (use prefab functionality)
     '''
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     if not prefab.systemservices.docker.isInstalled():
         prefab.systemservices.docker.install()
 
