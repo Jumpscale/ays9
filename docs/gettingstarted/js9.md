@@ -30,30 +30,7 @@ eval "$(ssh-agent -s)"
 ssh-add -K ~/.ssh/id_rsa
 ```
 
-Then specify a directory on your host for the volumes that will be mounted in your JS9 Docker container.
 
-On Mac:
-```shell
-export GIGDIR="/Users/$USER/gig9"
-```
-
-Or on Linux:
-```shell
-export GIGDIR="/home/$USER/gig9"
-```
-
-Then remove the old directory:
-```shell
-rm -rf $GIGDIR
-```
-
-Now prepare your environment for building a new Docker image and container:
-```shell
-export GIGBRANCH="master"
-rm -rf /tmp/jsinit.sh
-curl https://raw.githubusercontent.com/Jumpscale/developer/${GIGBRANCH}/jsinit.sh?$RANDOM > /tmp/jsinit.sh
-bash /tmp/jsinit.sh
-```
 
 And finally, start the actual building of your image with the `js9_build ` script, which will also start your container with the name `js9_base`:
 ```shell
@@ -76,3 +53,6 @@ ssh -A root@localhost -p 2222
 For more details on the JumpScale9 Docker container see https://github.com/Jumpscale/developer.
 
 Next you will probably want start the AYS service, as documented in [Start AYS](startays.md).
+
+
+#TODO: *1 needs to be done
