@@ -43,10 +43,9 @@ def test(job):
     #  'datacenter!ovh_germany2': {'files': ['data.json',
     #    'schema.capnp',
     #    'service.json']},
-     'datacenter!ovh_germany3': {'cockpittesting!cockpitv2': {'files': ['data.json',
-        'schema.capnp',
-        'service.json']},
+     'datacenter!ovh_germany3': {
       'files': ['data.json', 'schema.capnp', 'service.json']},
+      'cockpittesting!cockpitv2': {'files': ['data.json', 'schema.capnp', 'service.json']},
      'sshkey!main': {'files': ['data.json', 'schema.capnp', 'service.json']}}
     cwd = os.getcwd()
     repos = []
