@@ -80,7 +80,7 @@ setting `force = False` in `service.delete` will do a dryrun to see if you can d
 
 > it's always safer to use `force=False` and reason about your delete methods.
 
-> service.delete triggers processChange with `links` changeCategory and producer_removed key containing the removed producer name and role.
+> service.delete triggers processChange with `links` changeCategory and producer_removed key containing the removed producer `role!name`
 ### Default implementation for delete action
 It uses `j.tools.async.wrappers.sync(job.service.delete())` meaning `force=False` for safe deletions by default.
 

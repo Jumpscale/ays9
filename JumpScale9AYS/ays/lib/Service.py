@@ -357,7 +357,7 @@ class Service:
         @param force bool=False: will execute a dryrun to check if deleting this service won't break anything (force will remove children and consumption link with consumers even if minimum consumption isn't statisified after delete.
 
         """
-        linksargs = {'role': self.model.role, 'name':self.name}
+        producer_removed = "{}!{}".format(self.model.role, self.name)
 
         if not force:
             oktodelete, msg = await self.oktodelete()
@@ -384,7 +384,7 @@ class Service:
                 consumer.model.reSerialize()
                 consumer.saveAll()
                 # here we trigger processChange with `links` category with args of removed producer role and name
-                consumer.processChange(actor=self.aysrepo.actorGet(consumer.model.dbobj.actorName), changeCategory="links", args={"producer_removed":linksargs})
+                consumer.processChange(actor=self.aysrepo.actorGet(consumer.model.dbobj.actorName), changeCategory="links", args={"producer_removed":producer_removed})
 
         self.model.delete()
         j.sal.fs.removeDirTree(self.path)
