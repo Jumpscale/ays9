@@ -1,6 +1,6 @@
-from js9 import j
-from JumpScale9AYS.ays.lib.Recurring import RecurringTask, LongRunningTask
 import asyncio
+from js9 import j
+from JumpScale9AYS.ays.lib.Recurring import LongRunningTask, RecurringTask
 
 
 class Service:
@@ -381,6 +381,9 @@ class Service:
                 consumer.model.producerRemove(self)
                 consumer.model.reSerialize()
                 consumer.saveAll()
+                linksargs = {k:[v.name for v in v] for k,v in consumer.producers.items()}
+                consumer.processChange(actor=self.aysrepo.actorGet(consumer.model.dbobj.actorName), changeCategory="links", args={"producers":linksargs})
+
 
         self.model.delete()
         j.sal.fs.removeDirTree(self.path)
@@ -541,6 +544,7 @@ class Service:
         template action change
         categories :
             - dataschema
+            - links
             - ui
             - config
             - action_new_actionname
@@ -552,7 +556,9 @@ class Service:
         if changeCategory == 'dataschema':
             # We use the args passed without change
             pass
-
+        elif changeCategory == 'links':
+            # used to trigger link update(prod/consumer, parent/child)
+            pass
         elif changeCategory == 'ui':
             # TODO
             pass

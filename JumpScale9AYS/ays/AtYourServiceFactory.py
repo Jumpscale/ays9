@@ -25,7 +25,7 @@ class AtYourServiceFactory:
         self.debug = j.application.config['system']['debug']
         self.logger = j.logger.get('j.atyourservice.server')
         self.started = False
-
+        self.dev_mode = False
         self.baseActions = {}
         self.templateRepos = None
         self.aysRepos = None
