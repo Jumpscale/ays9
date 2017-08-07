@@ -27,4 +27,7 @@ uservdc__ex:
     provider: 'itsyouonline'
     groups: '<list of groups>'
     g8client: 'example'
+    
+actions:
+  - action: install
 ```
