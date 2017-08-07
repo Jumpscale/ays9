@@ -383,8 +383,8 @@ class Service:
                 consumer.model.producerRemove(self)
                 consumer.model.reSerialize()
                 consumer.saveAll()
+                # here we trigger processChange with `links` category with args of removed producer role and name
                 consumer.processChange(actor=self.aysrepo.actorGet(consumer.model.dbobj.actorName), changeCategory="links", args={"producer_removed":linksargs})
-
 
         self.model.delete()
         j.sal.fs.removeDirTree(self.path)
