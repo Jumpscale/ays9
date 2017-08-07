@@ -357,6 +357,8 @@ class Service:
         @param force bool=False: will execute a dryrun to check if deleting this service won't break anything (force will remove children and consumption link with consumers even if minimum consumption isn't statisified after delete.
 
         """
+        linksargs = {'role': self.model.role, 'name':self.name}
+
         if not force:
             oktodelete, msg = await self.oktodelete()
             if not oktodelete:
@@ -381,8 +383,7 @@ class Service:
                 consumer.model.producerRemove(self)
                 consumer.model.reSerialize()
                 consumer.saveAll()
-                linksargs = {k:[v.name for v in v] for k,v in consumer.producers.items()}
-                consumer.processChange(actor=self.aysrepo.actorGet(consumer.model.dbobj.actorName), changeCategory="links", args={"producers":linksargs})
+                consumer.processChange(actor=self.aysrepo.actorGet(consumer.model.dbobj.actorName), changeCategory="links", args={"producer_removed":linksargs})
 
 
         self.model.delete()
