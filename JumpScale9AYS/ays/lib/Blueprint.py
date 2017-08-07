@@ -1,6 +1,7 @@
 from js9 import j
 import yaml
 import re
+from .utils import validate_service_name, validate_bp_yaml, validate_bp_format
 
 class Blueprint:
     """
@@ -27,7 +28,7 @@ class Blueprint:
             self.name = 'unknown'
             self.content = content
 
-        self.is_valid, self.valid_msg = self._validate_yaml(self.content)
+        self.is_valid, self.valid_msg = validate_bp_yaml(name=self.name, content=self.content, logger=self.logger)
 
         if self.is_valid:
             decoded = j.data.serializer.yaml.ordered_load(self.content, yaml.SafeLoader) or {}
@@ -35,7 +36,7 @@ class Blueprint:
                 self.models.append({key: value})
 
             self.hash = j.data.hash.md5_string(self.content)
-            self.is_valid, self.valid_msg = self._validate_format(self.models)
+            self.is_valid, self.valid_msg = validate_bp_format(path=self.path, models=self.models, aysrepo=self.aysrepo, logger=self.logger)
 
     async def load(self, role="", instance="", context=None):
         self.actions = []
@@ -206,50 +207,8 @@ class Blueprint:
             self.path = newpath
             self.active = True
 
-    def _validate_yaml(self, content):
-        try:
-            j.data.serializer.yaml.loads(content)
-            return True, "yaml is valid"
-        except yaml.YAMLError:
-            message = 'Yaml format is not valid for %s please fix this to continue' % self.name
-            self.logger.error(message)
-            return False, message
 
-    def _validate_format(self, models):
-        for model in models:
-            if model is None:
-                continue
 
-            if model and not j.data.types.dict.check(model):
-                message = "Bad formatted blueprint: %s" % self.path
-                self.logger.error(message)
-                return False, message
-
-            for key in model.keys():
-
-                # this two blocks doesn't have the same format as classic service declaration
-                if key in ['actions', 'eventfilters']:
-                    if not j.data.types.list.check(model[key]):
-                        message = "%s should be a list of dictionary: found %s" % (key, type(model[key]))
-                        self.logger.error(message)
-                        return False, message
-                else:
-                    if key.find("__") == -1:
-                        message = "Key in blueprint is not right format, needs to be $aysname__$instance, found:'%s'" % key
-                        self.logger.error(message)
-                        return False, message
-
-                    aysname, instance = key.split("__", 1)
-                    if aysname not in self.aysrepo.templates:
-                        message = "Service template %s not found. Can't execute this blueprint" % aysname
-                        self.logger.error(message)
-                        return False, message
-
-                    if not re.sub("[-_.]", "", instance).isalnum():
-                        message = "Service instance name should be digits or alphanumeric. you passed [%s]" % instance
-                        return False, message
-
-        return True, 'Blueprint format is valid'
 
     def validate(self):
         return self.is_valid, self.valid_msg
