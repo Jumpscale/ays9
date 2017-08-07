@@ -235,7 +235,7 @@ If you need to detach disks from an already created machine you can execute a bl
 node.ovc__demo:
     disk:
       - 'disk1'
-
+```
 ## Example for getting VM history
 ```yaml
 g8client__env:
