@@ -215,6 +215,28 @@ actions:
     service: demo
 ```
 
+## Example for cloning machine
+
+Executing the following blueprint will create a clone of the machine `demo` with name `demo_clone` in the same cloudspace.
+
+```yaml
+g8client__env:
+    url: '<env_url>'
+    login: '<login>'
+    password: '<password>'
+    account: '<account>'
+
+vdc__vdcname:
+    location: '<location>'
+
+node.ovc__demo:
+
+actions:
+  - action: clone
+    actor: node.ovc
+    service: demo
+```
+
 If you need to attach disks from an already created machine you can execute a blueprint with the node added to it all new disks
 - The following example attaches a new disk `disk2` to the machine called `demo`
 #### Example for attaching new disks
