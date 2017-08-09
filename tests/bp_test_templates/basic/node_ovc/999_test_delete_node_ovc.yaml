@@ -1,5 +1,7 @@
-
 vdc__vdcname:
+
+# also cleanup clone created in previous test
+node.ovc__testnode_clone:
 
 node.ovc__testnode:
 

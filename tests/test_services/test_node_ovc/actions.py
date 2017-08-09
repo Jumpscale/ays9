@@ -4,7 +4,7 @@ def init_actions_(service, args):
         'test_delete': ['init'],
         'test_attach_external_network': ['init'],
         'test_detach_external_network': ['init'],
-        'test_clone': ['init'],
+        'test_clone': ['init']
     }
 
 
@@ -230,6 +230,7 @@ def test_clone(job):
     import requests
     import sys
     RESULT_OK = 'OK : %s '
+    RESULT_FAILED = 'FAILED : %s'
     RESULT_ERROR = 'ERROR : %s'
 
     service = job.service
@@ -251,7 +252,7 @@ def test_clone(job):
 
         clone_name = "%s_clone" % vm.name
 
-        res = [machine['id'] if machine['name'] == clone_name for machine in response.json()]
+        res = [machine['id'] for machine in response.json() if machine['name'] == clone_name]
         if res:
             # get id of cloned vm
             clone_id = res[0]
