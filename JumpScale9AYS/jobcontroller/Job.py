@@ -296,7 +296,10 @@ class Job:
                 service_action_obj = self.service.model.actions[self.model.dbobj.actionName]
                 service_action_obj.state = str(self.model.dbobj.state)
 
-            self.service.saveAll()
+            if self.model.dbobj.actionName == "delete" and self.model.dbobj.state == 'ok':
+                self.service.save()
+            else:
+                self.service.saveAll()
 
         if not j.sal.fs.exists(j.sal.fs.joinPaths(self.service.aysrepo.path, "services")):
             return # repo destroyed or service is deleted.

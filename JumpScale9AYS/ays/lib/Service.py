@@ -17,7 +17,6 @@ class Service:
         self._longrunning_tasks = {}  # for long running jobs.
         self.aysrepo = aysrepo
         self.logger = j.logger.get('j.atyourservice.server.service')
-        self._deleted = False
 
     @classmethod
     async def init_from_actor(cls, aysrepo, actor, args, name, context=None):
@@ -323,58 +322,51 @@ class Service:
         j.sal.fs.writeFile(path4, self.model.dbobj.dataSchema)
 
     def save(self):
-        if not self._deleted:
-            self.model.save()
+        self.model.save()
 
     def saveAll(self):
-        if not self._deleted:
-            self.model.save()
-            self.saveToFS()
+        self.model.save()
+        self.saveToFS()
 
     def reload(self):
         # service are kept in memory so we never need to relad anyomre
         pass
 
-    async def checkDelete(self):
+    async def oktodelete(self):
         """
         Executes a dryrun to check if deleting service is OK.
-        To ensure that removal won't break minimum consumption required by a consumer for the service or any of its children.
+        Deleting a service will remove its children and may break a minimum consumption required by a consumer.
 
         """
-        if self.children:
-            for child in self.children:
-                oktodelete, msg = await child.checkDelete()
-                if not oktodelete:
-                    return False, msg 
 
+        if self.children:
+            return False, "Can't remove {} has children {}.".format(self, self.children)
         for consumers in self.consumers.values():
             for consumer in consumers:
                 constemplate = self.aysrepo.templateGet(name=consumer.model.dbobj.actorName)
                 consumptionconfig = constemplate.consumptionConfig
                 for conf in consumptionconfig:
-                    minimum = conf.get('min', 0)  >= len(consumer.producers.get(self.model.role, []))
-                    if minimum == 0:
-                        continue
-                    if conf['role'] == self.model.role and minimum <= len(consumer.producers.get(self.model.role, [])):
-                        msg = "Can't remove {} without providing minimum of {} {} services to {}.".format(self, conf['min'], conf['role'], consumer)
-                        return False, msg 
+                    if conf['role'] == self.model.role and conf['min'] == len(consumer.producers.get(self.model.role)):
+                        return False, "Can't remove {} without providing minimum of {} {} services to {}.".format(self, conf['min'], conf['role'], consumer)
         return True, "OK"
 
-    async def delete(self):
+    async def delete(self, force=False):
         """
-        Deletes service and its children from database and filesystem if safe. 
+        Deletes service and its children from database and filesystem.
 
-        if removal won't break minimum consumption required by a consumer for the service or any of its children.
+        @param force bool=False: will execute a dryrun to check if deleting this service won't break anything (force will remove children and consumption link with consumers even if minimum consumption isn't statisified after delete.
+
         """
         producer_removed = "{}!{}".format(self.model.role, self.name)
 
-        oktodelete, msg = await self.checkDelete()
-        if not oktodelete:
-            raise j.exceptions.RuntimeError(msg)
+        if not force:
+            oktodelete, msg = await self.oktodelete()
+            if not oktodelete:
+                raise j.exceptions.RuntimeError(msg)
 
         if self.children:
             for service in self.children:
-                await service.delete()
+                await service.delete(force=force)
 
         # cancel all recurring tasks
         self.stop()
@@ -398,8 +390,6 @@ class Service:
         j.sal.fs.removeDirTree(self.path)
         if self.model.key in self.aysrepo.db.services.services:
             del self.aysrepo.db.services.services[self.model.key]
-
-        self._deleted = True
 
     @property
     def parent(self):

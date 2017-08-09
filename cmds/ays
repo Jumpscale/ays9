@@ -532,7 +532,7 @@ def create(assume_yes, force, debug, profile, follow):
             try:
                 resp = ayscl.api.ays.getRun(runid=run['key'], repository=_current_repo_name())
             except Exception as e:
-                print("Error during retreive of the run {}: {}".format(run['key'], _extract_error(e)))
+                print("Error during retreive of the run {}: {}".format(key, _extract_error(e)))
                 return
 
             run = resp.json()
@@ -685,8 +685,7 @@ def blueprint(name, follow, message):
             if follow:
                 print(resp.json())
             else:
-                msg = resp.json()['msg']
-                print(msg)
+                print("Blueprint {} executed".format(name))
         except Exception as e:
             print('error during execution of the blueprint {}: {}'.format(name, _extract_error(e)))
             return
@@ -774,7 +773,7 @@ def action(action, assume_yes, actor, service, force, message):
         ayscl.api.ays.createBlueprint(bp, _current_repo_name())
         resp = ayscl.api.ays.executeBlueprint(data={"message": message}, blueprint=name, repository=_current_repo_name())
         ayscl.api.ays.deleteBlueprint(blueprint=name, repository=_current_repo_name())
-        print(resp.json()['msg'])
+        print("blueprint {} executed".format(name))
     except Exception as e:
         print('error during execution of the blueprint {}: {}'.format(name, _extract_error(e)))
         return
