@@ -8,6 +8,20 @@ def init_actions_(service, args):
     }
 
 
+def authenticate(g8client):
+    import requests
+    url = 'https://' + g8client.model.data.url
+    username = g8client.model.data.login
+    password = g8client.model.data.password
+
+    login_url = url + '/restmachine/system/usermanager/authenticate'
+    credential = {'name': username,
+                  'secret': password}
+
+    session = requests.Session()
+    session.post(url=login_url, data=credential)
+    return session
+
 def test_create(job):
     import requests
     import sys
@@ -18,14 +32,7 @@ def test_create(job):
     service = job.service
     try:
         g8client = service.producers['g8client'][0]
-        url = 'https://' + g8client.model.data.url
-        username = g8client.model.data.login
-        password = g8client.model.data.password
-        login_url = url + '/restmachine/system/usermanager/authenticate'
-        credential = {'name': username,
-                      'secret': password}
-        session = requests.Session()
-        session.post(url=login_url, data=credential)
+        session = authenticate(g8client)
 
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
@@ -66,14 +73,7 @@ def test_delete(job):
     service = job.service
     try:
         g8client = service.producers['g8client'][0]
-        url = 'https://' + g8client.model.data.url
-        username = g8client.model.data.login
-        password = g8client.model.data.password
-        login_url = url + '/restmachine/system/usermanager/authenticate'
-        credential = {'name': username,
-                      'secret': password}
-        session = requests.Session()
-        session.post(url=login_url, data=credential)
+        session = authenticate(g8client)
 
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
@@ -104,14 +104,7 @@ def test_node_disks(job):
     service = job.service
     try:
         g8client = service.producers['g8client'][0]
-        url = 'https://' + g8client.model.data.url
-        username = g8client.model.data.login
-        password = g8client.model.data.password
-        login_url = url + '/restmachine/system/usermanager/authenticate'
-        credential = {'name': username,
-                      'secret': password}
-        session = requests.Session()
-        session.post(url=login_url, data=credential)
+        session = authenticate(g8client)
 
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
@@ -148,14 +141,7 @@ def test_attach_external_network(job):
     service = job.service
     try:
         g8client = service.producers['g8client'][0]
-        url = 'https://' + g8client.model.data.url
-        username = g8client.model.data.login
-        password = g8client.model.data.password
-        login_url = url + '/restmachine/system/usermanager/authenticate'
-        credential = {'name': username,
-                      'secret': password}
-        session = requests.Session()
-        session.post(url=login_url, data=credential)
+        session = authenticate(g8client)
 
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
@@ -192,14 +178,7 @@ def test_detach_external_network(job):
     service = job.service
     try:
         g8client = service.producers['g8client'][0]
-        url = 'https://' + g8client.model.data.url
-        username = g8client.model.data.login
-        password = g8client.model.data.password
-        login_url = url + '/restmachine/system/usermanager/authenticate'
-        credential = {'name': username,
-                      'secret': password}
-        session = requests.Session()
-        session.post(url=login_url, data=credential)
+        session = authenticate(g8client)
 
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
@@ -236,14 +215,7 @@ def test_clone(job):
     service = job.service
     try:
         g8client = service.producers['g8client'][0]
-        url = 'https://' + g8client.model.data.url
-        username = g8client.model.data.login
-        password = g8client.model.data.password
-        login_url = url + '/restmachine/system/usermanager/authenticate'
-        credential = {'name': username,
-                      'secret': password}
-        session = requests.Session()
-        session.post(url=login_url, data=credential)
+        session = authenticate(g8client)
 
         vm = service.producers['node'][0]
 
