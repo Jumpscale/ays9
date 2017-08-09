@@ -2,7 +2,9 @@ def init_actions_(service, args):
     return {
         'test_create': ['init'],
         'test_delete': ['init'],
-        'test_clone': ['init']
+        'test_attach_external_network': ['init'],
+        'test_detach_external_network': ['init'],
+        'test_clone': ['init'],
     }
 
 
@@ -126,7 +128,7 @@ def test_node_disks(job):
                 failure = 'Machine Model Disks({}) != Actual Machine Disks({})'.format(len(disks)+1, len(content['disks']))
                 service.model.data.result = RESULT_FAILED % failure
             else:
-                service.model.data.result = RESULT_OK % 'test_attach_disk'
+                service.model.data.result = RESULT_OK % 'test_node_disks'
         else:
             response_data = {'status_code': response.status_code,
                              'content': response.content}
@@ -134,6 +136,95 @@ def test_node_disks(job):
     except Exception as e:
         service.model.data.result = RESULT_ERROR % (str(sys.exc_info()[:2]) + str(e))
     service.save()
+
+
+def test_attach_external_network(job):
+    import requests
+    import sys
+    RESULT_OK = 'OK : %s '
+    RESULT_FAILED = 'FAILED : %s'
+    RESULT_ERROR = 'ERROR : %s'
+
+    service = job.service
+    try:
+        g8client = service.producers['g8client'][0]
+        url = 'https://' + g8client.model.data.url
+        username = g8client.model.data.login
+        password = g8client.model.data.password
+        login_url = url + '/restmachine/system/usermanager/authenticate'
+        credential = {'name': username,
+                      'secret': password}
+        session = requests.Session()
+        session.post(url=login_url, data=credential)
+
+        vm = service.producers['node'][0]
+        vm_id = vm.model.data.machineId
+
+        api_url = url + '/restmachine/cloudapi/machines/get'
+        api_body = {'machineId': vm_id}
+
+        response = session.post(url=api_url, data=api_body)
+
+        if response.status_code == 200:
+            content = response.json()
+            # check if machine is attached: there should be an interface with type PUBLIC
+            if not any(inter['type'] == 'PUBLIC' for inter in content['interfaces']):
+                failure = 'Machine is not attached to external network '
+                service.model.data.result = RESULT_FAILED % failure
+            else:
+                service.model.data.result = RESULT_OK % 'test_attach_external_network'
+        else:
+            response_data = {'status_code': response.status_code,
+                             'content': response.content}
+            service.model.data.result = RESULT_ERROR % str(response_data)+str(vm_id)
+    except Exception as e:
+        service.model.data.result = RESULT_ERROR % (str(sys.exc_info()[:2]) + str(e))
+    service.save()
+
+
+def test_detach_external_network(job):
+    import requests
+    import sys
+    RESULT_OK = 'OK : %s '
+    RESULT_FAILED = 'FAILED : %s'
+    RESULT_ERROR = 'ERROR : %s'
+
+    service = job.service
+    try:
+        g8client = service.producers['g8client'][0]
+        url = 'https://' + g8client.model.data.url
+        username = g8client.model.data.login
+        password = g8client.model.data.password
+        login_url = url + '/restmachine/system/usermanager/authenticate'
+        credential = {'name': username,
+                      'secret': password}
+        session = requests.Session()
+        session.post(url=login_url, data=credential)
+
+        vm = service.producers['node'][0]
+        vm_id = vm.model.data.machineId
+
+        api_url = url + '/restmachine/cloudapi/machines/get'
+        api_body = {'machineId': vm_id}
+
+        response = session.post(url=api_url, data=api_body)
+
+        if response.status_code == 200:
+            content = response.json()
+            # check if machine is detached: there should not be an interface with type PUBLIC
+            if any(inter['type'] == 'PUBLIC' for inter in content['interfaces']):
+                failure = 'Machine is not detached from external network '
+                service.model.data.result = RESULT_FAILED % failure
+            else:
+                service.model.data.result = RESULT_OK % 'test_detach_external_network'
+        else:
+            response_data = {'status_code': response.status_code,
+                             'content': response.content}
+            service.model.data.result = RESULT_ERROR % str(response_data)+str(vm_id)
+    except Exception as e:
+        service.model.data.result = RESULT_ERROR % (str(sys.exc_info()[:2]) + str(e))
+    service.save()
+
 
 def test_clone(job):
     import requests

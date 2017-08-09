@@ -1,10 +1,10 @@
-node.ovc__testn:
-    disk:
-      - disk1
+node.ovc__testnode:
+  disk:
+    - disk1
 
-test_node_ovc__node:
+test_node_ovc__test:
 
 actions:
   - action: test_node_disks
     actor: test_node_ovc
-    service: node
+    service: test

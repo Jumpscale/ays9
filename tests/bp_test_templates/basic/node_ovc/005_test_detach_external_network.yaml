@@ -1,12 +1,9 @@
-
-vdc__vdcname:
-
 node.ovc__testnode:
 
 test_node_ovc__test:
 
 actions:
-  - action: uninstall
-  - action: test_delete
+  - action: detach_external_network
+  - action: test_detach_external_network
     actor: test_node_ovc
     service: test
