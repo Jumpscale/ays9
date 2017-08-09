@@ -1,0 +1,15 @@
+g8client__env:
+    url: '<url>'
+    login: '<login>'
+    password: '<password>'
+    account: '<account>'
+
+vdc__vdc001:
+    location: '<location>'
+
+test_vdc__vdc:
+
+actions:
+  - action: disable
+  - action: test_disable
+    actor : test_vdc

@@ -1,7 +1,7 @@
 g8client__env:
-    url: 'du-conv-2.demo.greenitglobe.com'
-    login: 'jonas'
-    password: 'gigorgpass'
+    url: '<url>'
+    login: '<login>'
+    password: '<password>'
 
 uservdc__usertest:
 
