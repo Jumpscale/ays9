@@ -53,7 +53,7 @@ def create_graphs(repo, all_nodes, to_execute):
 
 def addEdges(node, action, all_nodes, nodes):
     """
-    recursivlely add edged to a node
+    recursivlely add edges to a node
     """
     for producers in node.service.producers.values():
         for prod in producers:
@@ -67,17 +67,32 @@ def addEdges(node, action, all_nodes, nodes):
 
 def addConsumerEdges(node, action, all_nodes, nodes):
     """
-    recursivlely add edged to a node
+    recursivlely add edges to a node
     only if its a parent.
     """
-    for prod in node.service.children:
 
+    children = node.service.children
+
+    for prod in children:
         name = "%s-%s" % (prod.model.key, action)
         edge = all_nodes.get(name)
         if edge:
             addConsumerEdges(edge, action, all_nodes, nodes)
             node.addEdge(edge)
             nodes.add(edge)
+
+    if not children:
+        actions = []
+        node.service._build_actions_chain(action, actions)
+        for i, action in enumerate(actions):
+            name = "%s-%s" % (node.service.model.key, action)
+
+            if i + 1 < len(actions):
+                action = actions[i + 1]
+                name = "%s-%s" % (node.service.model.key, action)
+                edge = all_nodes[name]
+                node.addEdge(edge)
+                nodes.add(edge)
 
 def get_task_batches(nodes):
 

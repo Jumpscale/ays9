@@ -458,7 +458,7 @@ async def executeBlueprint(request, blueprint, repository):
     try:
         inputs = request.json
         message = inputs.get('message') if inputs else None
-        jobkeys = await repo.blueprintExecute(path=bp.path, context={'token': extract_token(request)},
+        jobkeys, msg = await repo.blueprintExecute(path=bp.path, context={'token': extract_token(request)},
                                               message=message)
 
     except j.exceptions.Input as inputEx:
@@ -476,7 +476,7 @@ async def executeBlueprint(request, blueprint, repository):
         j.atyourservice.server.logger.exception(error_msg)
         return json({'error': str(e)}, 500)
     # Returns json containing list of jobkeys in addition to the message. Will only return jobs with action process change.
-    return json({'msg': 'Blueprint {} executed'.format(blueprint), 'processChangeJobs': jobkeys})
+    return json({'msg': msg, 'processChangeJobs': jobkeys})
 
 
 async def updateBlueprint(request, blueprint, repository):

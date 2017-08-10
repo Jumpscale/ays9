@@ -153,7 +153,17 @@ class Blueprint:
                         args = {} if item is None else item
                         await actor.asyncServiceCreate(instance=bpinstance, args=args, context=context)
 
+        msg = "Blueprint {} executed".format(self.name)
         # first we had to make sure all services do exist, then we can add these properties
+        for idx, action_info in enumerate(self.actions):
+            if action_info['action_name'] == "delete":
+                for service in self.aysrepo.servicesFind(name=action_info['service'], actor=action_info['actor']):
+                    ok, oktodeletemsg = await service.checkDelete()
+                    if not ok:
+                        msg += "\n- Skipped delete action for service {}: {}".format(service.name, oktodeletemsg)
+                        self.logger.warning(msg)
+                        self.actions.pop(idx)  # we pop the delete action here if you don't want to raise exception and continue with the rest of actions.
+
         for action_info in self.actions:
             for service in self.aysrepo.servicesFind(name=action_info['service'], actor=action_info['actor']):
                 service.scheduleAction(action_info['action_name'], period=action_info['recurring_period'], force=action_info['force'])
@@ -165,7 +175,7 @@ class Blueprint:
                     channel=event_filter['channel'], actions=event_filter['action_name'],
                     command=event_filter['command'], secrets=event_filter['secret'])
                 service.saveAll()
-
+        return msg
 
     @property
     def services(self):

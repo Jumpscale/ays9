@@ -70,19 +70,24 @@ Imagine you have some service instances already deployed and a new version of th
   - execute `ays blueprint`. This command will walk over the blueprints and update the data accordingly. If there is some new fields they will be added to the `data.json`.
 
 
-## Service deletion (service.delete(force=False))
-Deleting services can cause problems and broken services state if not used with care, 
+## Service deletion (service.delete())
+Service cannot be deleted if itself or any of its children break the minimum requirements of any of their consumers upon deletion.
 
-setting `force = True` in `service.delete` call
-is a very damaging parameter, as It may delete its children or break a minimum required consumption of a consumer. 
+### producer_removed
+In case of producer removal a change in the `links` category would be propagated to its consumers
 
-setting `force = False` in `service.delete` will do a dryrun to see if you can delete services with no problems in the beginning. 
-
-> it's always safer to use `force=False` and reason about your delete methods.
+```
+def processChange(job):
+    args = job.model.args
+    category = args.pop('changeCategory')
+    if category=="links":
+        producers=args.pop("producer_removed", None)
+        print("producer was removed ", producers)
+```
 
 > service.delete triggers processChange with `links` changeCategory and producer_removed key containing the removed producer `role!name`
 ### Default implementation for delete action
-It uses `j.tools.async.wrappers.sync(job.service.delete())` meaning `force=False` for safe deletions by default.
+It uses `j.tools.async.wrappers.sync(job.service.delete())`.
 
 ```
 !!!
