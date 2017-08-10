@@ -421,7 +421,7 @@ def init_actions_(service, args):
         'import_': ['init'],
         'monitor': ['start'],
         'stop': [],
-        'clone': ['install'],
+        'clone': ['install', 'stop'],
         'get_history': ['install'],
         'attach_external_network': ['install'],
         'detach_external_network': ['install'],
@@ -716,8 +716,6 @@ def clone(job):
 
     clone_name = "%s_clone" % machine.name
 
-    # machine has to be stopped before cloning
-    machine.stop()
     machine.clone(clone_name)
     machine.start()
 

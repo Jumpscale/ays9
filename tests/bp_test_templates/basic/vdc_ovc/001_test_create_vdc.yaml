@@ -4,12 +4,14 @@ g8client__env:
     password: '<password>'
     account: '<account>'
 
-vdc__vdc001:
+vdc__testvdc:
+    g8client: 'env'
+    account: '<account>'
     location: '<location>'
 
-test_vdc__vdc:
+test_vdc__test:
 
 actions:
   - action: install
   - action: test_create
-    actor : test_vdc
+    service: test

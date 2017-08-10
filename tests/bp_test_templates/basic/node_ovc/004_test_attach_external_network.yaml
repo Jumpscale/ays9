@@ -4,6 +4,8 @@ test_node_ovc__test:
 
 actions:
   - action: attach_external_network
+    actor: node.ovc
+    service: testnode
   - action: test_attach_external_network
     actor: test_node_ovc
     service: test

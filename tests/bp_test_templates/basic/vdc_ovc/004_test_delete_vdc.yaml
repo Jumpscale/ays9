@@ -1,15 +1,10 @@
 g8client__env:
-    url: '<url>'
-    login: '<login>'
-    password: '<password>'
-    account: '<account>'
 
-vdc__vdc001:
-    location: '<location>'
+vdc__testvdc:
 
-test_vdc__vdc:
+test_vdc__test:
 
 actions:
   - action: uninstall
   - action: test_delete
-    actor : test_vdc
+    service : test

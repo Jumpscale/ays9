@@ -13,4 +13,8 @@ links:
     auto: false
     min: 1
     role: g8client
+  - argname: vdc
+    auto: false
+    min: 1
+    role: vdc
 recurring: []
