@@ -1,9 +1,9 @@
 def init_actions_(service, args):
     return {
         'test_create': ['install'],
-        'test_disable': ['install'],
+        'test_delete': ['install'],
         'test_enable': ['enable'],
-        'test_delete': ['disable'],
+        'test_disable': ['disable'],
     }
 
 ##############
