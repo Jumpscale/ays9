@@ -28,7 +28,7 @@ struct Schema {
 	cloneName @24 :Text;
 	snapshots @25 :List(Text);
 	snapshotEpoch @26 :Text;
-	
+
 	struct UserVdcEntry {
 		name @0 :Text;
 		accesstype @1 :Text = "R";

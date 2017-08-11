@@ -31,7 +31,6 @@ def delete_snapshot(job):
     pass
 #################
 
-
 def test_create(job):
     import sys
     RESULT_OK = 'OK : %s '

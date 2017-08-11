@@ -720,7 +720,7 @@ def clone(job):
     space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
 
     if service.name not in space.machines:
-        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+        raise j.exceptions.RuntimeError("Machine with name %s doesn't exist in the cloud space" % service.name)
 
     machine = space.machines[service.name]
 
@@ -768,7 +768,7 @@ def attach_external_network(job):
     space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
 
     if service.name not in space.machines:
-        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+        raise j.exceptions.RuntimeError("Machine with name %s doesn't exist in the cloud space" % service.name)
 
     machine = space.machines[service.name]
     machine.attach_external_network()
@@ -789,7 +789,7 @@ def detach_external_network(job):
     space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
 
     if service.name not in space.machines:
-        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+        raise j.exceptions.RuntimeError("Machine with name %s doesn't exist in the cloud space" % service.name)
 
     machine = space.machines[service.name]
     machine.detach_external_network()
@@ -861,7 +861,7 @@ def list_snapshots(job):
     space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
 
     if service.name not in space.machines:
-        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+        raise j.exceptions.RuntimeError("Machine with name %s doesn't exist in the cloud space" % service.name)
 
     machine = space.machines[service.name]
     res = machine.list_snapshots()
@@ -885,7 +885,7 @@ def snapshot(job):
     space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
 
     if service.name not in space.machines:
-        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+        raise j.exceptions.RuntimeError("Machine with name %s doesn't exist in the cloud space" % service.name)
 
     machine = space.machines[service.name]
     machine.create_snapshot(machine.name)
@@ -907,7 +907,7 @@ def rollback_snapshot(job):
     space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
 
     if service.name not in space.machines:
-        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+        raise j.exceptions.RuntimeError("Machine with name %s doesn't exist in the cloud space" % service.name)
 
     machine = space.machines[service.name]
     snapshot_epoch = service.model.data.snapshotEpoch
@@ -932,7 +932,7 @@ def delete_snapshot(job):
     space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
 
     if service.name not in space.machines:
-        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+        raise j.exceptions.RuntimeError("Machine with name %s doesn't exist in the cloud space" % service.name)
 
     machine = space.machines[service.name]
     snapshot_epoch = service.model.data.snapshotEpoch
