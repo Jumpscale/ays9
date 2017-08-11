@@ -10,20 +10,15 @@ This actor template is responsible for creating a virtual machine on any openVCl
 - memory: memory available for the vm in GB. default:1.
 - sizeID: will override memory parameter. Denotes type of VM, this size impact the number of CPU and memory available for the vm.
 - os.image: OS image to use for the VM. default:'Ubuntu 15.10'.
-
 - ports: List of port forwards to create. Format is `Public_port:VM_port` or `VM_port`.
 if the public port is not specified, it will be chosen automatically in the available ports of the vdc.
 e.g: to expose port 22 of the VM to the port 9000 on the public port of the vdc use :`9000:22`. **optional**
-
 - machine.id: once the VM is created, holds the ID return by openvcloud for that VM. **filled in automatically, don't specify it in the blueprint**
 - ip.public: public IP of the VM once installed. **filled in automatically, don't specify it in the blueprint**
 - ip.private: private IP of the VM inside the VDC. **filled in automatically, don't specify it in the blueprint**
-
 - ssh.login: login used to create ssh connection to the VM. **filled in automatically, don't specify it in the blueprint**
 - ssh.password: password used to create ssh connection to the vm. **filled in automatically, don't specify it in the blueprint**
-
 - vdc: service name of the vdc service where to deploy the VM. This is the parent service. If not specified, will try to use any defined in the blueprint. **required** to be defined in the blueprint
-
 - ovf.link: the link to owncloud e.g http://mycloud.com/remote.php/webdav/ where you want to store the exported machine
 - ovf.username: username for owncloud server
 - ovf.password: password for owncloud server
@@ -32,7 +27,9 @@ e.g: to expose port 22 of the VM to the port 9000 on the public port of the vdc 
 - disk: list of disk instances to be attached to the VM
 - vmHistory: stores VM history which includes the actions performed on this machine and the time these actions were performed. **filled in automatically, don't specify it in the blueprint**
 - uservdc: List of users to that access the machine with the type of access rights for each user e.g 'R' for read only access, 'RCX' for Write and 'ARCXDU' for Admin
-- cloneName: The name of the machine that will be created when executing the clone action.
+- clone.name: The name of the machine that will be created when executing the clone action.
+- snapshots: The list of snapshots of the node. **filled in when executing the listSnapshots action, don't specify it in the blueprint**
+- snapshot.epoch: The epoch of a snapshot to rollback or delete.
 
 
 ### Changing port forwardings
@@ -384,6 +381,96 @@ node.ovc__demo:
 
 actions:
   - action: delete_user
+    actor: node.ovc
+    service: demo
+```
+
+## Example for listing snapshots of a machine
+```yaml
+g8client__env:
+    url: '<env_url>'
+    login: '<login>'
+    password: '<password>'
+    account: '<account>'
+
+vdc__vdcname:
+    location: '<location>'
+
+uservdc__demo_user:
+    g8client: env
+
+node.ovc__demo:
+
+actions:
+  - action: list_snapshots
+    actor: node.ovc
+    service: demo
+```
+
+## Example for taking snapshot of a machine
+```yaml
+g8client__env:
+    url: '<env_url>'
+    login: '<login>'
+    password: '<password>'
+    account: '<account>'
+
+vdc__vdcname:
+    location: '<location>'
+
+uservdc__demo_user:
+    g8client: env
+
+node.ovc__demo:
+
+actions:
+  - action: snapshot
+    actor: node.ovc
+    service: demo
+```
+
+## Example for deleting snapshot of a machine
+```yaml
+g8client__env:
+    url: '<env_url>'
+    login: '<login>'
+    password: '<password>'
+    account: '<account>'
+
+vdc__vdcname:
+    location: '<location>'
+
+uservdc__demo_user:
+    g8client: env
+
+node.ovc__demo:
+  snapshotEpoch: <epoch of snapshot to be deleted>
+
+actions:
+  - action: delete_snapshot
+    actor: node.ovc
+    service: demo
+```
+
+## Example for rollbacking snapshot of a machine
+```yaml
+g8client__env:
+    url: '<env_url>'
+    login: '<login>'
+    password: '<password>'
+    account: '<account>'
+
+vdc__vdcname:
+    location: '<location>'
+
+uservdc__demo_user:
+    g8client: env
+
+node.ovc__demo:
+  snapshotEpoch: <epoch of snapshot to be rollbacked>
+
+actions:
+  - action: rollback_snapshot
     actor: node.ovc
     service: demo
 ```

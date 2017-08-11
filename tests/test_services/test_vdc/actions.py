@@ -16,7 +16,6 @@ def disable(job):
 ##############
 
 def test_create(job):
-    import requests
     import sys
     RESULT_OK = 'OK : %s '
     RESULT_FAILED = 'FAILED : %s'
@@ -44,7 +43,6 @@ def test_create(job):
 
 
 def test_delete(job):
-    import requests
     import sys
     RESULT_OK = 'OK : %s '
     RESULT_FAILED = 'FAILED : %s'
@@ -71,7 +69,6 @@ def test_delete(job):
     service.save()
 
 def test_enable(job):
-    import requests
     import sys
     RESULT_OK = 'OK : %s '
     RESULT_FAILED = 'FAILED : %s'
@@ -99,7 +96,6 @@ def test_enable(job):
     service.save()
 
 def test_disable(job):
-    import requests
     import sys
     RESULT_OK = 'OK : %s '
     RESULT_FAILED = 'FAILED : %s'

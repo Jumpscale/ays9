@@ -1,5 +1,5 @@
 
-@0xa92c02ccac309240;
+@0xd37ff48ad935931f;
 struct Schema {
 	description @0 :Text;
 	bootdiskSize @1 :Int64 = 10;
@@ -26,6 +26,9 @@ struct Schema {
 	vmHistory @22 :Text;
 	uservdc @23 :List(UserVdcEntry);
 	cloneName @24 :Text;
+	snapshots @25 :List(Text);
+	snapshotEpoch @26 :Text;
+	
 	struct UserVdcEntry {
 		name @0 :Text;
 		accesstype @1 :Text = "R";

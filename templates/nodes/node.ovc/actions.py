@@ -330,7 +330,7 @@ def processChange(job):
 
                 setattr(service.model.data, key, value)
 
-            if key == 'cloneName':
+            if key == 'cloneName' or  key == 'snapshotEpoch':
                 setattr(service.model.data, key, value)
 
         space.save()
@@ -432,6 +432,10 @@ def init_actions_(service, args):
         'add_user': ['install'],
         'update_user': ['install'],
         'delete_user': ['install'],
+        'list_snapshots': ['install'],
+        'snapshot': ['install'],
+        'rollback_snapshot': ['install', 'stop'],
+        'delete_snapshot': ['install']
     }
 
 
@@ -838,3 +842,99 @@ def delete_user(job):
     Remove a registered user access rights to the machine
     """
     _update_user_acl(job=job, action='delete')
+
+
+def list_snapshots(job):
+    """
+    Action that lists the snapshots of the machine
+    """
+    import json
+    service = job.service
+    vdc = service.parent
+
+    if 'g8client' not in vdc.producers:
+        raise j.exceptions.RuntimeError("No producer g8client found. Cannot continue creating snapshot of %s" % service)
+
+    g8client = vdc.producers["g8client"][0]
+    cl = j.clients.openvcloud.getFromService(g8client)
+    acc = cl.account_get(vdc.model.data.account)
+    space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
+
+    if service.name not in space.machines:
+        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+
+    machine = space.machines[service.name]
+    res = machine.list_snapshots()
+    service.model.data.snapshots = [json.dumps(s) for s in res]
+    service.saveAll()
+
+
+def snapshot(job):
+    """
+    Action that creates a snapshot of the machine
+    """
+    service = job.service
+    vdc = service.parent
+
+    if 'g8client' not in vdc.producers:
+        raise j.exceptions.RuntimeError("No producer g8client found. Cannot continue creating snapshot of %s" % service)
+
+    g8client = vdc.producers["g8client"][0]
+    cl = j.clients.openvcloud.getFromService(g8client)
+    acc = cl.account_get(vdc.model.data.account)
+    space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
+
+    if service.name not in space.machines:
+        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+
+    machine = space.machines[service.name]
+    machine.create_snapshot(machine.name)
+
+
+def rollback_snapshot(job):
+    """
+    Action that rolls back the machine to a snapshot
+    """
+    service = job.service
+    vdc = service.parent
+
+    if 'g8client' not in vdc.producers:
+        raise j.exceptions.RuntimeError("No producer g8client found. Cannot continue creating snapshot of %s" % service)
+
+    g8client = vdc.producers["g8client"][0]
+    cl = j.clients.openvcloud.getFromService(g8client)
+    acc = cl.account_get(vdc.model.data.account)
+    space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
+
+    if service.name not in space.machines:
+        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+
+    machine = space.machines[service.name]
+    snapshot_epoch = service.model.data.snapshotEpoch
+
+    machine.rollback_snapshot(snapshot_epoch)
+    machine.start()
+
+
+def delete_snapshot(job):
+    """
+    Action that deletes a snapshot of the machine
+    """
+    service = job.service
+    vdc = service.parent
+
+    if 'g8client' not in vdc.producers:
+        raise j.exceptions.RuntimeError("No producer g8client found. Cannot continue creating snapshot of %s" % service)
+
+    g8client = vdc.producers["g8client"][0]
+    cl = j.clients.openvcloud.getFromService(g8client)
+    acc = cl.account_get(vdc.model.data.account)
+    space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
+
+    if service.name not in space.machines:
+        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+
+    machine = space.machines[service.name]
+    snapshot_epoch = service.model.data.snapshotEpoch
+
+    machine.delete_snapshot(snapshot_epoch)
