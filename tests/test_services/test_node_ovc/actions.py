@@ -238,10 +238,10 @@ def test_snapshot(job):
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
 
-        content = client.api.cloudapi.machines.listSnapshots(machineId=vm_id)
+        snapshots = client.api.cloudapi.machines.listSnapshots(machineId=vm_id)
 
         # check if list of snapshots is not empty
-        if not content:
+        if not snapshots:
             failure = 'Snapshot is not created'
             service.model.data.result = RESULT_FAILED % failure
         else:
@@ -267,16 +267,18 @@ def test_list_snapshots(job):
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
 
-        content = client.api.cloudapi.machines.listSnapshots(machineId=vm_id)
+        snapshots = client.api.cloudapi.machines.listSnapshots(machineId=vm_id)
+
+        actual_snapshots = [json.loads(s) for s in vm.model.data.snapshots]
 
         # check if snapshot lists match
-        if content != vm.model.data.snapshots:
+        if snapshots != actual_snapshots:
             failure = 'Snapshots are not listed correctly'
             service.model.data.result = RESULT_FAILED % failure
         else:
             service.model.data.result = RESULT_OK % 'test_list_snapshots'
             # prepare test_delete_snapshot: set epoch of snapshot
-            vm['data']['snapshotEpoch'] = content[0]['epoch']
+            vm.model.data.snapshotEpoch = str(snapshots[0]['epoch'])
 
     except Exception as e:
         service.model.data.result = RESULT_ERROR % (str(sys.exc_info()[:2]) + str(e))
@@ -297,10 +299,10 @@ def test_delete_snapshot(job):
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
 
-        content = client.api.cloudapi.machines.listSnapshots(machineId=vm_id)
+        snapshots = client.api.cloudapi.machines.listSnapshots(machineId=vm_id)
 
         # check if list of snapshots is empty
-        if content:
+        if snapshots:
             failure = 'Snapshot is not deleted'
             service.model.data.result = RESULT_FAILED % failure
         else:

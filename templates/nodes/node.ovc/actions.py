@@ -866,6 +866,7 @@ def list_snapshots(job):
     machine = space.machines[service.name]
     res = machine.list_snapshots()
     service.model.data.snapshots = [json.dumps(s) for s in res]
+
     service.saveAll()
 
 
