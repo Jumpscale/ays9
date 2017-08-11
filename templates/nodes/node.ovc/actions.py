@@ -717,7 +717,7 @@ def clone(job):
 
     machine = space.machines[service.name]
 
-    clone_name = "%s_clone" % machine.name
+    clone_name = service.model.data.cloneName
 
     machine.clone(clone_name)
     machine.start()
@@ -783,7 +783,7 @@ def detach_external_network(job):
 
     if service.name not in space.machines:
         raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
-        
+
     machine = space.machines[service.name]
     machine.detach_external_network()
 
