@@ -254,7 +254,6 @@ def test_snapshot(job):
 
 def test_list_snapshots(job):
     import sys
-    import json
     RESULT_OK = 'OK : %s '
     RESULT_FAILED = 'FAILED : %s'
     RESULT_ERROR = 'ERROR : %s'
@@ -269,10 +268,10 @@ def test_list_snapshots(job):
 
         snapshots = client.api.cloudapi.machines.listSnapshots(machineId=vm_id)
 
-        actual_snapshots = [json.loads(s) for s in vm.model.data.snapshots]
+        actual_snapshots = [j.data.serializer.json.loads(s) for s in vm.model.data.snapshots]
 
         # check if snapshot lists match
-        if snapshots != actual_snapshots:
+        if len(snapshots) != 1 or snapshots != actual_snapshots:
             failure = 'Snapshots are not listed correctly'
             service.model.data.result = RESULT_FAILED % failure
         else:

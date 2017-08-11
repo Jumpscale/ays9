@@ -330,7 +330,7 @@ def processChange(job):
 
                 setattr(service.model.data, key, value)
 
-            if key == 'cloneName' or  key == 'snapshotEpoch':
+            if key in ['cloneName', 'snapshotEpoch']:
                 setattr(service.model.data, key, value)
 
         space.save()
