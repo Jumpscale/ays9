@@ -330,6 +330,9 @@ def processChange(job):
 
                 setattr(service.model.data, key, value)
 
+            if key == 'cloneName':
+                setattr(service.model.data, key, value)
+
         space.save()
         service.save()
 

@@ -16,6 +16,7 @@ node.ovc__testnode:
   os.image: 'Ubuntu 16.04 x64'
   disk:
     - disk1
+  clone.name: 'testnode_clone'
 
 test_node_ovc__test:
 
