@@ -30,10 +30,10 @@ def test_create(job):
         vdc = service.producers['vdc'][0]
         vdc_id = vdc.model.data.cloudspaceID
 
-        content = client.api.cloudapi.cloudspaces.get(cloudspaceId=vdc_id)
+        cloudspace = client.api.cloudapi.cloudspaces.get(cloudspaceId=vdc_id)
 
-        if vdc.name != content['name']:
-            failure = vdc.name + '!=' + content['name']
+        if vdc.name != cloudspace['name']:
+            failure = vdc.name + '!=' + cloudspace['name']
             service.model.data.result = RESULT_FAILED % failure
         else:
             service.model.data.result = RESULT_OK % 'test_create_vdc'
@@ -58,9 +58,9 @@ def test_delete(job):
         vdc = service.producers['vdc'][0]
         vdc_id = vdc.model.data.cloudspaceID
 
-        content = client.api.cloudapi.cloudspaces.get(cloudspaceId=vdc_id)
+        cloudspace = client.api.cloudapi.cloudspaces.get(cloudspaceId=vdc_id)
 
-        if content['status'] != 'DESTROYED':
+        if cloudspace['status'] != 'DESTROYED':
             failed = 'Cloudspace was not deleted'
             service.model.data.result = RESULT_FAILED % failed
         else:
@@ -85,10 +85,10 @@ def test_enable(job):
         vdc = service.producers['vdc'][0]
         vdc_id = vdc.model.data.cloudspaceID
 
-        content = client.api.cloudapi.cloudspaces.get(cloudspaceId=vdc_id)
+        cloudspace = client.api.cloudapi.cloudspaces.get(cloudspaceId=vdc_id)
 
         # check if vdc is enabled
-        if content['status'] != 'DEPLOYED':
+        if cloudspace['status'] != 'DEPLOYED':
             failure = 'vdc is not deployed'
             service.model.data.result = RESULT_FAILED % failure
         else:
@@ -113,10 +113,10 @@ def test_disable(job):
         vdc = service.producers['vdc'][0]
         vdc_id = vdc.model.data.cloudspaceID
 
-        content = client.api.cloudapi.cloudspaces.get(cloudspaceId=vdc_id)
+        cloudspace = client.api.cloudapi.cloudspaces.get(cloudspaceId=vdc_id)
 
         # check if vdc is disabled
-        if content['status'] != 'DISABLED':
+        if cloudspace['status'] != 'DISABLED':
             failure = 'vdc is not disabled'
             service.model.data.result = RESULT_FAILED % failure
         else:

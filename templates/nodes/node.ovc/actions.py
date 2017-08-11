@@ -698,6 +698,9 @@ def reset(job):
 
 
 def clone(job):
+    """
+    Action that creates a clone of a machine.
+    """
     service = job.service
     vdc = service.parent
 
@@ -710,8 +713,8 @@ def clone(job):
     space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
 
     if service.name not in space.machines:
-        service.logger.warning("Machine doesn't exist in the cloud space")
-        return
+        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+
     machine = space.machines[service.name]
 
     clone_name = "%s_clone" % machine.name
@@ -743,6 +746,9 @@ def get_history(job):
 
 
 def attach_external_network(job):
+    """
+    Action that attaches the machine to the external network.
+    """
     service = job.service
     vdc = service.parent
 
@@ -755,12 +761,15 @@ def attach_external_network(job):
     space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
 
     if service.name not in space.machines:
-        service.logger.warning("Machine doesn't exist in the cloud space")
-        return
+        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+
     machine = space.machines[service.name]
     machine.attach_external_network()
 
 def detach_external_network(job):
+    """
+    Action that detaches the machine from the external network.
+    """
     service = job.service
     vdc = service.parent
 
@@ -773,8 +782,8 @@ def detach_external_network(job):
     space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
 
     if service.name not in space.machines:
-        service.logger.warning("Machine doesn't exist in the cloud space")
-        return
+        raise j.exceptions.RuntimeError("Machine doesn't exist in the cloud space")
+        
     machine = space.machines[service.name]
     machine.detach_external_network()
 

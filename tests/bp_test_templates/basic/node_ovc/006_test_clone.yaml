@@ -1,6 +1,7 @@
 vdc__vdcname:
 
 node.ovc__testnode:
+  cloneName: 'testnode_clone'
 
 test_node_ovc__test:
 

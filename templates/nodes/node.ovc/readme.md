@@ -32,6 +32,7 @@ e.g: to expose port 22 of the VM to the port 9000 on the public port of the vdc 
 - disk: list of disk instances to be attached to the VM
 - vmHistory: stores VM history which includes the actions performed on this machine and the time these actions were performed. **filled in automatically, don't specify it in the blueprint**
 - uservdc: List of users to that access the machine with the type of access rights for each user e.g 'R' for read only access, 'RCX' for Write and 'ARCXDU' for Admin
+- cloneName: The name of the machine that will be created when executing the clone action.
 
 
 ### Changing port forwardings
@@ -228,6 +229,7 @@ vdc__vdcname:
     location: '<location>'
 
 node.ovc__demo:
+  cloneName: 'demo_clone'
 
 actions:
   - action: clone

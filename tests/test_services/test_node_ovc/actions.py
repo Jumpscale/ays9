@@ -34,16 +34,16 @@ def test_create(job):
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
 
-        content = client.api.cloudapi.machines.get(machineId=vm_id)
+        machine = client.api.cloudapi.machines.get(machineId=vm_id)
 
-        if vm.name != content['name']:
-            failure = vm.name + '!=' + content['name']
+        if vm.name != machine['name']:
+            failure = vm.name + '!=' + machine['name']
             service.model.data.result = RESULT_FAILED % failure
-        elif vm.model.data.osImage != content['osImage']:
-            failure = service.model.data.osImage + '!=' + content['osImage']
+        elif vm.model.data.osImage != machine['osImage']:
+            failure = service.model.data.osImage + '!=' + machine['osImage']
             service.model.data.result = RESULT_FAILED % failure
-        elif vm.model.data.bootdiskSize != content['disks'][0]['sizeMax']:
-            failure = service.model.data.bootdiskSize + '!=' + content['disks'][0]['sizeMax']
+        elif vm.model.data.bootdiskSize != machine['disks'][0]['sizeMax']:
+            failure = service.model.data.bootdiskSize + '!=' + machine['disks'][0]['sizeMax']
             service.model.data.result = RESULT_FAILED % failure
         else:
             service.model.data.result = RESULT_OK % 'test_create_virtualmachine'
@@ -69,9 +69,9 @@ def test_delete(job):
         vdc = service.producers['vdc'][0]
         vdc_id = vdc.model.data.cloudspaceID
 
-        content = client.api.cloudapi.machines.list(cloudspaceId=vdc_id)
+        machines = client.api.cloudapi.machines.list(cloudspaceId=vdc_id)
 
-        if any(vm['name'] == vm_name for vm in content):
+        if any(vm['name'] == vm_name for vm in machines):
             failure = 'vm is not deleted'
             service.model.data.result = RESULT_FAILED % failure
         else:
@@ -97,12 +97,12 @@ def test_node_disks(job):
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
 
-        content = client.api.cloudapi.machines.get(machineId=vm_id)
+        machine = client.api.cloudapi.machines.get(machineId=vm_id)
 
         disks = vm.producers.get('disk', [])
         # length of service disks +1(boot disk) should equal the actual number of machine disks
-        if (len(disks) + 1) != len(content['disks']):
-            failure = 'Machine Model Disks({}) != Actual Machine Disks({})'.format(len(disks)+1, len(content['disks']))
+        if (len(disks) + 1) != len(machine['disks']):
+            failure = 'Machine Model Disks({}) != Actual Machine Disks({})'.format(len(disks)+1, len(machine['disks']))
             service.model.data.result = RESULT_FAILED % failure
         else:
             service.model.data.result = RESULT_OK % 'test_node_disks'
@@ -127,10 +127,10 @@ def test_attach_external_network(job):
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
 
-        content = client.api.cloudapi.machines.get(machineId=vm_id)
+        machine = client.api.cloudapi.machines.get(machineId=vm_id)
 
         # check if machine is attached: there should be an interface with type PUBLIC
-        if not any(inter['type'] == 'PUBLIC' for inter in content['interfaces']):
+        if not any(inter['type'] == 'PUBLIC' for inter in machine['interfaces']):
             failure = 'Machine is not attached to external network '
             service.model.data.result = RESULT_FAILED % failure
         else:
@@ -156,10 +156,10 @@ def test_detach_external_network(job):
         vm = service.producers['node'][0]
         vm_id = vm.model.data.machineId
 
-        content = client.api.cloudapi.machines.get(machineId=vm_id)
+        machine = client.api.cloudapi.machines.get(machineId=vm_id)
 
         # check if machine is detached: there should not be an interface with type PUBLIC
-        if any(inter['type'] == 'PUBLIC' for inter in content['interfaces']):
+        if any(inter['type'] == 'PUBLIC' for inter in machine['interfaces']):
             failure = 'Machine is not detached from external network '
             service.model.data.result = RESULT_FAILED % failure
         else:
@@ -187,25 +187,25 @@ def test_clone(job):
         vdc = service.producers['vdc'][0]
         vdc_id = vdc.model.data.cloudspaceID
 
-        content = client.api.cloudapi.machines.list(cloudspaceId=vdc_id)
+        machines = client.api.cloudapi.machines.list(cloudspaceId=vdc_id)
 
-        clone_name = "%s_clone" % vm.name
+        clone_name = 'testnode_clone'
 
-        res = [machine['id'] for machine in content if machine['name'] == clone_name]
+        res = [machine['id'] for machine in machines if machine['name'] == clone_name]
         if res:
             # get id of cloned vm
             clone_id = res[0]
-            content = client.api.cloudapi.machines.get(machineId=clone_id)
+            machine = client.api.cloudapi.machines.get(machineId=clone_id)
 
             # check if this vm is a clone of the original vm
-            if clone_name != content['name']:
-                failure = vm.name + '!=' + content['name']
+            if clone_name != machine['name']:
+                failure = vm.name + '!=' + machine['name']
                 service.model.data.result = RESULT_FAILED % failure
-            elif vm.model.data.osImage != content['osImage']:
-                failure = service.model.data.osImage + '!=' + content['osImage']
+            elif vm.model.data.osImage != machine['osImage']:
+                failure = service.model.data.osImage + '!=' + machine['osImage']
                 service.model.data.result = RESULT_FAILED % failure
-            elif vm.model.data.bootdiskSize != content['disks'][0]['sizeMax']:
-                failure = service.model.data.bootdiskSize + '!=' + content['disks'][0]['sizeMax']
+            elif vm.model.data.bootdiskSize != machine['disks'][0]['sizeMax']:
+                failure = service.model.data.bootdiskSize + '!=' + machine['disks'][0]['sizeMax']
                 service.model.data.result = RESULT_FAILED % failure
             else:
                 service.model.data.result = RESULT_OK % 'test_clone_machine'
