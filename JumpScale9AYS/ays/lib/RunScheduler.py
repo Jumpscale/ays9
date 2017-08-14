@@ -87,7 +87,8 @@ class RunScheduler:
             try:
                 self._current = run.model.key
                 await run.execute()
-                self._commit(run)
+                if j.atyourservice.server.dev_mode:
+                    self._commit(run)
             except:
                 # retry the run after a delay
                 await self._retry(run)
