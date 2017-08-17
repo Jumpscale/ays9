@@ -1,6 +1,6 @@
 def install(job):
     data = job.service.model.data
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
 
     # create bridge
     if data.name not in prefab.systemservices.openvswitch.networkList():
@@ -23,7 +23,7 @@ def install(job):
     job.service.saveAll()
 
 def start(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     if not prefab.processmanager.exists('systemd-networkd'):
         raise j.exceptions.RuntimeError("systemd-networkd service doesn't exists. \
                                          it should have been created during installation of this service")
@@ -34,7 +34,7 @@ def start(job):
     job.service.saveAll()
 
 def stop(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     if not prefab.processmanager.exists('systemd-networkd'):
         raise j.exceptions.RuntimeError("systemd-networkd service doesn't exists. \
                                          it should have been created during installation of this service")
@@ -46,7 +46,7 @@ def stop(job):
 
 def uninstall(job):
     data = job.service.model.data
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     if data.name in prefab.systemservices.openvswitch.networkList():
         prefab.systemservices.openvswitch.networkDelete(data.name)
 

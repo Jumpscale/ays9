@@ -1,5 +1,5 @@
 def install(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     # install openvswitch, used for kvm networking
     prefab.systemservices.openvswitch.install()
     # start openvswitch switch
@@ -9,7 +9,7 @@ def install(job):
     job.service.saveAll()
 
 def start(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     if not prefab.processmanager.exists('openvswitch-switch'):
         raise j.exceptions.RuntimeError("openvswitch-switch service doesn't exists. \
                                          it should have been created during installation of this service")
@@ -20,7 +20,7 @@ def start(job):
     job.service.saveAll()
 
 def stop(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     if not prefab.processmanager.exists('openvswitch-switch'):
         raise j.exceptions.RuntimeError("openvswitch-switch service doesn't exists. \
                                          it should have been created during installation of this service")
@@ -31,7 +31,7 @@ def stop(job):
     job.service.saveAll()
 
 def uninstall(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     prefab.systemservices.openvswitch.uninstall()
 
     job.service.model.actions['install'].state = 'new'

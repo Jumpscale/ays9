@@ -11,7 +11,7 @@ def init_actions_(service, args):
 
 def install(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     # List available devices
     code, out, err = prefab.core.run('lsblk -J  -o NAME,FSTYPE,MOUNTPOINT')
     if code != 0:

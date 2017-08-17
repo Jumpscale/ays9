@@ -156,7 +156,7 @@ def init(job):
     # # write the init script that will be used in case of machine shutdown
     #
     # os = service.aysrepo.servicesFind(actor='os.*', name=service.model.data.hostNode)[0]
-    # vm_prefab = os.executor.prefab
+    # vm_prefab = os.executor.get_prefab()
     # rc_local = vm_prefab.core.file_read('/etc/rc.local').split('\n')
     # for idx, line in enumerate(rc_local):
     #     if line == 'exit 0':
@@ -186,7 +186,7 @@ def init(job):
 
 def update(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     dependencies = ['caddy', 'mongodb', 'redis', 'portal', 'ayscockpit']
     service.logger.info('stop all dependencies')
@@ -200,7 +200,7 @@ def update(job):
     job.executeInProcess()
 
     os = service.aysrepo.servicesFind(actor='os.*', name=service.model.data.hostNode)[0]
-    vm_prefab = os.executor.prefab
+    vm_prefab = os.executor.get_prefab()
 
     service.logger.info('remove fs backend')
     vfs_config = service.aysrepo.serviceGet('vfs_config', 'opt')

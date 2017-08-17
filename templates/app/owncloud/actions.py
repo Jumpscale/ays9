@@ -3,7 +3,7 @@ def install(job):
     Installing owncloud
     """
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     sitename = service.model.data.sitename
     owncloudAdminUser = service.model.data.owncloudAdminUser

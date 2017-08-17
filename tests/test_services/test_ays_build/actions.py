@@ -20,7 +20,7 @@ def test(job):
 
         log.info('check if there is influx process running')
         influxos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'influxdb')[0]
-        prefab = influxos.executor.prefab
+        prefab = influxos.executor.get_prefab()
         prefab.apps.influxdb.start()
         check = prefab.core.run('ps aux | grep influx | grep -v grep | wc -l')
         if int(check[1]) < 1:
@@ -32,7 +32,7 @@ def test(job):
 
         log.info('check if there is mongo process running')
         mongoos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'mongodb')[0]
-        prefab = mongoos.executor.prefab
+        prefab = mongoos.executor.get_prefab()
         prefab.apps.mongodb.start()
         time.sleep(4)
         check = prefab.core.run('/opt/jumpscale8/bin/mongo --host 127.0.01 --port 27017 --eval "print("1234")" | grep -o -F "1234"')
@@ -44,7 +44,7 @@ def test(job):
 
         log.info('check if redis is running port 6379')
         redisos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'redis')[0]
-        prefab = redisos.executor.prefab
+        prefab = redisos.executor.get_prefab()
         prefab.apps.redis.start()
         check = prefab.core.run('/opt/jumpscale8/bin/redis-cli -h 127.0.0.1 -p 6379 -r 2 Ping')
         if check[1] != 'PONG\nPONG':
@@ -55,7 +55,7 @@ def test(job):
 
         log.info('check if grafana is running on port 3000')
         grafanaos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'grafana')[0]
-        prefab = grafanaos.executor.prefab
+        prefab = grafanaos.executor.get_prefab()
         prefab.apps.grafana.start()
         check = prefab.core.run('netstat -ntlp | grep grafana | grep -o -F "3000"')
         if check[1] != '3000':
@@ -67,7 +67,7 @@ def test(job):
 
         log.info('check if shellinabox package is installed')
         shellinaboxos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'shellinabox')[0]
-        prefab = shellinaboxos.executor.prefab
+        prefab = shellinaboxos.executor.get_prefab()
         check = prefab.core.run('dpkg -l shellinabox | grep -o -F "shellinabox"')
         if check[1] != 'shellinabox':
             service.model.data.result = 'FAILED : {} {} {}'.format('test_ays_build',
@@ -77,7 +77,7 @@ def test(job):
 
         log.info('check if pip3 and base packages are installed')
         pythonos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'python')[0]
-        prefab = pythonos.executor.prefab
+        prefab = pythonos.executor.get_prefab()
         check = prefab.core.run('dpkg -l  python3-pip | grep -o -F "python3-pip"')
         if check[1] != 'python3-pip':
             service.model.data.result = 'FAILED : {} {} {}'.format('test_ays_build',
@@ -93,7 +93,7 @@ def test(job):
 
         log.info('check if jumpscale installation went fine')
         jumpscaleos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'jumpscale')[0]
-        prefab = jumpscaleos.executor.prefab
+        prefab = jumpscaleos.executor.get_prefab()
         check = prefab.core.run('js "print(1)"')
         if check[1] != '1':
             service.model.data.result = 'FAILED : {} {} {}'.format('test_ays_build',
@@ -104,7 +104,7 @@ def test(job):
 
         log.info('Check if there is a portal running process')
         portalos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'portal')[0]
-        prefab = portalos.executor.prefab
+        prefab = portalos.executor.get_prefab()
         prefab.apps.portal.start()
         check = prefab.core.run('ps aux | grep portal | grep -v grep | wc -l')
         if int(check[1]) < 1:
@@ -116,7 +116,7 @@ def test(job):
 
         log.info('check if cockpit is running')
         cockpitos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'cockpit')[0]
-        prefab = cockpitos.executor.prefab
+        prefab = cockpitos.executor.get_prefab()
         prefab.solutions.cockpit.start()
         check = prefab.core.run('ps aux | grep cockpit | grep -v grep | wc -l')
         if int(check[1]) < 1:
@@ -128,7 +128,7 @@ def test(job):
 
         log.info('check if godep binaries are there')
         golangos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'golang')[0]
-        prefab = golangos.executor.prefab
+        prefab = golangos.executor.get_prefab()
         check = prefab.core.run('ls /optvar/go/bin/godep')
         if check[1] != '/optvar/go/bin/godep':
             service.model.data.result = 'FAILED : {} {} {}'.format('test_ays_build',
@@ -139,7 +139,7 @@ def test(job):
         # issue in fs: https://github.com/Jumpscale/ays_build/issues/10
         log.info('check if fs is running')
         fsos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'fs')[0]
-        prefab = fsos.executor.prefab
+        prefab = fsos.executor.get_prefab()
         prefab.systemservices.g8osfs.start()
         check = prefab.core.run('sv status fs | grep -o -F "up:"')
         if check[1] !=  'up:':
@@ -151,7 +151,7 @@ def test(job):
 
         log.info('check if geodns is running on port 5053')
         geodnsos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'geodns')[0]
-        prefab = geodnsos.executor.prefab
+        prefab = geodnsos.executor.get_prefab()
         prefab.apps.geodns.start()
         check = prefab.core.run('netstat -ntlp | grep geodns | grep -o -F 5053')
         if check[1] !=  '5053':
@@ -168,7 +168,7 @@ def test(job):
         # issue in scality: https://github.com/Jumpscale/ays_build/issues/9
         log.info('check if there is scality process running ')
         scalityos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'scality')[0]
-        prefab = owncloudos.executor.prefab
+        prefab = owncloudos.executor.get_prefab()
         prefab.apps.s3server.start()
         check = prefab.core.run('ps aux | grep scalityS3 | grep -v grep | wc -l')
         if int(check[1]) < 1:
@@ -180,7 +180,7 @@ def test(job):
 
         log.info('check if owncloud is running fine')
         owncloudos = repo.servicesFind(actor='os.ssh.ubuntu', name = 'owncloud')[0]
-        prefab = owncloudos.executor.prefab
+        prefab = owncloudos.executor.get_prefab()
         prefab.apps.owncloud.start(sitename='jsowncloud.com')
         check = prefab.core.run('ls /optvar/cfg/nginx/etc/sites-enabled/jsowncloud.com')
         if check[1] != '/optvar/cfg/nginx/etc/sites-enabled/jsowncloud.com':

@@ -7,7 +7,7 @@ def install(job):
 
 def model(job):
     service = job.service
-    c = service.executor.prefab
+    c = service.executor.get_prefab()
     controller = c.systemservices.kvm._controller
     vmpool = service.producers['vmpool'][0]
     name = service.model.dbobj.name

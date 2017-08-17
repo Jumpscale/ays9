@@ -1,6 +1,6 @@
 def install(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     if 'redis' not in service.producers:
         raise j.exceptions.AYSNotFound("Can't find redis service in producers.")
@@ -95,7 +95,7 @@ def install(job):
 
 def start(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     pm = prefab.processmanager.get('tmux')
 
@@ -112,7 +112,7 @@ def start(job):
 
 def stop(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
     pm = prefab.processmanager.get('tmux')
     pm.stop(name='cockpit_api_%s' % service.name)
     pm.stop(name='cockpit_daemon_%s' % service.name)

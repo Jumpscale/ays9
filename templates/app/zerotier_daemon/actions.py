@@ -3,7 +3,7 @@ def install(job):
     Installing zerotier
     """
     service = job.service
-    prefab = service.parent.executor.prefab
+    prefab = service.parent.executor.get_prefab()
 
     # build and install zerotier
     prefab.package.update()

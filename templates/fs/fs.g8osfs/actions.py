@@ -1,5 +1,5 @@
 def install(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
 
     prefab.package.mdupdate()
     prefab.package.install('fuse')
@@ -9,7 +9,7 @@ def install(job):
     prefab.core.file_attribs('/usr/local/bin/fs', '0550')
 
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     final_config = {
         'mount': [],
@@ -112,7 +112,7 @@ def start(job):
 
 def stop(job):
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     pm = prefab.processmanager.get('tmux')
     pm.stop('fs_%s' % service.name)

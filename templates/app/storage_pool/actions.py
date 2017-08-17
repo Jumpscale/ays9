@@ -18,7 +18,7 @@ def snapshot(job):
     path = service.model.data.path
     root_path = service.producers['fs'][0].model.data.mount
     snapshots_path = j.sal.fs.joinPaths(root_path, 'snapshots')
-    prefab = os.executor.prefab
+    prefab = os.executor.get_prefab()
     prefab.core.dir_ensure(snapshots_path)
     prefab.core.sudomode = True
     prefab.btrfs.snapshotReadOnlyCreate(path, j.sal.fs.joinPaths(snapshots_path, '%s_%d_%d_%d' % (service.name,
@@ -31,14 +31,14 @@ def replicate(job):
     if not service.model.data.replicate or not service.model.data.pools:
         return
     os_base = service.producers['os'][0]
-    prefab_base = os_base.executor.prefab
+    prefab_base = os_base.executor.get_prefab()
     prefab_base.tools.rsync.build()
 
     for pool in service.producers['storage_pool']:
         os_remote = pool.producers['os'][0]
         node_remote = os_remote.producers['node'][0]
         address = node_remote.model.data.ipPrivate
-        prefab_remote = os_remote.executor.prefab
+        prefab_remote = os_remote.executor.get_prefab()
         content = ''
         if node_remote.producers['sshkey']:
             key = node_remote.producers['sshkey'][0].model.data.keyPub
@@ -67,7 +67,7 @@ def replicate(job):
 #     os = service.producers['os']
 #     node = os.producers['node']
 #     address = node.model.data.ipPublic
-#     prefab = os.executor.prefab
+#     prefab = os.executor.get_prefab()
 #     root_path = service.producers['fs'].model.data.mount
 #     free_space = prefab.btrfs.getSpaceFree(root_path)
 

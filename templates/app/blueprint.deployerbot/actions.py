@@ -42,7 +42,7 @@ def init(job):
 
 
     # service = job.service
-    # prefab = service.executor.prefab
+    # prefab = service.executor.get_prefab()
     # args = service.model.data
 
     # # Install dependencies

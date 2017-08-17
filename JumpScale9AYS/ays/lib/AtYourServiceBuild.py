@@ -91,7 +91,7 @@ def build(service, build_func, build_destination='/mnt/building'):
     #     job.method(job)
 
     # make sure the building destinatin exists
-    prefab = os.executor.prefab
+    prefab = os.executor.get_prefab()
     executordict = '$VARDIR/jsexecutor.json'
     if prefab.core.file_exists(executordict):
         prefab.core.run('rm %s' % executordict)
@@ -123,7 +123,7 @@ def build(service, build_func, build_destination='/mnt/building'):
     else:
         raise j.exceptions.AYSNotFound("can't find os layer of builder host")
 
-    prefab_host = os_hostbuidler.executor.prefab
+    prefab_host = os_hostbuidler.executor.get_prefab()
     # create a new image from the result of the build
     docker_id = os.parent.model.data.id
     cmd = 'docker commit {id} aysbuilding_{name}'.format(id=docker_id, name=service.model.dbobj.actorName)

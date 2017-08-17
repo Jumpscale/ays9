@@ -1,5 +1,5 @@
 def install(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     data = job.service.model.data
 
     # create a pool for the images and virtual disks
@@ -10,7 +10,7 @@ def install(job):
     job.service.saveAll()
 
 def uninstall(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     data = job.service.model.data
 
     # delete a pool

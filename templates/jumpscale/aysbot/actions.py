@@ -1,6 +1,6 @@
 def install(job):
     service = job.service
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
 
     cfg = {'token': service.model.data.botToken,
            'oauth': {
@@ -17,10 +17,10 @@ def install(job):
     prefab.apps.aysbot.install()
 
 def start(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     prefab.processmanager.start('aysbot__main')
 
 
 def stop(job):
-    prefab = job.service.executor.prefab
+    prefab = job.service.executor.get_prefab()
     prefab.processmanager.stop('aysbot__main')

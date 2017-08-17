@@ -17,7 +17,7 @@ def test(job):
         log.addHandler(j.logger._LoggerFactory__fileRotateHandler('tests'))
         service = job.service
         branch = service.model.data.branch
-        prefab = service.executor.prefab
+        prefab = service.executor.get_prefab()
         log.info('Installing jumpscale on the VM')
         prefab.core.run('apt-get update')
         prefab.core.run('echo Y | apt-get install curl')

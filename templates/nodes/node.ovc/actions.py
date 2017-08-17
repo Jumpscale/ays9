@@ -171,8 +171,8 @@ def install(job):
                                             login= vm_info['accounts'][0]['login'], passwd=password,
                                             allow_agent=True, look_for_keys=True, timeout=5, usecache=False,
                                             passphrase=None, key_filename=key_path)
-    executor.prefab.ssh.authorize("root", sshkey.model.data.keyPub)
-    prefab = executor.prefab
+    executor.get_prefab().ssh.authorize("root", sshkey.model.data.keyPub)
+    prefab = executor.get_prefab()
 
     #  GET THE available devices on the system and bind them to services if available instead of creating disks
     rc, out, err = prefab.core.run("lsblk -J", die=False)
@@ -492,7 +492,7 @@ def add_disk(job):
                                size=model['size'],
                                type='D')
 
-    code, out, err = os.executor.prefab.core.run("lsblk -J", die=False)
+    code, out, err = os.executor.get_prefab().core.run("lsblk -J", die=False)
     if code != 0:
         raise RuntimeError('failed to list devices on node: %s' % err)
 

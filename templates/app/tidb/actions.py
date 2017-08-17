@@ -3,7 +3,7 @@ def install(job):
     Installing owncloud
     """
     service = job.service
-    prefab = service.executor.prefab
+    prefab = service.executor.get_prefab()
 
     clusterId = service.model.data.clusterId
     # dbname = service.model.data.dbname
