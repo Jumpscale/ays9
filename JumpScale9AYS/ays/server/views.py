@@ -107,7 +107,8 @@ def job_view(job):
         'service_key': job.dbobj.serviceKey,
         'service_name': job.dbobj.serviceName,
         'state': job.state,
-        'logs': []
+        'logs': [],
+        'result': job.dbobj.result
     }
     for log in job.dbobj.logs:
         view['logs'].append(log.to_dict())
