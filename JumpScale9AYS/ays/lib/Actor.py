@@ -398,7 +398,7 @@ class Actor():
                                         amDecorator="actor", amMethodArgs="job", amDoc="")
 
                     elif actionname == "delete":
-                        amSource = "j.tools.async.wrappers.sync(job.service.delete())"
+                        amSource = "job.service.delete()"
                         self._addAction(actionName="delete", amSource=amSource,
                                         amDecorator="actor", amMethodArgs="job", amDoc="")
                     else:
