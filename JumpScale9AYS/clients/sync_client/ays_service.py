@@ -65,6 +65,14 @@ class AysService:
         uri = self.client.base_url + "/ays/repository/"+repository+"/job/"+jobid
         return self.client.get(uri, headers, query_params, content_type)
 
+    def listJobs(self, repository, headers=None, query_params=None, content_type="application/json"):
+        """
+        List all jobs in a repo
+        It is method for GET /ays/repository/{repository}/job
+        """
+        uri = self.client.base_url + "/ays/repository/"+repository+"/job"
+        return self.client.get(uri, headers, query_params, content_type)
+
     def executeRun(self, data, runid, repository, headers=None, query_params=None, content_type="application/json"):
         """
         execute an aysrun

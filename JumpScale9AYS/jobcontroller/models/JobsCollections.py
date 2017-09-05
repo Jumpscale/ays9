@@ -49,7 +49,7 @@ class JobsCollection(ModelBaseCollection):
         if serviceKey == "":
             serviceKey = ".*"
         epoch = ".*"
-        regex = "%s:%s:%s:%s:%s:%s" % (actor, service, action, state, serviceKey, epoch)
+        regex = "%s:%s:%s:%s:%s:%s:*" % (actor, service, action, state, serviceKey, epoch)
         res0 = self._index.list(regex, returnIndex=True)
         res1 = []
         for index, key in res0:
