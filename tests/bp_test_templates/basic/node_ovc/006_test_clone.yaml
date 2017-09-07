@@ -1,0 +1,13 @@
+vdc__testnodeovc:
+
+node.ovc__testnodeovc:
+
+test_node_ovc__test:
+
+actions:
+  - action: clone
+    actor: node.ovc
+    service: testnode
+  - action: test_clone
+    actor: test_node_ovc
+    service: test

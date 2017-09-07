@@ -1,0 +1,10 @@
+@usedefaults
+
+{{timestamp}}
+
+{{aysjobprofile: aysrepo:$$aysrepo jobid:$$jobid}}
+
+{{breadcrumb:
+    - AYS : /
+    - Job $$jobid:
+}}

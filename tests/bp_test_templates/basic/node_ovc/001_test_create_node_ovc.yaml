@@ -1,24 +1,27 @@
 g8client__env:
-    url: '<url>'
-    login: '<login>'
-    password: '<password>'
-    account: '<account>'
+    url: <URL>
+    login: <LOGIN>
+    password: <PASSWORD>
+    account: <ACCOUNT>
 
-vdc__vdcname:
-    location: '<location>'
+vdc__testnodeovc:
+    location: <LOCATION>
 
-disk.ovc__disk1:
-  size: 5
+disk.ovc__testnodeovcdisk1:
+  size: 10
+  maxIOPS: 1000
 
-node.ovc__testn:
+node.ovc__testnodeovc:
+    sizeID: 1
     os.image: 'Ubuntu 16.04 x64'
     disk:
-      - disk1
+      - testnodeovcdisk1
+    clone.name: 'testnode_clone'
 
-test_node_ovc__node:
+test_node_ovc__testnodeovc:
 
 actions:
   - action: install
   - action: test_create
     actor: test_node_ovc
-    service: node
+    service: testnodeovc

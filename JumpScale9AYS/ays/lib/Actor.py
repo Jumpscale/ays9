@@ -81,9 +81,9 @@ class Actor():
                 flist.path = flist_path
             flists.finish()
 
-        self.saveAll()
 
     def saveToFS(self):
+
         j.sal.fs.createDir(self.path)
 
         path = j.sal.fs.joinPaths(self.path, "actor.json")
@@ -133,8 +133,7 @@ class Actor():
             self.model.dbobj.dataUI = template.dataUI
             self.processChange("ui", context=context)
 
-        self.saveToFS()
-        self.model.save()
+        self.saveAll()
 
         for s in services:
             dirtyservice = False
@@ -192,8 +191,7 @@ class Actor():
         self.model.dbobj.serviceDataSchema = template.schemaCapnpText
         self.model.dbobj.dataUI = template.dataUI
 
-        self.saveToFS()
-        self.model.save()
+        self.saveAll()
 
     def _initParent(self, template):
         parent = template.parentConfig
@@ -468,9 +466,7 @@ class Actor():
         """
         # self.logger.debug('process change for %s (%s)' % (self, changeCategory))
         if changeCategory == 'dataschema':
-            # TODO
             pass
-
         elif changeCategory == 'ui':
             # TODO
             pass
@@ -488,9 +484,6 @@ class Actor():
         elif changeCategory.find('action_del') != -1:
             action_name = changeCategory.split('action_del_')[1]
             self.model.actionDelete(action_name)
-
-        self.saveAll()
-
         for service in self.aysrepo.servicesFind(actor=self.model.name):
             service.processChange(actor=self, changeCategory=changeCategory, reschedule=reschedule, context=context)
 

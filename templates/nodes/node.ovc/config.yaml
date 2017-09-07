@@ -24,6 +24,7 @@ doc:
   - stackID: ''
   - vmHistory: ''
   - uservdc: 'List of vdc users that cann access the machine'
+  - sshAuthorized: 'Flag to indicate whether the node has been ssh authorized or not'
 links:
   consume:
   - argname: disk

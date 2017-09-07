@@ -1,0 +1,19 @@
+@usedefaults
+
+{{timestamp}}
+
+{{aysrepo reponame:$$reponame}}
+{{breadcrumb:
+    {% if repo %}
+    - Repositories: /AYS/repos
+    - Repository $$reponame: /AYS/Repo?reponame=$$reponame
+    {% endif %}
+    - Explorer: /AYS/Actortemplates
+
+}}
+{% if error is defined %}
+Error : ${error}
+{% else %}
+h2. Explorer
+{{explorer: ppath:${repo.path}}}
+{% endif %}

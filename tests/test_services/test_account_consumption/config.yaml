@@ -1,0 +1,18 @@
+doc:
+  property:
+  - account: ''
+  - g8client: ''
+  - result: ''
+links:
+  consume:
+  - argname: account
+    auto: false
+    max: 100
+    min: 0
+    role: account
+  - argname: g8client
+    auto: false
+    max: 100
+    min: 0
+    role: g8client
+recurring: []

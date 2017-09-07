@@ -31,4 +31,4 @@ ssh -A root@<ZeroTier network address>
 
 If you started AYS as documented in [Start AYS](startays.md) you will now be able to interact with the AYS RESTful API.
 
-Next you might want to install and start JumpScale Portal, allowing you to interact with the AYS Portal, as documented in [Start the AYS Portal](ays-portal.md).
+Next you might want to install and start JumpScale Portal, allowing you to interact with the AYS Portal, as documented in [Start the AYS Portal](portal.md).

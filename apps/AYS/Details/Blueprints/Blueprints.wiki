@@ -1,0 +1,93 @@
+@usedefaults
+
+{{timestamp}}
+
+{{aysblueprints ayspath:$$ayspath reponame:$$reponame}}
+
+{{breadcrumb:
+    - Repositories : /AYS/repos
+    - "Repository: $$reponame": /AYS/Repo?reponame=$$reponame
+    - Blueprints: /AYS/Blueprints?reponame=$$reponame
+}}
+
+{% if error is defined %}
+Error : ${error}
+{% elif not data -%}
+This repository does not have any blueprints defined yet
+{% else %}
+
+
+
+{{html:
+<script src='/jslib/codemirror/codemirror.js'></script>
+<script src='/jslib/codemirror/autorefresh.js'></script>
+}}
+{{jscript
+$(function() {
+    $('.label').click(function() {
+      bp=$(".label").parent()[0].children[0].text
+      bp = this.parentElement.children[0].text
+      console.log("SIBLING:" +bp)
+      //reponame
+      parts = document.URL.split("/")
+      var repo=parts[parts.length-1].split("=")[1]
+
+      var that = this
+
+      var ss = this.id.split('-')
+
+      if (this.innerText == 'active'){
+          var url = '/restmachine/ays/tools/archiveBlueprint';
+      }else{
+          var url = '/restmachine/ays/tools/restoreBlueprint';
+      }
+      $.ajax({
+        type: 'POST',
+        data: 'repository='+repo+'&blueprint='+bp,
+        success: function(result,status,xhr) {
+          // restore
+          if (that.innerText == 'archived'){
+              that.classList.remove('glyphicon-saved');
+              that.classList.remove('label-warning');
+              that.classList.add('glyphicon-ok');
+              that.classList.add('label-success');
+              that.innerText = 'active'
+          }else{ // archive
+              that.classList.remove('glyphicon-ok');
+              that.classList.remove('label-success');
+              that.classList.add('label-warning');
+              that.classList.add('glyphicon-saved');
+              that.innerText = 'archived'
+          }
+        },
+        error: function(xhr,status,error){ alert('error:'+ error) },
+        url: url,
+        cache:false
+      });
+    });
+  });
+}}
+{{cssstyle
+a.label-archive{
+  color: white;
+}
+}}
+
+
+{% for item in data -%}
+    {% for bpname, bp in item.items() -%}
+        h4. ${bpname}
+        {{accordion:
+            - title: ${bp.title}
+              label_color: ${bp.label_color}
+              label_icon: ${bp.icon}
+              content: |
+                  ${bp.content}
+              label_content: ${bp.label_content}
+              code: True
+              yaml: True
+        }}
+    {% endfor %}
+{% endfor %}
+{% endif %}
+@colend

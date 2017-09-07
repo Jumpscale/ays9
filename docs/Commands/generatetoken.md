@@ -1,4 +1,4 @@
-# Generate Itsyou.online JWT
+# Generate ItsYou.online JWT
 
 ```shell
 ays generatetoken --help

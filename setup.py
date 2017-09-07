@@ -14,8 +14,10 @@ def _post_install(libname, libpath):
 
     print("****:%s:%s" % (libname, libpath))
 
-    j.tools.jsloader.generateJumpscalePlugins()
-    j.tools.jsloader.copyPyLibs()
+    j.tools.jsloader.generate()
+
+    # not needed to do
+    # j.tools.jsloader.copyPyLibs()
 
 
 class install(_install):
@@ -23,8 +25,10 @@ class install(_install):
     def run(self):
         _install.run(self)
         libname = self.config_vars['dist_name']
-        libpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), libname)
-        self.execute(_post_install, (libname, libpath), msg="Running post install task")
+        libpath = os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), libname)
+        self.execute(_post_install, (libname, libpath),
+                     msg="Running post install task")
 
 
 class develop(_develop):
@@ -32,8 +36,10 @@ class develop(_develop):
     def run(self):
         _develop.run(self)
         libname = self.config_vars['dist_name']
-        libpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), libname)
-        self.execute(_post_install, (libname, libpath), msg="Running post install task")
+        libpath = os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), libname)
+        self.execute(_post_install, (libname, libpath),
+                     msg="Running post install task")
 
 
 long_description = ""

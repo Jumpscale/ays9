@@ -1,0 +1,3 @@
+actions:
+    - action: delete
+      service: cons1 

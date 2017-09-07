@@ -59,7 +59,7 @@ def test(job):
                 else:
                     failures.append('Missing service [%s!%s] from repo [%s]' % (actor, service_name, repo_name))
 
-            j.tools.prefab.get().core.run(replace_cmd)
+            j.tools.prefab.local.core.run(replace_cmd)
             execute_bp_res = ays_client.api.ays.executeBlueprint(data={}, blueprint=bp_name, repository=repo_name)
             if execute_bp_res.status_code == 200:
                 for actor in actors:
@@ -89,6 +89,6 @@ def test(job):
         job.service.save()
         j.sal.fs.changeDir(cwd)
         replace_cmd = 'sed -i s/%s/%s/g %s' % (replacement_str, original_str, bp_path)
-        j.tools.prefab.get().core.run(replace_cmd)
+        j.tools.prefab.local.core.run(replace_cmd)
         for repo in repos:
             ays_client.api.ays.destroyRepository(data={}, repository=repo)

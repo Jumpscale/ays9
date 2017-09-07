@@ -1,5 +1,5 @@
 
-@0xe342199c2c60d68b;
+@0xdd89b76472682068;
 struct Schema {
 	description @0 :Text;
 	g8client @1 :Text;
@@ -9,6 +9,9 @@ struct Schema {
 	maxCPUCapacity @5 :Int64 = -1;
 	maxNumPublicIP @6 :Int64 = -1;
 	maxDiskCapacity @7 :Int64 = -1;
+	consumptionFrom @8 :Int64;
+	consumptionTo @9 :Int64;
+	consumptionData @10 :Data;
 
 	struct UserVdcEntry {
 		name @0 :Text;

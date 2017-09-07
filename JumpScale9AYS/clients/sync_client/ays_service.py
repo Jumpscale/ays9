@@ -65,6 +65,24 @@ class AysService:
         uri = self.client.base_url + "/ays/repository/"+repository+"/job/"+jobid
         return self.client.get(uri, headers, query_params, content_type)
 
+    def listJobs(self, repository, headers=None, query_params=None, content_type="application/json"):
+        """
+        List all jobs in a repo
+        It is method for GET /ays/repository/{repository}/job
+        filters are
+        actor:str  Only list jobs of this actor
+        service:str Only list jobs of this service
+        action:str Only list jobs of this action
+        type:str Only list jobs with this state
+        serviceKey:str Only list jobs of this serviceKey
+        fromEpoch:int Only list jobs from this epoch
+        toEpoch:int Only list jobs till this epoch
+        tags: comma-seperated list of tags to be included
+        fields:str comma-seperated list of fields to be included in the response
+        """
+        uri = self.client.base_url + "/ays/repository/"+repository+"/job"
+        return self.client.get(uri, headers, query_params, content_type)
+
     def executeRun(self, data, runid, repository, headers=None, query_params=None, content_type="application/json"):
         """
         execute an aysrun

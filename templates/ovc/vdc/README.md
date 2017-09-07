@@ -13,13 +13,14 @@ This actor template creates a cloudspace (Virtual Data Center) on the specified 
 - location: Environment to deploy this cloudspace.
 - uservdc: Users to have access to this cloudpsace. Name is name of user service to be consumed and accesstype is the user access right to this cloudspace.
 - allowedVMSizes: Specify the allowed size ids for virtual machines on this cloudspace.
-- cloudspaceID: id of the cloudspace (leave empty).
+- cloudspaceID: id of the cloudspace. **Filled in automatically, don't specify it in the blueprint**
 - maxMemoryCapacity: Cloudspace limits, maximum memory(GB).
 - maxCPUCapacity: Cloudspace limits, maximum CPU capacity.
 - maxDiskCapacity: Cloudspace limits, maximum disk capacity(GB).
 - maxNumPublicIP: Cloudspace limits, maximum allowed number of public IPs.
 - externalNetworkID: External network to be attached to this cloudspace.
 - maxNetworkPeerTransfer: Cloudspace limits, max sent/received network transfer peering(GB).
+- disabled: True if the cloudspace is disabled. **Filled in automatically, don't specify it in the blueprint**
 
 ## User access rights
 
@@ -89,4 +90,36 @@ vdc__cs2:
 
 actions:
   - action: uninstall
+```
+
+## Example for disabling VDC
+
+```yaml
+g8client__example:
+    url: '<url of the environment>'
+    login: '<username>'
+    password: '<password>'
+    account: '<account name>'
+
+vdc__cs2:
+    location: '<name of the environment>'
+
+actions:
+  - action: disable
+```
+
+## Example for enabling VDC
+
+```yaml
+g8client__example:
+    url: '<url of the environment>'
+    login: '<username>'
+    password: '<password>'
+    account: '<account name>'
+
+vdc__cs2:
+    location: '<name of the environment>'
+
+actions:
+  - action: enable
 ```

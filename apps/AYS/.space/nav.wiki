@@ -1,0 +1,6 @@
+Repositories:/AYS/Repos
+Actor Templates:/AYS/ActorTemplates
+JWT:/AYS/jwt
+Version: /AYS/version
+
+AYS API:http://localhost:5000/apidocs/index.html?raml=api.raml

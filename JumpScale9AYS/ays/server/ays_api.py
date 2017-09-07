@@ -42,7 +42,7 @@ async def addTemplateRepo(request):
     except jsonschema.ValidationError as e:
         return text('Bad Request Body', 400)
 
-    path = j.do.pullGitRepo(url=inputs['url'], branch=inputs['branch'])
+    path = j.clients.git.pullGitRepo(url=inputs['url'], branch=inputs['branch'])
 
     # Register/update the cloned/pulled template repo
     template_repo_collection = j.atyourservice.server.templateRepos
@@ -262,11 +262,11 @@ async def createRun(request, repository):
     using the 'GET /ays/repository/{repository}/aysrun/{aysrun_key}' endpoint
     It is handler for POST /ays/repository/<repository>/aysrun
     '''
+    import requests
     try:
         repo = get_repo(repository)
     except j.exceptions.NotFound as e:
         return json({'error': e.message}, 404)
-
     simulate = j.data.types.bool.fromString(request.args.get('simulate', 'False'))
     callback_url = request.args.get('callback_url', None)
 
@@ -276,6 +276,9 @@ async def createRun(request, repository):
         run.save()
         if not simulate:
             await repo.run_scheduler.add(run)
+        if callback_url:
+            run.callbackUrl = callback_url
+            run.save()
         return json(run_view(run), 200)
 
     except j.exceptions.Input as e:
@@ -322,9 +325,20 @@ async def getJob(request, jobid, repository):
     return json(job_view(jobobj), 200)
 
 
-async def listJobs(request, actor="", service="", action="", state="", serviceKey="", fromEpoch=0, toEpoch=9999999999999, tags=[]):
+async def listJobs(request, repository):
     '''
     List all jobs that match the filters.
+    filters are
+    actor:str  Only list jobs of this actor
+    service:str Only list jobs of this service
+    action:str Only list jobs of this action
+    type:str Only list jobs with this state
+    serviceKey:str Only list jobs of this serviceKey
+    fromEpoch:int Only list jobs from this epoch
+    toEpoch:int Only list jobs till this epoch
+    tags: comma-seperated list of tags to be included
+    fields:str comma-seperated list of fields to be included in the response
+
     returns requested fields
     '''
 

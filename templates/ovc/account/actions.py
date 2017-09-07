@@ -3,7 +3,8 @@ from js9 import j
 
 def init_actions_(service, args):
     dependencies = {
-        'list_disks': ['init']
+        'list_disks': ['init'],
+        'get_consumption': ['install']
     }
     return dependencies
 
@@ -148,3 +149,16 @@ def list_disks(job):
     account = cl.account_get(name=service.model.dbobj.name)
     service.model.disks = account.disks
     service.save()
+
+
+def get_consumption(job):
+    import datetime
+    service = job.service
+    g8client = service.producers["g8client"][0]
+    cl = j.clients.openvcloud.getFromService(g8client)
+    account = cl.account_get(name=service.model.dbobj.name)
+    if not service.model.data.consumptionFrom and not service.model.data.consumptionTo:
+        service.model.data.consumptionFrom = account.model['creationTime']
+        end = datetime.datetime.fromtimestamp(service.model.data.consumptionFrom) + datetime.timedelta(hours=1)
+        service.model.data.consumptionTo = end.timestamp()
+    service.model.data.consumptionData = account.get_consumption(service.model.data.consumptionFrom, service.model.data.consumptionTo)

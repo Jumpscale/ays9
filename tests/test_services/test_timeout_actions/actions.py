@@ -41,6 +41,10 @@ def test(job):
 
         run = cl.getRun(runid=runkey, repository=repo).json()
         runstate = run['state']
+        while runstate not in ['error', 'ok']:
+            run = cl.getRun(runid=runkey, repository=repo).json()
+            runstate = run['state']
+
         if runstate != 'error':
             failures.append("Wrong run state: Expected [{}] and Found [{}]".format("error", runstate))
 

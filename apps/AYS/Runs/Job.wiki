@@ -1,0 +1,41 @@
+@usedefaults
+
+{{aysjob: jobid:$$jobid runid:$$runid reponame:$$reponame}}
+
+{{cssstyle
+    .CodeMirror {
+        position: relative;
+        left: 7%;
+    }
+}}
+
+{{breadcrumb:
+    - Repositories: /AYS/repos
+    - "Repository: $$reponame": /AYS/Repo?reponame=$$reponame
+    - Runs: /AYS/Runs?repo=$$reponame
+    - Run $$runid: /AYS/RunModel?reponame=$$reponame&runid=$$runid
+    - Job $$jobid:
+}}
+{% if error is defined %}
+Error : ${error}
+{% else %}
+h3. Job $$jobid:
+
+* *Action*:
+    ** Actor name: ${job.actor_name}
+    ** Action name: ${job.action_name}
+    ** code:
+    {{code:
+${job.code}
+    }}
+** args: ${job.args}
+** debug: ${job.debug}
+** lastModDate: ${job.lastModDate}
+* *Logs*:
+{{code:
+${job.printLogs}
+}}
+{% if job.profileData -%}
+    * [See job cProfile|/AYS/jobprofile?jobid=${job.key}]
+{% endif %}
+{% endif %}

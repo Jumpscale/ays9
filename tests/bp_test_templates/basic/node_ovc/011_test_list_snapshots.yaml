@@ -1,0 +1,11 @@
+node.ovc__testnodeovc:
+
+test_node_ovc__test:
+
+actions:
+  - action: list_snapshots
+    actor: node.ovc
+    service: testnodeovc
+  - action: test_list_snapshots
+    actor: test_node_ovc
+    service: test

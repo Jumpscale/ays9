@@ -1,4 +1,4 @@
 account__acc:
   accountusers:
-    - name: 'jonas'
+    - name: '<login>'
       accesstype: 'CXDRAU'

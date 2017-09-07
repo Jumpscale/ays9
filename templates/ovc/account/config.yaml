@@ -8,6 +8,9 @@ doc:
   - description: ''
   - maxNumPublicIP: ''
   - maxDiskCapacity: ''
+  - consumptionFrom: ''
+  - consumptionTo: ''
+  - consumptionData: ''
 links:
   consume:
   - argname: g8client

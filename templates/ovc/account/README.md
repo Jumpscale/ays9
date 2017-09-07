@@ -22,6 +22,17 @@ This actor template is responsible for creating an account on any openVCloud env
 
 - maxDiskCapacity: The limit on the disk capacity that can be used by the account. Default: -1 (unlimited)
 
+- consumptionFrom: determines the start date of the required period to fetch the account consumption info from. If left empty will be creation time of the account.
+
+- consumptionTo: determines the end date of the required period to fetch the account consumption info from. If left empty will be consumptionfrom + 1 hour.
+
+- consumptionData: consumption data will be saved here as series of bytes which represents a zip file. Example of writing the data:
+```
+service = response.json() # response is the service view that can be obtained from getServiceByName
+with open('/tmp/account.zip', 'wb') as f:
+    f.write(service['data']['consumptionData'])
+```
+
 ## Add/remove/update user
 
 It is possible to add, remove and update user access to the account. To add a user after creating the account, a new uservdc has to be added in the blueprint. Executing the blueprint will trigger the process change and add it to the account. In the same way a user can be removed from the account by deleting the entry from the accountusers in the blueprint. Changing the accesstype of as user will update the user access to the account when executing the blueprint.
@@ -120,4 +131,23 @@ actions:
   - action: list_disks
     actor: account
     service: account1
+```
+
+## Example for getting consumption info
+
+```yaml
+
+g8client__env:
+  url: '<env-url>'
+  login: '<login user>'
+  password: '<login password>'
+
+account__acc:
+  description: 'test account'
+  g8client: 'env'
+  consumptionFrom: <start epoch>
+  consumptionTo: <end epoch>
+
+actions:
+  - action: get_consumption
 ```

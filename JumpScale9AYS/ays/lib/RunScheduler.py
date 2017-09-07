@@ -61,7 +61,8 @@ class RunScheduler:
         """
         self.logger.debug("create commit on repo %s for un %s", self.repo.path, run.model.key)
         msg = "Run {}\n\n{}".format(run.model.key, str(run))
-        self._git.commit(message=msg)
+        if not j.atyourservice.server.dev_mode:
+            self._git.commit(message=msg)
 
     async def start(self):
         """

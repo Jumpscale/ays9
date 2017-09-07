@@ -1,6 +1,8 @@
 import colored_traceback
 from .RunStep import RunStep
 from js9 import j
+import requests
+import json
 
 colored_traceback.add_hook(always=True)
 
@@ -75,6 +77,14 @@ class Run:
                         out += str(action.result or '')
         return out
 
+    @property
+    def callbackUrl(self):
+        return self.model.dbobj.callbackUrl
+
+    @callbackUrl.setter
+    def callbackUrl(self, callbackUrl):
+        self.model.dbobj.callbackUrl = callbackUrl
+
     def reverse(self):
         ordered = []
         for i, _ in enumerate(self.model.dbobj.steps):
@@ -122,6 +132,9 @@ class Run:
             self.state = 'error'
             raise
         finally:
+            if self.callbackUrl:
+                data = {'runid': self.key, 'runState': self.state.__str__()}
+                requests.post(self.callbackUrl, headers={'Content-type': 'application/json'}, data=json.dumps(data))
             self.save()
 
     def __repr__(self):

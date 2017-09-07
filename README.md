@@ -18,3 +18,5 @@ To install ays dependencies navigate to repo path and execute:
 bash install.sh
 ```
 To connect to a remote AYS server without installing JumpScale, it is possible to use the [AYS client](docs/gettingstarted/python.md).
+
+For information about the AYS portal and how to load it to the [portal](https://github.com/Jumpscale/portal9) see [here](docs/AYS-Portal)

@@ -1,0 +1,65 @@
+@usedefaults
+
+{{breadcrumb:
+    - Repositories : /AYS/Repos
+    - "Repository: $$reponame": /AYS/Repo?reponame=$$reponame
+}}
+{% if error is defined %}
+Error : ${error}
+{% else %}
+{{aysrepo reponame:$$reponame}}
+{{timestamp}}
+@block
+@row
+h2. Repository: [$$reponame|/AYS/Repo?reponame=$$reponame]
+
+h4. Actions
+{{actions:
+- display: Execute blueprint
+  action: /restmachine/ays/tools/executeBlueprints
+  showresponse: True
+  input:
+  - name: repository
+    type: hidden
+    value: $$reponame
+
+- display: Run
+  action: /restmachine/ays/tools/createRun
+  showresponse: True
+  input:
+  - name: repository
+    type: hidden
+    value: $$reponame
+
+}}
+
+@col 6
+h2. Links:
+* [ActorTemplates|ActorTemplates?reponame=$$reponame]
+* [Services|Services?reponame=$$reponame]
+* [Blueprints|Blueprints?reponame=$$reponame]
+* [Explorer|Explorer?reponame=$$reponame]
+* [Simulator|Repo/simulate?reponame=$$reponame]
+* [Runs|Runs?reponame=$$reponame]
+* [Actors|Actors?reponame=$$reponame]
+@colend
+
+@col 6
+{{form:
+  action: /restmachine/ays/tools/quickBlueprint
+  display: 'Apply'
+  showresponse: True
+  input:
+  - name: name
+    label: Blueprint Name (leave empty to immediately archive)
+    type: text
+  - name: repository
+    type: hidden
+    value: $$reponame
+  - name: contents
+    label: Add content of blueprint
+    type: code
+    language: yaml
+}}
+@colend
+{% endif %}
