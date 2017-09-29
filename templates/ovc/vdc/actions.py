@@ -73,6 +73,7 @@ def authorization_user(space, service):
 
 
 def install(job):
+    import time
     service = job.service
     if 'g8client' not in service.producers:
         raise j.exceptions.AYSNotFound("No producer g8client found. Cannot continue install of %s" % service)
@@ -107,6 +108,16 @@ def install(job):
     space.model['maxCPUCapacity'] = service.model.data.maxCPUCapacity
     space.model['maxNetworkPeerTransfer'] = service.model.data.maxNetworkPeerTransfer
     space.save()
+
+    status = space.model['status']
+    timeout_limit = time.time() + 60
+    while time.time() < timeout_limit:
+        if status == 'DEPLOYED':
+            break
+        time.sleep(5)
+        status = cl.api.cloudapi.cloudspaces.get(cloudspaceId=service.model.data.cloudspaceID)['status']
+    else:
+        raise j.exceptions.Timeout("VDC not yet deployed")
 
 
 def get_user_accessright(username, service):

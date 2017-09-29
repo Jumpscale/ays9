@@ -107,49 +107,39 @@ def _ssh_authorize(service, vm_info):
 
 
 def _configure_disks(service, machine, prefab):
-
-    # GET THE available devices on the system and bind them to services
-    # if available instead of creating disks
-    rc, out, err = prefab.core.run("lsblk -J", die=False)
-    if rc != 0:
-        raise j.exceptions.RuntimeError("Unexpected Error: {}".format(err))
-    jsonout = j.data.serializer.json.loads(out)
-    available_devices = [x['name'] for x in jsonout['blockdevices'] if
-                         x['mountpoint'] is None and x['type'] == 'disk' and 'children' not in x]  # should be only 1
-
-    datadisks = service.producers.get('disk', [])
-    takendevices = [x.model.data.devicename for x in datadisks if x.model.data.devicename != '']
-
-    # Add disks to machine if they aren't there else logically bind to any of them.
-    for data_disk in datadisks:
-        disk_args = data_disk.model.data
-        if data_disk.model.data.devicename == '' and len(available_devices):
-            data_disk.model.data.devicename = available_devices.pop(0)
-            takendevices.append(data_disk.model.data.devicename)
-
-        else:
-            disk_args.diskId = machine.add_disk(name=data_disk.model.dbobj.name,
+    machine_disks = {disk['name']: disk['id'] for disk in machine.disks if disk['type'] != 'B' and 'autoscale' not in disk['name']}
+    disklist = service.producers.get('disk', [])
+    for disk in disklist:
+        disk_name = disk.model.dbobj.name
+        if disk_name not in machine_disks:
+            disk_args = disk.model.data
+            disk_args.diskId = machine.add_disk(name=disk.name,
                                                 description=disk_args.description,
                                                 size=disk_args.size,
                                                 type=disk_args.type.upper(),
                                                 ssdSize=disk_args.ssdSize)
-
             machine.disk_limit_io(disk_args.diskId, disk_args.totalBytesSec, disk_args.readBytesSec, disk_args.writeBytesSec,
                                   disk_args.totalIopsSec, disk_args.readIopsSec, disk_args.writeIopsSec,
                                   disk_args.totalBytesSecMax, disk_args.readBytesSecMax, disk_args.writeBytesSecMax,
                                   disk_args.totalIopsSecMax, disk_args.readIopsSecMax, disk_args.writeIopsSecMax,
                                   disk_args.sizeIopsSec, disk_args.maxIOPS)
-            rc, out, err = prefab.core.run("lsblk -J", die=False)
-            if rc != 0:
-                raise j.exceptions.RuntimeError("Unexpected Error: {}".format(err))
-            jsonout = j.data.serializer.json.loads(out)
-            available_devices = [x['name'] for x in jsonout['blockdevices'] if
-                                 x['mountpoint'] is None and x['type'] == 'disk' and 'children' not in x and x[
-                                     'name'] not in takendevices]
-            data_disk.model.data.devicename = available_devices.pop(0)
-            takendevices.append(data_disk.model.data.devicename)
 
-        data_disk.saveAll()
+    for machine_name, machine_id in machine_disks.items():
+        if not any(machine_name == disk.model.dbobj.name for disk in disklist):
+            machine.detach_disk(machine_id)
+
+    rc, out, err = prefab.core.run("lsblk -J", die=False)
+    if rc != 0:
+        raise j.exceptions.RuntimeError("Unexpected Error: {}".format(err))
+    jsonout = j.data.serializer.json.loads(out)
+    available_devices = [x for x in jsonout['blockdevices'] if
+                         x['mountpoint'] is None and x['type'] == 'disk' and 'children' not in x]
+
+    for device in available_devices:
+        for disk in disklist:
+            if int(device['size'].split('G')[0]) == disk.model.data.size:
+                disk.model.data.devicename = device['name']
+                disk.saveAll()
 
 
 def input(job):
@@ -378,33 +368,21 @@ def processChange(job):
 
             if key == 'disk':
                 # Get machine data disks only
-                machine_disks = {disk['name']: disk['id'] for disk in machine.disks if disk['type'] != 'B'}
+                # machine_disks = {disk['name']: disk['id'] for disk in machine.disks if disk['type'] != 'B'}
                 old_disks_services = service.producers.get('disk', [])
 
                 # Check for removed disk services which aren't of type B(boot), and delete them
                 for old_disk_service in old_disks_services:
                     if old_disk_service.name not in value and old_disk_service.model.data.type != 'B':
                         service.model.producerRemove(old_disk_service)
-                        device_name = old_disk_service.model.dbobj.name
-                        if device_name in machine_disks:
-                            machine.detach_disk(machine_disks[device_name])
 
                 # Check for the new disk services and add them
                 for disk_service_name in value:
                     disk_service = service.aysrepo.serviceGet('disk.ovc', disk_service_name)
                     if disk_service not in old_disks_services:
                         service.consume(disk_service)
-                        disk_args = disk_service.model.data
-                        disk_args.diskId = machine.add_disk(name=disk_service.name,
-                                                            description=disk_args.description,
-                                                            size=disk_args.size,
-                                                            type=disk_args.type.upper(),
-                                                            ssdSize=disk_args.ssdSize)
-                        machine.disk_limit_io(disk_args.diskId, disk_args.totalBytesSec, disk_args.readBytesSec, disk_args.writeBytesSec,
-                                              disk_args.totalIopsSec, disk_args.readIopsSec, disk_args.writeIopsSec,
-                                              disk_args.totalBytesSecMax, disk_args.readBytesSecMax, disk_args.writeBytesSecMax,
-                                              disk_args.totalIopsSecMax, disk_args.readIopsSecMax, disk_args.writeIopsSecMax,
-                                              disk_args.sizeIopsSec, disk_args.maxIOPS)
+
+                _configure_disks(service, machine, service.executor.prefab)
 
                 setattr(service.model.data, key, value)
 

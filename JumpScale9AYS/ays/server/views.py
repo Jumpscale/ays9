@@ -75,8 +75,9 @@ def run_view(run):
             'state': step.state
         }
         for job in step.jobs:
-            action_retry = job.service.model.actions[job.model.dbobj.actionName].errorNr
-            retry = action_retry if action_retry > retry else retry
+            if job.service:
+                action_retry = job.service.model.actions[job.model.dbobj.actionName].errorNr
+                retry = action_retry if action_retry > retry else retry
             logs = []
             for log in job.model.dbobj.logs:
                 log_dict = {}

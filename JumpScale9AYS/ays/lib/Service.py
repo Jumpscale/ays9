@@ -379,6 +379,7 @@ class Service:
         if not oktodelete:
             raise j.exceptions.RuntimeError(msg)
 
+        self._deleted = True
         if self.children:
             for service in self.children:
                 await service.delete()
@@ -405,8 +406,6 @@ class Service:
         j.sal.fs.removeDirTree(self.path)
         if self.model.key in self.aysrepo.db.services.services:
             del self.aysrepo.db.services.services[self.model.key]
-
-        self._deleted = True
 
     @property
     def parent(self):
