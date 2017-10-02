@@ -10,7 +10,7 @@ js9
 In the JumpScale interactive shell ('js9') execute:
 ```python
 prefab = j.tools.prefab.local
-prefab.apps.atyourservice.install()
+prefab.js9.atyourservice.install()
 ```
 
 This will install and start the AYS Portal on port 8200, as pre-configured in `/opt/cfg/portals/main/config.yaml`, which is the configuration common to all portals using the JumpScale Portal Framework of your JumpScale environment. See [AYS Portal Configuration](../AYS-Portal/README.md) for more details.

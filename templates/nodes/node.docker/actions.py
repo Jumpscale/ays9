@@ -43,7 +43,7 @@ def install(job):
     prefab.core.dir_ensure(base)
     prefab.system.package.mdupdate()
     prefab.system.package.ensure('python3-pip')
-    prefab.development.pip.install('docker-compose')
+    prefab.runtimes.pip.install('docker-compose')
     prefab.core.file_write(
         j.sal.fs.joinPaths(base, 'docker-compose.yml'),
         j.data.serializer.yaml.dumps(compose)

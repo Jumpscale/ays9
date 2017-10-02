@@ -7,7 +7,7 @@ def install(job):
 
     # build and install zerotier
     prefab.system.package.update()
-    zerotier_client = prefab.apps.zerotier
+    zerotier_client = prefab.network.zerotier
     zerotier_client.build()
     zerotier_client.install()
     zerotier_client.start()

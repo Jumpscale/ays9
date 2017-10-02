@@ -49,14 +49,17 @@ def install(job):
     if service.model.data.stagging is True:
         # enable stating environment, remove for prodction
         cmd += ' -ca https://acme-staging.api.letsencrypt.org/directory'
-    prefab.processmanager.ensure("caddy_%s" % service.name, cmd=cmd, path='$JSCFGDIR/caddy/%s' % name, autostart=True)
+    pm = prefab.system.processManager.get()
+    pm.ensure("caddy_%s" % service.name, cmd=cmd, path='$JSCFGDIR/caddy/%s' % name, autostart=True)
 
 
 def start(job):
     prefab = job.service.executor.prefab
-    prefab.processmanager.start("caddy_%s" % job.service.name)
+    pm = prefab.system.processManager.get()pm =
+    pm.start("caddy_%s" % job.service.name)
 
 
 def stop(job):
     prefab = job.service.executor.prefab
-    prefab.processmanager.stop("caddy_%s" % job.service.name)
+    pm = prefab.system.processManager.get()
+    pm.stop("caddy_%s" % job.service.name)
