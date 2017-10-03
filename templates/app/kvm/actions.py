@@ -13,7 +13,7 @@ def start(job):
     prefab = job.service.executor.prefab
 
     services_to_start = ['libvirt-bin', 'virtlogd']
-    pm = prefab.system.processManager.get()
+    pm = prefab.system.processmanager.get()
     for service in services_to_start:
         if not pm.exists(service):
             raise j.exceptions.RuntimeError("{} service doesn't exists. \
@@ -28,7 +28,7 @@ def stop(job):
     prefab = job.service.executor.prefab
 
     services_to_start = ['libvirt-bin', 'virtlogd']
-    pm = prefab.system.processManager.get()
+    pm = prefab.system.processmanager.get()
     for service in services_to_start:
         if not pm.exists(service):
             raise j.exceptions.RuntimeError("{} service doesn't exists. \

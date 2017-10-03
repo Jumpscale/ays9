@@ -17,16 +17,12 @@ from rq import Queue
 import time
 import logging
 
+AYS_CORE_BP_TESTS_PATH = [j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'core')]
 
+AYS_NON_CORE_BP_TESTS_PATH = [j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'basic'),
+                              j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'advanced'),
+                              j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'extend')]
 
-AYS_CORE_BP_TESTS_PATH = [os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'core')]
-
-AYS_NON_CORE_BP_TESTS_PATH = [
-                            #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'basic'),
-                            #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'advanced'),
-                            #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'extend')
-                            ]
-                              
 # AYS_DEFAULT_PLACEHOLDERS = ['URL', 'LOGIN', 'ACCOUNT', 'PASSWORD', 'LOCATION']
 AYS_TESTRUNNER_REPO_NAME = 'ays_testrunner'
 AYS_TESTRUNNER_REPO_GIT = 'https://github.com/ahussein/ays_testrunner.git'
@@ -225,8 +221,6 @@ class AYSGroupTest:
         @param path: Path to the hosting folder of the test bps
         @param logger: Logger object to use for logging
         """
-    
-        
         self._name = name
         self._path = path
         self._errors = []
@@ -346,14 +340,11 @@ class AYSTest:
         @param setup: Setup function to be called before the test
         @param teardown: Teardown function to be called after the test
         """
-    
-        
         self._path = path
         self._name = name
-        self._prefab = j.tools.prefab.local
         self._repo_info = {}
         self._errors = []
-        self._cli  = None
+        self._cli = None
         self._starttime = None
         self._endtime = None
         if setup is not None:
@@ -402,7 +393,6 @@ class AYSTest:
             return -1
 
 
-
     def replace_placehlders(self, config):
         """
         Use a given configuration to replace the content of the bp after replacing all the placeholder with values
@@ -412,11 +402,7 @@ class AYSTest:
         self._logger.info('Replacing placeholders for test blueprint {}'.format(self._path))
         for item, value in config.items():
             cmd = sed_base_command.format(key=item, value=value, path=self._path)
-            try:
-                self._prefab.core.run(cmd)
-            except:
-                self._logger.warning('Failed to replace placeholder {}'.format(item))
-
+            j.tools.prefab.local.core.run(cmd)
 
     def setup(self):
         """
@@ -457,7 +443,6 @@ class AYSTest:
         - Collect run results
         - Destroy repo
         """
-    
         self.setup()
 
         try:
@@ -665,7 +650,7 @@ class ParallelTestRunner(BaseRunner):
         super().__init__(name=name, config=config)
         self._task_queue = Queue(connection=Redis(), default_timeout=self._config.get('TEST_TIMEOUT', DEFAULT_TEST_TIMEOUT))
 
-    
+
     def _collect_and_preprocess(self):
         """
         This is a workaround method that will be called from the run test scripts to avoid opening of the files during replacing the placeholders

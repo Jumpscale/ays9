@@ -60,7 +60,7 @@ def install(job):
         j.data.serializer.json.dumps(config, indent=2)
     )
 
-    pm = prefab.system.processManager.get()
+    pm = prefab.system.processmanager.get()
     pm.ensure(
         name='scalityS3',
         cmd='npm start',

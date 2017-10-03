@@ -10,7 +10,7 @@ def install(job):
 
 def start(job):
     prefab = job.service.executor.prefab
-    pm = prefab.system.processManager.get()
+    pm = prefab.system.processmanager.get()
     if not pm.exists('openvswitch-switch'):
         raise j.exceptions.RuntimeError("openvswitch-switch service doesn't exists. \
                                          it should have been created during installation of this service")
@@ -22,7 +22,7 @@ def start(job):
 
 def stop(job):
     prefab = job.service.executor.prefab
-    pm = prefab.system.processManager.get()
+    pm = prefab.system.processmanager.get()
     if not pm.exists('openvswitch-switch'):
         raise j.exceptions.RuntimeError("openvswitch-switch service doesn't exists. \
                                          it should have been created during installation of this service")
