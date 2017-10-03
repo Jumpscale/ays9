@@ -3,7 +3,7 @@ from .Service import Service
 from .utils import validate_service_name, Lock
 import capnp
 from JumpScale9AYS.ays.lib import model_capnp as ModelCapnp
-
+import asyncio
 
 class Actor():
 
@@ -398,7 +398,7 @@ class Actor():
                                         amDecorator="actor", amMethodArgs="job", amDoc="")
 
                     elif actionname == "delete":
-                        amSource = "j.tools.async.wrappers.sync(job.service.delete())"
+                        amSource = "job.service.delete()"
                         self._addAction(actionName="delete", amSource=amSource,
                                         amDecorator="actor", amMethodArgs="job", amDoc="")
                     else:
@@ -515,7 +515,8 @@ class Actor():
         """
         same call as asyncServiceCreate but synchronous. we expose this so user can use this method in service actions.
         """
-        return j.tools.async.wrappers.sync(self.asyncServiceCreate(instance=instance, args=args, context=context))
+        futur = asyncio.run_coroutine_threadsafe(self.asyncServiceCreate(instance=instance, args=args, context=context), loop=self.aysrepo._loop)
+        return futur.result()
 
     @property
     def services(self):

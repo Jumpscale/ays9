@@ -155,4 +155,4 @@ def processChange(job):
 
 #### Default implementation for delete action
 
-If no `Delete(job)` action has been implemented `j.tools.async.wrappers.sync(job.service.delete())` will be used.
+If no `Delete(job)` action has been implemented `job.service.delete()` will be used.

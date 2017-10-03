@@ -364,7 +364,11 @@ class Service:
                         return False, msg
         return True, "OK"
 
-    async def delete(self):
+    def delete(self):
+        futur = asyncio.run_coroutine_threadsafe(self.asyncDelete(), loop=self.aysrepo._loop)
+        return futur.result()
+
+    async def asyncDelete(self):
         """
         Deletes service and its children from database and filesystem if safe.
 
@@ -379,7 +383,7 @@ class Service:
         self._deleted = True
         if self.children:
             for service in self.children:
-                await service.delete()
+                await service.asyncDelete()
 
         # cancel all recurring tasks
         self.stop()
@@ -715,13 +719,17 @@ class Service:
 
         self.saveAll()
 
-    async def executeAction(self, action, args={}, context=None):
+    def executeAction(self, action, args={}, context=None):
         if action[-1] == "_":
-            return self.executeActionService(action)
+            return self._executeActionService(action)
         else:
-            return await self.executeActionJob(action, args, context=context)
+            futur = asyncio.run_coroutine_threadsafe(self.executeActionJob(action, args, context=context), loop=self.aysrepo._loop)
+            return futur.result()
 
-    def executeActionService(self, action, args={}):
+    def ayncExecuteAction(self, action, args={}, context=None):
+        return self.executeActionJob(action, args, context=context)
+
+    def _executeActionService(self, action, args={}):
         # execute an action in process without creating a job
         # usefull for methods called very often.
         action_id = self.model.actions[action].actionKey
@@ -733,7 +741,7 @@ class Service:
         res = eval(action)(service=self, args=args)
         return res
 
-    async def executeActionJob(self, actionName, args={}, context=None):
+    async def _executeActionJob(self, actionName, args={}, context=None):
         """
         creates a job and execute the action names actionName
         @param actionName: name of the action to execute
