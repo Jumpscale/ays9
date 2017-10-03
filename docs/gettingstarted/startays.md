@@ -2,7 +2,7 @@
 
 You will first want to review the configuation of your AYS server, as documented in [AYS Server Configuration](ays-server-configuration.md).
 
-Most importantly, in order to run AYS in **production mode** you need to update or add following two sections in `/optvar/cfg/jumpscale9.toml`:
+Most importantly, in order to run AYS in **production mode** you need to update or add following two sections in `/etc/jumpscale9.toml`:
 ```toml
 [ays]
 production = true
