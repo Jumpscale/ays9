@@ -75,7 +75,7 @@ class ServiceModel(ActorServiceBaseModel):
         obj = self.collection.capnp_schema.ServicePointer.new_message(actorName=actorName,
                                                                       serviceName=serviceName,
                                                                       key=key)
-        self.addSubItem('producers', obj)
+        self.updateSubItem('producers', ['actorName', 'serviceName'], obj)
 
     def producerRemove(self, service):
         """
@@ -92,7 +92,7 @@ class ServiceModel(ActorServiceBaseModel):
         obj = self.collection.capnp_schema.ServicePointer.new_message(actorName=actorName,
                                                                       serviceName=serviceName,
                                                                       key=key)
-        self.addSubItem('consumers', obj)
+        self.updateSubItem('consumers', ['actorName', 'serviceName'], obj)
 
     def consumerRemove(self, service):
         """
