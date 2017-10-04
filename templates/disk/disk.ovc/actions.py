@@ -69,7 +69,7 @@ def processChange(job):
             if key not in ['size', 'type', 'description', 'devicename', 'ssdSize', 'g8client', 'location']:
                 setattr(service.model.data, key, value)
         if service.aysrepo.servicesFind(actor='node.ovc'):
-            j.tools.async.wrappers.sync(service.executeAction('limit_io'))
+            service.executeAction('limit_io')
 
 
 def limit_io(job):

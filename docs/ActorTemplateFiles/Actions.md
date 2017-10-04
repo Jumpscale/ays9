@@ -119,7 +119,7 @@ actions:
 
 In some situations you may want to be able to access the http request context of a request within an action.
 
-AYS allows you to access this context on the job object received in the service actions.  
+AYS allows you to access this context on the job object received in the service actions.
 
 For example, if you want to access the JWT token used to create a run:
 ```python
@@ -131,5 +131,5 @@ def install(job):
 
 In the case you create a job from within another job, make sure you pass the context around:
 ```python
-j.tools.async.wrappers.sync(service.executeAction('start', context=job.context))
+service.executeAction('start', context=job.context)
 ```
