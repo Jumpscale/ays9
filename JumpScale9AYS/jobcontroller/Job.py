@@ -63,7 +63,7 @@ def _execute_cb(job, future):
         if job.service:
             job.service.model.dbobj.state = 'ok'
 
-        job.logger.info("job {} done sucessfuly".format(str(job)))
+        job.logger.info("job {} done successfuly".format(str(job)))
 
     if service_action_obj.period > 0:   # recurring action.
         job.model.save()
