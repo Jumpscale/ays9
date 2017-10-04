@@ -1,6 +1,6 @@
 from js9 import j
 import asyncio
-
+import random
 
 class RecurringTask:
     """Execute a job periodicly"""
@@ -16,6 +16,13 @@ class RecurringTask:
 
     async def _run(self):
         try:
+            # we sleep random time to spread the start of all the recurring action the first
+            # time they are started. This is to prevent spawning too many jobs at the same time
+            action_info = self.service.model.actions[self.action]
+            sleep = random.randint(1, action_info.period)
+            self.logger.debug("wait for %d before starting recurring job", sleep)
+            await asyncio.sleep(sleep)
+
             while self.started:
                 # create job
                 self._job = self.service.getJob(actionName=self.action)
