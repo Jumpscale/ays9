@@ -784,7 +784,7 @@ class Service:
         can start
         """
         if dc is None:
-            dependency_chain = self.executeActionService('init_actions_', args={'action': action})
+            dependency_chain = self._executeActionService('init_actions_', args={'action': action})
         if action in parents:
             raise RuntimeError('cyclic dep: %s' % parents)
         if action in ds:
