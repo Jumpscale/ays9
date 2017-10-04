@@ -1,0 +1,14 @@
+doc:
+  property:
+  - test: ''
+  - result: ''
+
+links:
+  consume:
+  - argname: test
+    auto: false
+    max: 1
+    min: 0
+    role: test_nonexisting_consumption
+
+recurring: []

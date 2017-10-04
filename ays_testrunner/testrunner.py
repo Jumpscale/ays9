@@ -482,15 +482,17 @@ class BaseRunner:
         """
         Check if config is file the it will try to read it as a json file
         """
-        config = {}
+        new_config = {}
         try:
-            if type(self._config) is str:
+            if type(config) is str:
                 if j.sal.fs.exists(config):
-                    config = json.load(open(config))
+                    new_config = json.load(open(config))
                 else:
-                    self._logger.warning('Config file {} does not exist. Default values will be used'.format(self._config))
+                    logger.warning('Config file {} does not exist. Default values will be used'.format(config))
+            else:
+                new_config = config
         finally:
-            return config
+            return new_config
                 
 
 

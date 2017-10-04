@@ -8,9 +8,8 @@ test_dependency_tree__parent:
 
 test_dependency_tree__consumers:
    sshkeys:
-      - main
+      - main         
 
 actions:
-   - action: 'install'
    - action: 'test'
      actor: "test_dependency_tree"

@@ -42,7 +42,7 @@ def test(job):
             elif len(job.service.producers['sshkey']) != 1:
                 failures.append(RESULT_FAILED % ("Wrong number of sshkey producers"))
         if failures:
-            model.data.result = '\n'.join(failures) 
+            model.data.result = '\n'.join(failures)
     except:
         model.data.result = RESULT_ERROR % str(sys.exc_info()[:2])
 
