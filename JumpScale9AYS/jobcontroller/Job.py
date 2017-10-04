@@ -344,8 +344,11 @@ class Job:
             #         ## code here
             #     return inner(job)
             # self.method here is longjob and u need to call it with job to get the coroutine object returned `inner`
+            method = self.method(self)
+            if not asyncio.iscoroutine(method):
+                raise RuntimeError("the method used for a the long job %s of service %s is not a courotine" % (self.action.dbobj.name, self.service))
 
-            self._future = self._loop.create_task(self.method(self))
+            self._future = self._loop.create_task(method)
 
         # register callback to deal with logs and state of the job after execution
         self._future.add_done_callback(functools.partial(_execute_cb, self))
