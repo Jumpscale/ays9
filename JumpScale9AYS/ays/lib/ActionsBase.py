@@ -70,7 +70,7 @@ def process_event_(service, args):
         if secret != '' and secret != event_filter.secret:
             continue
 
-    service.executeActionService(action)
+    service._executeActionService(action)
 
 # before each action this is called, this happens always in process
 # if we return False then the action will not be executed
