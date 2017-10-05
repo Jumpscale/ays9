@@ -492,7 +492,7 @@ class BaseRunner:
             else:
                 new_config = config
         finally:
-            return new_config
+            return new_config or {}
                 
 
 

@@ -31,7 +31,7 @@ class Service:
             return self
         except Exception as e:
             # cleanup if init fails
-            await self.delete()
+            await self.asyncDelete()
             raise e
 
     @classmethod
