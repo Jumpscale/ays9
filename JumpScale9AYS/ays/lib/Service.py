@@ -226,6 +226,9 @@ class Service:
                 if svname:
                     # foundservices = self.aysrepo.servicesFind(name=svname, actor="%s(\..*)?" % producer_model.actorRole)
                     foundservices = self.aysrepo.servicesFind(name=svname, role=producer_model.actorRole)
+                    if not foundservices: 
+                        raise j.exceptions.Input(message="no service with name [%s] and role [%s] found" % (svname, producer_model.actorRole),
+                                                 level=1, source="", tags="", msgpub="")
                     usersetservices.extend(foundservices)
 
             available_services = self.aysrepo.servicesFind(role=producer_role)
