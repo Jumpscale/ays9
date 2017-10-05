@@ -54,6 +54,13 @@ class RecurringTask:
     def start(self):
         self.started = True
         self._future = asyncio.ensure_future(self._run(), loop=self._loop)
+        def callback(future):
+            try:
+                future.result()
+            except Exception as e:
+                self.logger.error("error during recurring job: %s" % e)
+                raise
+        self._future.add_done_callback(callback)
         return self._future
 
     def stop(self):

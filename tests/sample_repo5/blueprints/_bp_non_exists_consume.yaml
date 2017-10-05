@@ -1,2 +1,3 @@
 test_nonexisting_consumption__shouldfail:
-   test: 'nonexisting'
+   test:
+    - 'nonexisting'

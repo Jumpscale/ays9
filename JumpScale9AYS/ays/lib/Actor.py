@@ -516,7 +516,11 @@ class Actor():
         same call as asyncServiceCreate but synchronous. we expose this so user can use this method in service actions.
         """
         futur = asyncio.run_coroutine_threadsafe(self.asyncServiceCreate(instance=instance, args=args, context=context), loop=self.aysrepo._loop)
-        return futur.result()
+        try:
+            return futur.result()
+        except Exception as e:
+            self.logger.error("error creating service: %s" % e)
+            raise e
 
     @property
     def services(self):

@@ -21,7 +21,7 @@ AYS_CORE_BP_TESTS_PATH = [j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getPare
 AYS_NON_CORE_BP_TESTS_PATH = [j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'basic'),
                               j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'advanced'),
                               j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'extend')]
-                              
+
 # AYS_DEFAULT_PLACEHOLDERS = ['URL', 'LOGIN', 'ACCOUNT', 'PASSWORD', 'LOCATION']
 AYS_TESTRUNNER_REPO_NAME = 'ays_testrunner'
 AYS_TESTRUNNER_REPO_GIT = 'https://github.com/ahussein/ays_testrunner.git'
@@ -453,7 +453,7 @@ class BaseRunner:
         """
         Intialize test runner
         """
-        
+
         self._logger = j.logger.get('aystestrunner.{}'.format(name))
         # check if config is a file, then load cofnig from the file
         self._config = self._check_config(config)
@@ -461,7 +461,7 @@ class BaseRunner:
         self._task_queue = Queue(connection=Redis(), default_timeout=self._config.get('TEST_TIMEOUT', DEFAULT_TEST_TIMEOUT))
         self._failed_tests = {}
         self._tests = []
-        
+
         self._default_bp_paths = []
 
 
@@ -477,7 +477,7 @@ class BaseRunner:
         """
         raise NotImplementedError("Not Implemented")
 
-    
+
     def _check_config(self, config):
         """
         Check if config is file the it will try to read it as a json file
@@ -492,11 +492,7 @@ class BaseRunner:
             else:
                 new_config = config
         finally:
-            return new_config
-                
-
-
-
+            return new_config or {}
 
 class AYSCoreTestRunner(BaseRunner):
     """

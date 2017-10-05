@@ -167,12 +167,7 @@ class Job:
 
     @property
     def _loop(self):
-        try:
-            loop = asyncio.get_event_loop()
-        except:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        return loop
+        return j.atyourservice.server.loop
 
     def cleanup(self):
         """
@@ -344,11 +339,11 @@ class Job:
             #         ## code here
             #     return inner(job)
             # self.method here is longjob and u need to call it with job to get the coroutine object returned `inner`
-            method = self.method(self)
-            if not asyncio.iscoroutine(method):
+            coroutine = self.method(self)
+            if not asyncio.iscoroutine(coroutine):
                 raise RuntimeError("the method used for a the long job %s of service %s is not a courotine" % (self.action.dbobj.name, self.service))
 
-            self._future = self._loop.create_task(method)
+            self._future = asyncio.ensure_future(coroutine, loop=self._loop)
 
         # register callback to deal with logs and state of the job after execution
         self._future.add_done_callback(functools.partial(_execute_cb, self))
