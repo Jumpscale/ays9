@@ -1,8 +1,11 @@
 # Use the AYS client
 
+The AYS client is avaialble as part of [jumpscale/lib9](https://github.com/Jumpscale/lib9/tree/master/JumpScale9Lib/clients/ays).
+
+
 ## Preparation
 
-Use the Z-tools to install JS9: https://github.com/Jumpscale/bash
+Start by using the bash tools to install JS9: https://github.com/Jumpscale/bash
 
 Installing the master branch of the Z-tools:
 ```bash
@@ -41,26 +44,26 @@ zerotier-cli join $ZT_ID
 
 In order to interact with AYS you will typically need a JWT, unless the RESTful API is not protected with ItsYou.online.
 
-Options to get a JWT: https://github.com/Jumpscale/ays9/tree/master/docs/Howto/Get_JWT
+> See [Start AYS](../gettingstarted/startays.md) in [Getting Started](../gettingstarted/README.md) for more details about how AYS uses ItsYou.online to protect its RESTful API.
 
-First get/create an API key for the ItsYou.online organization used to protect you AYS server, and copy the name of the organization and the secret into environment variables:
+First get/create an API key for the ItsYou.online organization used to protect your AYS server, and copy the name of the organization and the secret into environment variables:
 ```bash
 CLIENT_ID="ays-organization"
 SECRET=:"..."
 ```
 
-Using the AYS RESTfull API:
+Using the AYS RESTfull API from the command line you get the JWT:
 ```bash
 JWT1=$(curl -d 'grant_type=client_credentials&client_id='"$CLIENT_ID"'&client_secret='"$SECRET"'&response_type=id_token' https://itsyou.online/v1/oauth/access_token)
 echo $JWT1
 ```
 
-Export JWT1 so you can access it from the JumpScale interactive shell:
+Export `JWT1` so you can access it from the JumpScale interactive shell, from which you will be connecting to the AYS server:
 ```bash
 export JWT1
 ```
 
-Or alternativelly in Python:
+An alternative way to get a JWT is using Python code:
 ```python
 import os
 import requests
@@ -76,6 +79,9 @@ resp = requests.post(url, params=params)
 resp.raise_for_status()
 jwt1 = resp.content.decode('utf8')
 ```
+
+> See [How to Get a JWT](../Howto/Get_JWT/README.md) for all options to get a JWT.
+
 
 ## Connect to a remote AYS server
 
@@ -117,14 +123,12 @@ resp = cl._ayscl.createRepository(data)
 resp.json()
 ```
 
-## Use a blueprint template
-...
 
 ## Get JWT for interacting with the OpenvCloud API
 
 Next to the JWT for interacting with the AYS server, you'll need a second JWT to pass in a blueprint for allowing AYS to interact with an OpenvCloud environment.
 
-See: https://gig.gitbooks.io/ovcdoc_public/content/API/GettingStarted.html
+> See [Getting started with the OpenvCloud Cloud API](https://gig.gitbooks.io/ovcdoc_public/content/API/GettingStarted.html) for more details about this second JWT.
 
 Create an API key in your ItsYou.online profile, and copy the **Application ID** and **Secret** into environment variables: 
 ```bash
