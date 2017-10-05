@@ -66,6 +66,8 @@ def install(job):
 
 def autoscale(job):
     service = job.service
+    if service.model.actionsState['install'] != 'ok':
+        return
     repo = service.aysrepo
     exc = service.executor
     prefab = exc.prefab
