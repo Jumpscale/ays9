@@ -1,6 +1,7 @@
+@0xc0eae70e2b530493;
 
-@0x878aa87e7a63d119;
 struct Schema {
-	result @0 :Text;
+	test @0 :List(Text);
+	result @1 :Text;
 
 }
