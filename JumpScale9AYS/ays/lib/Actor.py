@@ -522,7 +522,6 @@ class Actor():
             self.logger.error("error creating service: %s" % e)
             raise e
 
-
     @property
     def services(self):
         """
