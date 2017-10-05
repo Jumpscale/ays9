@@ -226,7 +226,7 @@ class Service:
                 if svname:
                     # foundservices = self.aysrepo.servicesFind(name=svname, actor="%s(\..*)?" % producer_model.actorRole)
                     foundservices = self.aysrepo.servicesFind(name=svname, role=producer_model.actorRole)
-                    if not foundservices: 
+                    if not foundservices:
                         raise j.exceptions.Input(message="no service with name [%s] and role [%s] found" % (svname, producer_model.actorRole),
                                                  level=1, source="", tags="", msgpub="")
                     usersetservices.extend(foundservices)
@@ -726,11 +726,11 @@ class Service:
         if action[-1] == "_":
             return self._executeActionService(action)
         else:
-            futur = asyncio.run_coroutine_threadsafe(self.executeActionJob(action, args, context=context), loop=self.aysrepo._loop)
+            futur = asyncio.run_coroutine_threadsafe(self._executeActionJob(action, args, context=context), loop=self.aysrepo._loop)
             return futur.result()
 
     def ayncExecuteAction(self, action, args={}, context=None):
-        return self.executeActionJob(action, args, context=context)
+        return self._executeActionJob(action, args, context=context)
 
     def _executeActionService(self, action, args={}):
         # execute an action in process without creating a job
@@ -787,7 +787,7 @@ class Service:
         can start
         """
         if dc is None:
-            dependency_chain = self.executeActionService('init_actions_', args={'action': action})
+            dependency_chain = self._executeActionService('init_actions_', args={'action': action})
         if action in parents:
             raise RuntimeError('cyclic dep: %s' % parents)
         if action in ds:
