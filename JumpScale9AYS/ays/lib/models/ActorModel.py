@@ -74,10 +74,9 @@ class ActorModel(ActorServiceBaseModel):
             argname @5 :Text; # key in the args that contains the instance name of the targets
           }
         """
-
         o = self.collection.capnp_schema.ActorPointer.new_message(actorRole=role, minServices=int(min), maxServices=int(max),
                                                         auto=bool(auto), optional=bool(optional), argname=argname)
-        self.addSubItem('producers', o)
+        self.updateSubItem('producers', keys='actorRole', data=o)
 
 
     @property

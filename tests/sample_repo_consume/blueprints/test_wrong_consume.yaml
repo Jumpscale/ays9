@@ -1,0 +1,6 @@
+actor1__service:
+
+actions:
+  - action: firstact
+    actor: actor1
+  

@@ -1,6 +1,6 @@
 # AYS Server Configuration
 
-AYS is configured through a simple configuration file: `/optvar/cfg/jumpscale9.toml`:
+AYS is configured through a simple configuration file: `/etc/jumpscale9.toml`:
 ```toml
 [ays]
 production = false
@@ -10,19 +10,23 @@ jwt_key = ""
 organization = ""
 
 [dirs]
-BASEDIR = "/opt/jumpscale9"
-BINDIR = "/opt/jumpscale9/bin"
-BUILDDIR = "/optvar/build"
-CFGDIR = "/optvar/cfg"
+BASEDIR = "/opt"
+BASEDIRJS = "/opt/jumpscale9"
+BINDIR = "/opt/bin"
+BUILDDIR = "/host/var/build"
+CFGDIR = "/opt/cfg"
 CODEDIR = "/opt/code"
-DATADIR = "/optvar/data"
+DATADIR = "/host/var/data"
 HOMEDIR = "/root"
-JSAPPSDIR = "/opt/jumpscale9/apps"
-LIBDIR = "/opt/jumpscale9/lib"
-LOGDIR = "/optvar/log"
-TEMPLATEDIR = "/opt/jumpscale9/templates"
+HOSTCFGDIR = "/hostcfg"
+HOSTDIR = "/host"
+JSAPPSDIR = "/opt/jumpscale9/app"
+LIBDIR = "/opt/lib/"
+LOGDIR = "/host/var/log"
+TEMPLATEDIR = "/host/var/templates"
 TMPDIR = "/tmp"
-VARDIR = "/optvar"
+VARDIR = "/host/var"
+
 
 [email]
 from = "info@incubaid.com"
