@@ -68,11 +68,17 @@ class RunStep:
 
             self.logger.info('execute %s' % job)
 
+            # wrap job execute in ensure_future to have a task pointer
+            # so we can link the tak and the job for logging purposes line 89 and following
+            task = None
             if job.service.aysrepo.no_exec is True:
                 # don't actually execute anything
-                tasks[self._fake_exec(job)] = job
+                task = asyncio.ensure_future(self._fake_exec(job))
             else:
-                tasks[asyncio.wait_for(job.execute(), action_timeout)] = job
+                task = asyncio.ensure_future(job.execute())
+
+            tasks[task] = job
+            asyncio.wait_for(task, action_timeout)
 
         done, pending = await asyncio.wait(tasks.keys(), return_when=asyncio.ALL_COMPLETED)
         if len(pending) > 0:
