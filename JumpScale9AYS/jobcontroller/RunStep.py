@@ -53,7 +53,8 @@ class RunStep:
 
     async def execute(self):
 
-        tasks = {}
+        coros = []
+        jobs = []
         for job in self.jobs:
 
             # don't re-execute succesfull jobs
@@ -68,29 +69,19 @@ class RunStep:
 
             self.logger.info('execute %s' % job)
 
-            # wrap job execute in ensure_future to have a task pointer
-            # so we can link the tak and the job for logging purposes line 89 and following
-            task = None
             if job.service.aysrepo.no_exec is True:
                 # don't actually execute anything
-                task = asyncio.ensure_future(self._fake_exec(job))
+                coros.append(self._fake_exec(job))
             else:
-                task = asyncio.ensure_future(job.execute())
+                coros.append(asyncio.wait_for(job.execute(), action_timeout))
+            jobs.append(job)
 
-            tasks[task] = job
-            asyncio.wait_for(task, action_timeout)
-
-        done, pending = await asyncio.wait(tasks.keys(), return_when=asyncio.ALL_COMPLETED)
-        if len(pending) > 0:
-            # should neber happened because of 'return_when=ALL_COMPLETED'
-            raise RuntimeError("some job are still pending, but this should not happened")
-
+        results = await asyncio.gather(*coros, return_exceptions=True)
         self.state = 'ok'
-        for task in done:
-            job = tasks[task]
-            exception = task.exception()
-            if exception:
-                self.logger.error("{} failed:\n{}".format(job, exception))
+        for i, result in enumerate(results):
+            job = jobs[i]
+            if isinstance(result, Exception):
+                self.logger.error("{} failed:\n{}".format(job, result))
                 self.state = 'error'
 
         self.logger.info("runstep {}: {}".format(self.dbobj.number, self.state))

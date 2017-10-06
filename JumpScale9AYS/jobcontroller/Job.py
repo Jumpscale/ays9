@@ -56,7 +56,7 @@ def _execute_cb(job, future):
             service_action_obj.errorNr += 1
             job.service.model.dbobj.state = 'error'
 
-        # ex = exception if exception is not None else TimeoutError()
+        ex = exception if exception is not None else TimeoutError()
 
         eco = j.errorhandler.processPythonExceptionObject(exception)
         job._processError(eco)
