@@ -810,9 +810,15 @@ async def updateActor(request, name, repository):
         actor = repo.actorGet(name=name)
     except j.exceptions.NotFound:
         return json({'error': 'actor {} not found'.format(name)}, 404)
+    except Exception as err:
+        return json({'error': 'unexpected error: {}'.format(err)}, 500)
 
     reschedule = j.data.types.bool.fromString(request.args.get('reschedule', False))
-    actor.update(reschedule=reschedule, context={'token': extract_token(request)})
+    try:
+        actor.update(reschedule=reschedule, context={'token': extract_token(request)})
+    except Exception as err:
+        logger.error("error during actor update of {}: {}".format(name, err))
+        return json({'error': 'unexpected error: {}'.format(err)}, 500)
 
     return json(actor_view(actor), 200)
 
