@@ -732,7 +732,7 @@ class Service:
             futur = asyncio.run_coroutine_threadsafe(self._executeActionJob(action, args, context=context), loop=self.aysrepo._loop)
             try:
                 return futur.result()
-            except Exception:
+            except Exception as e:
                 self.logger.error("error during execute action: %s" % e)
                 raise
 

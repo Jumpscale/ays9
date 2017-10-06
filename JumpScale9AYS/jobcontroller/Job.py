@@ -163,7 +163,7 @@ class Job:
 
     def __init__(self, model):
         # used to track how long the job takes to execute
-        self._started = time.time()
+        self._started = None
         self.model = model
         self.context = JobContext(model)
         self._cancelled = False
@@ -338,6 +338,8 @@ class Job:
 
         ex: result, stdout, stderr = await job.execute()
         """
+        self._started = time.time()
+
         # for now use default ThreadPoolExecutor
         if self.model.dbobj.debug is False:
             self.model.dbobj.debug = self.sourceLoader.source.find('ipdb') != -1 or \
