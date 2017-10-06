@@ -20,7 +20,7 @@ def test(job):
             if bp_resp.status_code == 200:
                 failures.append("blueprint %s should have failed" % bp_name)
         except Exception:
-            cl.deleteBlueprint('bp_non_exists_consume.yaml', job.service.aysrepo.name)
+            pass
         if failures:
             model.data.result = RESULT_FAILED % '\n'.join(failures)
 
