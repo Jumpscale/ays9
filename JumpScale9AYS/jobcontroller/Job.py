@@ -61,8 +61,9 @@ def _execute_cb(job, future):
         eco = j.errorhandler.processPythonExceptionObject(exception)
         job._processError(eco)
 
-        tb_lines = [line.rstrip('\n') for line in traceback.format_exception(exception.__class__, exception, exception.__traceback__)]
-        job.logger.error("{} failed:\n{}".format(job, '\n'.join(tb_lines)))
+        if not isinstance(exception, asyncio.CancelledError):
+            tb_lines = [line.rstrip('\n') for line in traceback.format_exception(exception.__class__, exception, exception.__traceback__)]
+            job.logger.error("{} failed:\n{}".format(job, '\n'.join(tb_lines)))
 
     else:
         # job executed succefully
