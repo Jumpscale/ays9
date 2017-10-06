@@ -53,6 +53,8 @@ prefab.apps.atyourservice.install(install_portal=True)
 
 Installing the AYS Portal using JumpScale will automatically start the AYS Portal in a new TMUX window.
 
+> There is also the option to just install the AYS Portal app, having the AYS installed and running elsewhere, this is achieved in JumpScale with `j.tools.prefab.local.apps.atyourservice.load_ays_space`, which also includes the `install_portal` option, which is in this case defaulted to False.
+
 
 ## Starting the AYS Portal
 
@@ -84,7 +86,7 @@ Starting AYS Portal will also start MongoDB in a window of the same TMUX session
 j.tools.prefab.local.apps.mongodb.start()
 ```
 
-## AYS Portal Confuration
+## AYS Portal Configuration
 
 The AYS Portal is configured in `/opt/cfg/portals/main/config.yaml`, which is the configuration that common to all portal apps using the JumpScale portal framework in your JumpScale environment.
 
