@@ -3,10 +3,11 @@ from js9 import j
 
 
 class RunStep:
-
+    """
+    A run step is a portion of a run
+    It consist of multiple jobs that can be execute concurently
+    """
     def __init__(self, run, nr, dbobj):
-        """
-        """
         self.run = run
         self.dbobj = dbobj
         self.dbobj.number = nr
@@ -52,8 +53,7 @@ class RunStep:
 
     async def execute(self):
 
-        coros = []
-        jobs = []
+        tasks = {}
         for job in self.jobs:
 
             # don't re-execute succesfull jobs
@@ -70,15 +70,21 @@ class RunStep:
 
             if job.service.aysrepo.no_exec is True:
                 # don't actually execute anything
-                coros.append(self._fake_exec(job))
+                tasks[self._fake_exec(job)] = job
             else:
-                coros.append(asyncio.wait_for(job.execute(), action_timeout))
-            jobs.append(job)
+                tasks[asyncio.wait_for(job.execute(), action_timeout)] = job
 
-        results = await asyncio.gather(*coros, return_exceptions=True)
+        done, pending = await asyncio.wait(tasks.keys(), return_when=asyncio.ALL_COMPLETED)
+        if len(pending) > 0:
+            # should neber happened because of 'return_when=ALL_COMPLETED'
+            raise RuntimeError("some job are still pending, but this should not happened")
+
         self.state = 'ok'
-        for result in results:
-            if isinstance(result, Exception):
+        for task in done:
+            job = tasks[task]
+            exception = task.exception()
+            if exception:
+                self.logger.error("{} failed:\n{}".format(job, exception))
                 self.state = 'error'
 
         self.logger.info("runstep {}: {}".format(self.dbobj.number, self.state))

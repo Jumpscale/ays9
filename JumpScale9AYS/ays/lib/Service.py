@@ -736,8 +736,8 @@ class Service:
                 self.logger.error("error during execute action: %s" % e)
                 raise
 
-    def ayncExecuteAction(self, action, args={}, context=None):
-        return self._executeActionJob(action, args, context=context)
+    async def asyncExecuteAction(self, action, args={}, context=None):
+        return await self._executeActionJob(action, args, context=context)
 
     def _executeActionService(self, action, args={}):
         # execute an action in process without creating a job
@@ -794,7 +794,7 @@ class Service:
         can start
         """
         if dc is None:
-            dependency_chain = self.executeActionService('init_actions_', args={'action': action})
+            dependency_chain = self._executeActionService('init_actions_', args={'action': action})
         if action in parents:
             raise RuntimeError('cyclic dep: %s' % parents)
         if action in ds:
