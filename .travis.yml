@@ -4,9 +4,9 @@ dist: trusty
 group: edge
 
 # whitelist master branch only		
- branches:		
-   only:		
-     - master
+branches:		
+  only:		
+    - master
 
 before_install:
   - sudo apt-get update
