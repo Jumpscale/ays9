@@ -1,30 +1,92 @@
 # Installation of an AYS Portal
 
-In order to install an AYS Portal you need a JumpScale environment with the JumpScale Portal Framework installed, so AYS Portal is actually a JumpScale portal app, just as for instance the Cloud Broker Portal that come with OpenvCloud.
+In order to install an AYS Portal you need a JumpScale environment with the JumpScale portal framework installed, so AYS Portal is actually a JumpScale portal app, just as for instance the Cloud Broker Portal that comes with OpenvCloud.
 
-The JumpScale portal framework is installed as part of a JS9 Docker container when using the `-p` option during the build step, as documented in the [jumpscale/developer](https://github.com/Jumpscale/developer/blob/master/README.md)) repository.
+The JumpScale portal framework is installed as part of a JS9 Docker image you get when using the `ZInstall_portal9` command, as documented in the [jumpscale/bash](https://github.com/Jumpscale/bash/blob/master/README.md) repository.
 
-In case you didn't install the JumpScale portal framework, you can use the following commands in the interactive shell in order to still add it to your environment:
+In case you did use `ZInstall_host_js9_full` or `ZInstall_js9_full` you still need to:
+- [Install the portal framework](#portal9)
+- [Install AYS and the AYS Portal](#ays9)
+
+<a id="portal9"></a>
+## Install the portal framework
+
+You can either install the Portal framework by manually cloning the [jumpscale/portal9](https://github.com/Jumpscale/portal9) repository or using the JumpScale interactive shell.
+
+Manually cloning:
+```bash
+cd /opt/code/github/jumpscale
+git clone git@github.com:Jumpscale/portal9.git
+```
+
+Or using the interactive shell:
 ```python
 prefab = j.tools.prefab.local
 prefab.apps.portal.install()
 ```
 
-Once the portal framework is installed on your JumpScale environment, you can add the AYS Portal by executing the following commands in the interactive shell:
-```python
+As discussed below you can also install the portal framework as part of the AYS installation, through one single command, using the `install_portal` when using the JumpScale.
+
+
+<a id="ays9"></a>
+## Install AYS and the AYS Portal
+
+Both are part of the [jumpscale/ays9](https://github.com/Jumpscale/ays9) repository.
+
+Installing the repository manually:
+```bash
+cd /opt/code/github/jumpscale
+git clone git@github.com:Jumpscale/ays9.git
+```
+
+Or using the interactive shell:
+```
 prefab = j.tools.prefab.local
 prefab.apps.atyourservice.install()
 ```
 
-In case you didn't yet install the portal framework, or simply want to reinstall the portal framework as part the AYS Portal installation, you can use the option `install_portal` as follows:
+Alternativelly you can use the `install_portal` option which will also install/reinstall the portal framework:
 ```python
 prefab = j.tools.prefab.local
 prefab.apps.atyourservice.install(install_portal=True)
 ```
 
-This will start the AYS Portal in a new TMUX window.
+Installing the AYS Portal using JumpScale will automatically start the AYS Portal in a new TMUX window.
 
-The AYS Portal is configured in `/optvar/cfg/portals/main/config.yaml`, which is the configuration that common to all portal apps using the JumpScale portal framework in your JumpScale environment.
+
+## Starting the AYS Portal
+
+In case you manually installed the [jumpscale/ays9](https://github.com/Jumpscale/ays9) repository you need to start AYS and the portal manually. This can be achieved either from the command line or by using the JumpScale interactive shell.
+
+Starting AYS from the command line:
+```bash
+ays start -b 0.0.0.0 -p 5000
+```
+
+Or starting AYS using JumpScale:
+```python
+j.tools.prefab.local.apps.atyourservice.start()
+```
+
+Starting the AYS Portal from the command line:
+```bash
+cd /opt/jumpscale8/apps/portals/main
+jspython3 portal_start.py
+```
+
+Or using the JumpScale:
+```python
+j.tools.prefab.local.apps.portal.start()
+```
+
+Starting AYS Portal will also start MongoDB in a window of the same TMUX session used for the AYS and the AYS Portal. If needed you can always start MongoDB manually:
+```python
+j.tools.prefab.local.apps.mongodb.start()
+```
+
+## AYS Portal Confuration
+
+The AYS Portal is configured in `/opt/cfg/portals/main/config.yaml`, which is the configuration that common to all portal apps using the JumpScale portal framework in your JumpScale environment.
 
 Here's the default configuration:
 ```yaml
