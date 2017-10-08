@@ -937,7 +937,7 @@ class Service:
         # Check if the action job is already existing at any run in the repo before
         # rescheduling it again
         existing_jobs = j.core.jobcontroller.db.jobs.find(actor=self.model.role, action=action, service=self.name,
-                                                          state="new|running|error", tags=["self_heal_internal"])
+                                                          state="(new|running|error)", tags=["self_heal_internal"])
         if not existing_jobs:
             self.scheduleAction(action, force=True)
             action_chain = []
