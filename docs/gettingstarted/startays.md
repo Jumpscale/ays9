@@ -44,6 +44,8 @@ Login to [ItsYou.online](http://ItsYou.online), click **+ ADD** on the **Setting
 
 ![](Images/create-ays-key1.png)
 
+Make sure to **enable client credentials grant type**
+
 Click **Create**, copy the generated secret value for later use, and then close the dialog.
 
 ![](Images/create-ays-key2.png)
