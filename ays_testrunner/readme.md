@@ -14,10 +14,16 @@ non-core tests can be found under:
   - https://github.com/Jumpscale/ays9/tree/master/tests/bp_test_templates/advaced
   - https://github.com/Jumpscale/ays9/tree/master/tests/bp_test_templates/extend
 
+## Execution Types of tests:
+We have different types of executions for running the ays tests, these types are:
+- Sequential: Runs the tests sequantially, good for debuging purposes, can be very slow when running non-core tests.
+- Threaded: Runs the tests in parallel using separate thread for each tests.
+- Parallel: Runs the tests in parallel using different processes (workers), requires installing rq pacakge.
+
 ## Prerequisites
 To be able to use the test runner, you will need
 - A running AYS server
-- An installed rq package
+- An installed rq package (only for Parallel execution type)
 
 ## Features
 Test runner's main purpose is to be able to run tests and report their result, in addition to this it provides the following features
@@ -45,27 +51,52 @@ and for each subdirectory, a group test object will be created.
 
 ## How to use it
 ### How to run core tests
+#### Sequentially
 ```python
-from ays_testrunner.testrunner import AYSCoreTestRunner
-core_runner = AYSCoreTestRunner(name='core')
-core_runner.run()
+from ays_testrunner.testrunner import AYSTestRunnerFactory
+runner = AYSTestRunnerFactory.get(name='core')
+runner.run()
 ```
-This will run all tests under https://github.com/Jumpscale/ays9/tree/master/tests/bp_test_templates/core in parallel
+This will run all tests under https://github.com/Jumpscale/ays9/tree/master/tests/bp_test_templates/core sequentially
+
+#### In Parallel (threaded)
+```python
+from ays_testrunner.testrunner import AYSTestRunnerFactory
+runner = AYSTestRunnerFactory.get(name='core', execution_type='threaded')
+runner.run()
+```
+This will run all tests under https://github.com/Jumpscale/ays9/tree/master/tests/bp_test_templates/core in parallel using threads
+
+#### In Parallel (processes)
+You need to have rq workers started already in a different process before to be able to process the testing jobs.
+You can start rq workers using the following command:
+```bash
+js9 "for index in range(10): j.tools.prefab.local.tmux.executeInScreen('workers', 'rqworker{}'.format(index), cmd='rq worker', wait=0)"
+```
+
+Then you can run the tests using:
+```python
+from ays_testrunner.testrunner import AYSTestRunnerFactory
+runner = AYSTestRunnerFactory.get(name='core', execution_type='parallel')
+runner.run()
+```
+This will run all tests under https://github.com/Jumpscale/ays9/tree/master/tests/bp_test_templates/core in parallel using child processes and queues
+
 
 ### How to run non-core tests
 ```python
-from ays_testrunner.testrunner import AYSTestRunner
+from ays_testrunner.testrunner import AYSTestRunnerFactory
 backend_config = {'URL': 'du-conv-2.demo.greenitglobe.com', 'LOGIN': 'aystestrunner@itsyouonline', 'PASSWORD': '******', 'ACCOUNT': 'aystestrunner', 'LOCATION': 'du-conv-2'}
-runner = AYSTestRunner(name='non-core', config={'BACKEND_ENV': backend_config, 'BACKEND_ENV_CLEANUP': True})
+runner = AYSTestRunnerFactory.get(name='non-core', test_type='non-core', config={'BACKEND_ENV': backend_config, 'BACKEND_ENV_CLEANUP': True})
 runner.run()
 ```
-This will run all non-core tests in parallel
+This will run all non-core tests in sequence, to run in a different execution mode use the execution_mode parameter as mentioned above
 
 ### How to run specific tests
 ```python
-from ays_testrunner.testrunner import AYSCoreTestRunner
-core_runner = AYSCoreTestRunner(name='core', config={'bp_paths': [path to test1, path to test2, path ot dir1]})
-core_runner.run()
+from ays_testrunner.testrunner import AYSTestRunnerFactory
+runner = AYSTestRunnerFactory.get(name='custom', config={'bp_paths': [path to test1, path to test2, path ot dir1]})
+runner.run()
 ```
 
 ### How to group tests

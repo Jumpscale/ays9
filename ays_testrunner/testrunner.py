@@ -458,53 +458,10 @@ class BaseRunner:
         # check if config is a file, then load cofnig from the file
         self._config = self._check_config(config)
         self._name = name
-        self._task_queue = Queue(connection=Redis(), default_timeout=self._config.get('TEST_TIMEOUT', DEFAULT_TEST_TIMEOUT))
         self._failed_tests = {}
         self._tests = []
 
         self._default_bp_paths = []
-
-
-    def run(self):
-        """
-        Run tests and report their results
-        collects tests
-        pre-process tests
-        execute setup steps
-        execute test
-        execute teardown setps
-        report tests
-        """
-        raise NotImplementedError("Not Implemented")
-
-
-    def _check_config(self, config):
-        """
-        Check if config is file the it will try to read it as a json file
-        """
-        new_config = {}
-        try:
-            if type(config) is str:
-                if j.sal.fs.exists(config):
-                    new_config = json.load(open(config))
-                else:
-                    logger.warning('Config file {} does not exist. Default values will be used'.format(config))
-            else:
-                new_config = config
-        finally:
-            return new_config or {}
-
-class AYSCoreTestRunner(BaseRunner):
-    """
-    Test Runner to run ays core tets
-    """
-
-    def __init__(self, name, config=None):
-        """
-        Initialize core test runner
-        """
-        super().__init__(name, config)
-        self._default_bp_paths = AYS_CORE_BP_TESTS_PATH
 
 
     def _pre_process_tests(self):
@@ -530,30 +487,13 @@ class AYSCoreTestRunner(BaseRunner):
             self._tests = collect_tests(paths=self._config.get('bp_paths', self._default_bp_paths), logger=self._logger)
             self._pre_process_tests()
             for test in self._tests:
-                self._logger.info('Scheduling test {}'.format(test.name))
-                jobs[test] = self._task_queue.enqueue(test.run)
-                test.starttime = time.time()
-            # block until all jobs are done
-            while True:
-                for test, job in jobs.copy().items():
-                    self._logger.debug('Checking status of test {}'.format(test.name))
-                    if job.result is None:
-                        self._logger.info('Test {} still running'.format(test.name))
-                    elif job.result == []:
-                        self._logger.info('Test {} completed successfully'.format(test.name))
-                        jobs.pop(test)
-                        test.endtime = time.time()
-                    elif job.result is not None or job.exc_info is not None:
-                        self._logger.error('Test {} failed'.format(test.name))
-                        test.errors = job.result or [job.exc_info]
-                        jobs.pop(test)
-                        self._failed_tests[test] = job
-                        test.endtime = time.time()
-                if jobs:
-                    time.sleep(10)
-                else:
-                    break
-
+                self._logger.info('Running test {}'.format(test.name))
+                try:
+                    test.starttime = time.time()
+                    test.run()
+                    test.endtime = time.time()
+                except Exception as e:
+                    test.errors.append('Failed to run test {}. Errors: [{}]'.format(test.name, str(e)))
             # report final results
             self._report_results()
         finally:
@@ -603,7 +543,150 @@ class AYSCoreTestRunner(BaseRunner):
             raise RuntimeError('Failures while running ays tests')
 
 
-class AYSTestRunner(AYSCoreTestRunner):
+    def _check_config(self, config):
+        """
+        Check if config is file the it will try to read it as a json file
+        """
+        new_config = {}
+        try:
+            if type(config) is str:
+                if j.sal.fs.exists(config):
+                    new_config = json.load(open(config))
+                else:
+                    logger.warning('Config file {} does not exist. Default values will be used'.format(config))
+            else:
+                new_config = config
+        finally:
+            return new_config or {}
+
+
+class ThreadedTestRunner(BaseRunner):
+    """
+    Thread based testrunner
+    """
+
+    def run(self):
+        """
+        Run tests and report their results
+        collects tests
+        pre-process tests
+        execute setup steps
+        execute test
+        execute teardown setps
+        report tests
+        """
+        import threading
+        try:
+            jobs = {}
+            self._tests = collect_tests(paths=self._config.get('bp_paths', self._default_bp_paths), logger=self._logger)
+            self._pre_process_tests()
+            for test in self._tests:
+                self._logger.info('Scheduling test {}'.format(test.name))
+                jobs[test] = threading.Thread(target=test.run, name=test.name)
+                jobs[test].start()
+                test.starttime = time.time()
+            # block until all jobs are done
+            while True:
+                for test, job in jobs.copy().items():
+                    self._logger.debug('Checking status of test {}'.format(test.name))
+                    if job.is_alive():
+                        self._logger.info('Test {} still running'.format(test.name))
+                        if time.time() - test.starttime > self._config.get('TEST_TIMEOUT', DEFAULT_TEST_TIMEOUT):
+                            self._logger.error('Test {} timed out'.format(test.name))
+                            jobs.pop(test)
+                            test.errors.append('Test {} timed out'.format(test.name))
+                            self._failed_tests[test] = job
+                    else:
+                        self._logger.info('Test {} completed successfully'.format(test.name))
+                        jobs.pop(test)
+                        test.endtime = time.time()
+                if jobs:
+                    time.sleep(10)
+                else:
+                    break
+
+            # report final results
+            self._report_results()
+        finally:
+            # clean up the BACKEND env if requested
+            if self._config.get('BACKEND_ENV_CLEANUP', False):
+                self._cleanup()
+
+
+
+class ParallelTestRunner(BaseRunner):
+    """
+    Parallel process based test runner
+    """
+    def __init__(self, name, config=None):
+        """
+        Intialize test runner
+        """
+        super().__init__(name=name, config=config)
+        self._task_queue = Queue(connection=Redis(), default_timeout=self._config.get('TEST_TIMEOUT', DEFAULT_TEST_TIMEOUT))
+
+    def run(self):
+        """
+        Run tests and report their results
+        collects tests
+        pre-process tests
+        execute setup steps
+        execute test
+        execute teardown setps
+        report tests
+        """
+        try:
+            jobs = {}
+            self._tests = collect_tests(paths=self._config.get('bp_paths', self._default_bp_paths), logger=self._logger)
+            self._pre_process_tests()
+            for test in self._tests:
+                self._logger.info('Scheduling test {}'.format(test.name))
+                jobs[test] = self._task_queue.enqueue(test.run)
+                test.starttime = time.time()
+            # block until all jobs are done
+            while True:
+                for test, job in jobs.copy().items():
+                    self._logger.debug('Checking status of test {}'.format(test.name))
+                    if job.result is None:
+                        self._logger.info('Test {} still running'.format(test.name))
+                    elif job.result == []:
+                        self._logger.info('Test {} completed successfully'.format(test.name))
+                        jobs.pop(test)
+                        test.endtime = time.time()
+                    elif job.result is not None or job.exc_info is not None:
+                        self._logger.error('Test {} failed'.format(test.name))
+                        test.errors = job.result or [job.exc_info]
+                        jobs.pop(test)
+                        self._failed_tests[test] = job
+                        test.endtime = time.time()
+                if jobs:
+                    time.sleep(10)
+                else:
+                    break
+
+            # report final results
+            self._report_results()
+        finally:
+            # clean up the BACKEND env if requested
+            if self._config.get('BACKEND_ENV_CLEANUP', False):
+                self._cleanup()
+
+
+class AYSCoreTestRunner(BaseRunner):
+    """
+    Test Runner to run ays core tets
+    """
+
+    def __init__(self, name, config=None):
+        """
+        Initialize core test runner
+        """
+        super().__init__(name=name, config=config)
+        self._default_bp_paths = AYS_CORE_BP_TESTS_PATH
+
+
+
+class AYSTestRunner(BaseRunner):
     """
     Test runner for non-core tests
     """
@@ -614,3 +697,90 @@ class AYSTestRunner(AYSCoreTestRunner):
         """
         super().__init__(name=name, config=config)
         self._default_bp_paths = AYS_NON_CORE_BP_TESTS_PATH
+
+
+
+class AYSCoreThreadedTestRunner(ThreadedTestRunner):
+    """
+    Test Runner to run ays core tets
+    """
+
+    def __init__(self, name, config=None):
+        """
+        Initialize core test runner
+        """
+        super().__init__(name=name, config=config)
+        self._default_bp_paths = AYS_CORE_BP_TESTS_PATH
+
+
+
+class AYSThreadedTestRunner(ThreadedTestRunner):
+    """
+    Test runner for non-core tests
+    """
+
+    def __init__(self, name, config=None):
+        """
+        Initialize non-core test runner
+        """
+        super().__init__(name=name, config=config)
+        self._default_bp_paths = AYS_NON_CORE_BP_TESTS_PATH
+
+
+
+class AYSCoreParallelTestRunner(ParallelTestRunner):
+    """
+    Test Runner to run ays core tets
+    """
+
+    def __init__(self, name, config=None):
+        """
+        Initialize core test runner
+        """
+        super().__init__(name=name, config=config)
+        self._default_bp_paths = AYS_CORE_BP_TESTS_PATH
+
+
+
+class AYSParallelTestRunner(ParallelTestRunner):
+    """
+    Test runner for non-core tests
+    """
+
+    def __init__(self, name, config=None):
+        """
+        Initialize non-core test runner
+        """
+        super().__init__(name=name, config=config)
+        self._default_bp_paths = AYS_NON_CORE_BP_TESTS_PATH
+
+
+
+
+class AYSTestRunnerFactory(object):
+    """
+    Factory class for creating aystestrunners
+    """
+
+    @staticmethod
+    def get(name, execution_type='seq', test_type='core', config=None):
+        if config is None:
+            config = {}
+        
+        if execution_type == 'seq':
+            if test_type == 'core':
+                return AYSCoreTestRunner(name=name, config=config)
+            else:
+                return AYSTestRunner(name=name, config=config)
+        elif execution_type == 'parallel':
+            if test_type == 'core':
+                return AYSCoreParallelTestRunner(name=name, config=config)
+            else:
+                return AYSParallelTestRunner(name=name, config=config)
+        elif execution_type == 'threaded':
+            if test_type == 'core':
+                return AYSCoreThreadedTestRunner(name=name, config=config)
+            else:
+                return AYSThreadedTestRunner(name=name, config=config)
+        else:
+            raise ValueError('Invalid value for execution_type {}, allowed values are [seq, parallel, threaded]'.format(execution_type))
