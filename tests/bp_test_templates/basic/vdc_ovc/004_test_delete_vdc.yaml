@@ -3,6 +3,8 @@ g8client__env:
 vdc__testcreatevdc:
 
 test_vdc__testdeletevdc:
+    vdc: testcreatevdc
+    g8client: env
 
 actions:
   - action: uninstall

@@ -1,0 +1,9 @@
+test_add_user_to_vm__useraccessupdate:
+   node: useraccess
+   g8client: example
+
+
+actions:
+  - action: test_user_access
+    service: useraccessupdate
+    actor: test_add_user_to_vm

@@ -1,16 +1,16 @@
 # create/specify which virtual data center to use
 g8client__env:
-    url: 'du-conv-2.demo.greenitglobe.com'
-    login: '<LOGIN>'
-    password: '<PASSWORD>'
-    account: '<ACCOUNT>'
+    url: <URL>
+    login: <LOGIN>
+    password: <PASSWORD>
+    account: <ACCOUNT>
 
 disk.ovc__testdisk:
     g8client: 'env'
     devicename: 'Test Disk'
     description: "Test Desc"
     type: "D"
-    location: "du-conv-2"
+    location: <LOCATION>
 
 actions:
 

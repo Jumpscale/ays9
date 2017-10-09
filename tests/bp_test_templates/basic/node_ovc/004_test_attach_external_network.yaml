@@ -1,6 +1,9 @@
 node.ovc__testnodeovc:
 
 test_node_ovc__test:
+    node: testnodeovc
+    g8client: env
+    vdc: testnodeovc
 
 actions:
   - action: attach_external_network
