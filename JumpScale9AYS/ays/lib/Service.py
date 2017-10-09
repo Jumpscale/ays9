@@ -329,11 +329,11 @@ class Service:
             j.sal.fs.writeFile(path4, self.model.dbobj.dataSchema)
 
     def save(self):
-        if not self._deleted:
+        if not self._deleted and self.model.key in self.aysrepo.db.services.services:
             self.model.save()
 
     def saveAll(self):
-        if not self._deleted:
+        if not self._deleted and self.model.key in self.aysrepo.db.services.services:
             self.model.save()
             self.saveToFS()
 
