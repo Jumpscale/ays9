@@ -560,7 +560,8 @@ class AYSCoreTestRunner(BaseRunner):
         RQ is trying to pickle objects behind the scene and it fails if we open files in the same process.
         """
         self._tests = collect_tests(paths=self._config.get('bp_paths', self._default_bp_paths), logger=self._logger)
-        self._pre_process_tests()
+        if self._config.get('preprocess', True):
+            self._pre_process_tests()
 
 
     def run(self):
@@ -606,6 +607,7 @@ class AYSCoreTestRunner(BaseRunner):
         finally:
             # clean up the BACKEND env if requested
             if self._config.get('BACKEND_ENV_CLEANUP', False):
+                self._logger.debug('Cleaning up backend environment')
                 self._cleanup()
 
 
@@ -618,9 +620,22 @@ class AYSCoreTestRunner(BaseRunner):
             backend_config = self._config.get('BACKEND_ENV', {})
             if backend_config:
                 ovc_cli = j.clients.openvcloud.get(url=backend_config.get('URL'), login=backend_config.get('LOGIN'), password=backend_config.get('PASSWORD'))
+                main_account = ovc_cli.account_get(name=backend_config.get('ACCOUNT'), create=False)
+                # clean up accounts
+                self._logger.debug('Cleaning up accounts')
+                for account_info in ovc_cli.api.cloudapi.accounts.list():
+                    if account_info['id'] != main_account.id:
+                        ovc_cli.api.cloudapi.accounts.delete(accountId=account_info['id'])
+                self._logger.debug('Cleaning up disks')
+                # delete disks
+                for disk_info in ovc_cli.api.cloudapi.disks.list(accountId=main_account.id):
+                    ovc_cli.api.cloudapi.disks.delete(diskId=disk_info['id'], detach=True)
+                self._logger.debug('Cleaning up cloudspaces')
                 # DELETE ALL THE CREATED CLOUDSPACES
-                for cloudspace_info in ovc_cli.api.cloudapi.cloudspaces.list():
-                    ovc_cli.api.cloudapi.cloudspaces.delete(cloudspaceId=cloudspace_info['id'])
+                for cloudspace in main_account.spaces:
+                    for machine_info in ovc_cli.api.cloudapi.machines.list(cloudspaceId=cloudspace.id):
+                        ovc_cli.api.cloudapi.machines.delete(machineId=machine_info['id'])
+                    ovc_cli.api.cloudapi.cloudspaces.delete(cloudspaceId=cloudspace.id)
         except Exception as err:
             self._logger.error('Failed to execute cleanup. Error {}'.format(err))
 
