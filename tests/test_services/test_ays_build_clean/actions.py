@@ -20,11 +20,11 @@ def install(job):
         raise j.exceptions.AYSNotFound("Can't find os service")
 
     prefab = host_os.executor.prefab
-    import ipdb;ipdb.set_trace
+
     if prefab.core.dir_exists('/mnt/building/opt')
     	prefab.core.dir_remove('/mnt/building/opt')
     dockers = ['packager', 'cockpit', 'portal', 'jumpscale', 'scality', 'geodns', 'php',
-               'fs', 'grafana', 'python', 'nodejs', 'mongodb', 'golang', 'nginx', 
+               'fs', 'grafana', 'python', 'nodejs', 'mongodb', 'golang', 'nginx',
                'shellinabox', 'caddy', 'influxdb', 'redis']
     for docker in dockers:
     	try:
@@ -32,4 +32,4 @@ def install(job):
             if check[1] == docker:
                prefab.core.execute_bash('docker rm -f %s' %docker)
         except:
-            continue 
+            continue

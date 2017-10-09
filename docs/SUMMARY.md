@@ -50,6 +50,7 @@
 * [Walkthroughs](walkthroughs/README.md):
   * [Create an Actor Template](walkthroughs/Create_actor_template.md)
   * [Deploy Zero-OS on Packet.net](walkthroughs/Deploy_Zero-OS.md)
+  * [Use the AYS client](AYS_client.md)
 * [How To](Howto/README.md)
   * AYS Basics
     * [Create a Repository](Howto/Create_repository/README.md)

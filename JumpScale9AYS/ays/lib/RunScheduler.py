@@ -119,8 +119,11 @@ class RunScheduler:
 
         except asyncio.TimeoutError:
             self.logger.warning("stop timeout reach for {}. possible run interrupted".format(self))
-
-        self._retries = []
+        except Exception as e:
+            self.logger.error("unknown exception during stopping of {}: {}".format(self, e))
+            raise
+        finally:
+            self._retries = []
 
     async def add(self, run, priority=NORMAL_RUN_PRIORITY):
         """

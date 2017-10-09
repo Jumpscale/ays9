@@ -31,7 +31,7 @@ class Service:
             return self
         except Exception as e:
             # cleanup if init fails
-            await self.delete()
+            await self.asyncDelete()
             raise e
 
     @classmethod
@@ -65,7 +65,6 @@ class Service:
         return self._path
 
     async def _initFromActor(self, actor, name, args={}, context=None):
-
         self.logger.info("init service %s from %s" % (name, actor.model.name))
         if j.data.types.string.check(actor):
             raise j.exceptions.RuntimeError("no longer supported, pass actor")
@@ -226,7 +225,7 @@ class Service:
                 if svname:
                     # foundservices = self.aysrepo.servicesFind(name=svname, actor="%s(\..*)?" % producer_model.actorRole)
                     foundservices = self.aysrepo.servicesFind(name=svname, role=producer_model.actorRole)
-                    if not foundservices: 
+                    if not foundservices:
                         raise j.exceptions.Input(message="no service with name [%s] and role [%s] found" % (svname, producer_model.actorRole),
                                                  level=1, source="", tags="", msgpub="")
                     usersetservices.extend(foundservices)
@@ -359,7 +358,7 @@ class Service:
                 constemplate = self.aysrepo.templateGet(name=consumer.model.dbobj.actorName)
                 consumptionconfig = constemplate.consumptionConfig
                 for conf in consumptionconfig:
-                    minimum = conf.get('min', 0)  >= len(consumer.producers.get(self.model.role, []))
+                    minimum = conf.get('min', 0) >= len(consumer.producers.get(self.model.role, []))
                     if minimum == 0:
                         continue
                     if conf['role'] == self.model.role and minimum <= len(consumer.producers.get(self.model.role, [])):
@@ -369,7 +368,11 @@ class Service:
 
     def delete(self):
         futur = asyncio.run_coroutine_threadsafe(self.asyncDelete(), loop=self.aysrepo._loop)
-        return futur.result()
+        try:
+            return futur.result()
+        except Exception as e:
+            self.logger.error("error during delete service: %s" % e)
+            raise
 
     async def asyncDelete(self):
         """
@@ -404,7 +407,7 @@ class Service:
                 consumer.model.reSerialize()
                 consumer.saveAll()
                 # here we trigger processChange with `links` category with args of removed producer role and name
-                consumer.processChange(actor=self.aysrepo.actorGet(consumer.model.dbobj.actorName), changeCategory="links", args={"producer_removed":producer_removed})
+                consumer.processChange(actor=self.aysrepo.actorGet(consumer.model.dbobj.actorName), changeCategory="links", args={"producer_removed": producer_removed})
 
         self.model.delete()
         j.sal.fs.removeDirTree(self.path)
@@ -726,11 +729,15 @@ class Service:
         if action[-1] == "_":
             return self._executeActionService(action)
         else:
-            futur = asyncio.run_coroutine_threadsafe(self.executeActionJob(action, args, context=context), loop=self.aysrepo._loop)
-            return futur.result()
+            futur = asyncio.run_coroutine_threadsafe(self._executeActionJob(action, args, context=context), loop=self.aysrepo._loop)
+            try:
+                return futur.result()
+            except Exception as e:
+                self.logger.error("error during execute action: %s" % e)
+                raise
 
-    def ayncExecuteAction(self, action, args={}, context=None):
-        return self.executeActionJob(action, args, context=context)
+    async def asyncExecuteAction(self, action, args={}, context=None):
+        return await self._executeActionJob(action, args, context=context)
 
     def _executeActionService(self, action, args={}):
         # execute an action in process without creating a job
@@ -787,7 +794,7 @@ class Service:
         can start
         """
         if dc is None:
-            dependency_chain = self.executeActionService('init_actions_', args={'action': action})
+            dependency_chain = self._executeActionService('init_actions_', args={'action': action})
         if action in parents:
             raise RuntimeError('cyclic dep: %s' % parents)
         if action in ds:
@@ -809,7 +816,6 @@ class Service:
                 task = LongRunningTask(service=self, action=action, loop=self._loop)
                 task.start()
                 self._longrunning_tasks[action] = task
-
 
     def _ensure_recurring(self):
         """
@@ -931,7 +937,7 @@ class Service:
         # Check if the action job is already existing at any run in the repo before
         # rescheduling it again
         existing_jobs = j.core.jobcontroller.db.jobs.find(actor=self.model.role, action=action, service=self.name,
-                                                          state="new|running|error", tags=["self_heal_internal"])
+                                                          state="(new|running|error)", tags=["self_heal_internal"])
         if not existing_jobs:
             self.scheduleAction(action, force=True)
             action_chain = []
@@ -939,4 +945,11 @@ class Service:
             action_chain.reverse()
             to_execute_actions = {self: [action_chain]}
             run = self.aysrepo.runCreate(to_execute_actions, jobs_tags=['self_heal_internal'])
-            asyncio.run_coroutine_threadsafe(self.aysrepo.run_scheduler.add(run), loop=self._loop)
+            future = asyncio.run_coroutine_threadsafe(self.aysrepo.run_scheduler.add(run), loop=self._loop)
+            def callback(future):
+                try:
+                    future.result()
+                except Exception as e:
+                    self.logger.error("error during long job: %s" % e)
+                    raise
+            future.add_done_callback(callback)

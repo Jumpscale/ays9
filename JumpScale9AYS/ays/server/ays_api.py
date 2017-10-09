@@ -754,7 +754,7 @@ async def deleteServiceByName(request, name, role, repository):
         return json({'error': 'Service role:%s name:%s not found in the repo %s' % (role, name, repository)}, 404)
 
     try:
-        await service.ayncDelete()
+        await service.asyncDelete()
     except j.exceptions.RuntimeError as e:
         error_msg = "Error during deletion of service:\n %s" % str(e)
         j.atyourservice.server.logger.exception(error_msg)
@@ -810,9 +810,15 @@ async def updateActor(request, name, repository):
         actor = repo.actorGet(name=name)
     except j.exceptions.NotFound:
         return json({'error': 'actor {} not found'.format(name)}, 404)
+    except Exception as err:
+        return json({'error': 'unexpected error: {}'.format(err)}, 500)
 
     reschedule = j.data.types.bool.fromString(request.args.get('reschedule', False))
-    actor.update(reschedule=reschedule, context={'token': extract_token(request)})
+    try:
+        actor.update(reschedule=reschedule, context={'token': extract_token(request)})
+    except Exception as err:
+        logger.error("error during actor update of {}: {}".format(name, err))
+        return json({'error': 'unexpected error: {}'.format(err)}, 500)
 
     return json(actor_view(actor), 200)
 
