@@ -28,10 +28,13 @@ js9 "for index in range(10): j.tools.prefab.local.tmux.executeInScreen('main', '
 
 
 # running testsuite
-echo "Running ays core tests"
-js9 "from ays_testrunner.testrunner import AYSCoreTestRunner;AYSCoreTestRunner(name='core', config='/hostcfg/ays_testrunner.json').run()"
 
 if [ -n $RUNTYPE ] && [ $RUNTYPE == "cron" ]; then
   echo "Running ays non-core tests"
-  js9 "from ays_testrunner.testrunner import AYSTestRunner;AYSTestRunner(name='non_core', config='/hostcfg/ays_testrunner.json').run()"
+  js9 "from ays_testrunner.testrunner import AYSTestRunner;import json;AYSTestRunner(name='non_core', config={'BACKEND_ENV': dict([(key.replace('BACKEND_', ''), value) for key, value in json.load(open('/hostcfg/ays_testrunner.json'))['BACKEND_ENV'].items()])})._collect_and_preprocess()"
+  js9 "from ays_testrunner.testrunner import AYSTestRunner;import json;AYSTestRunner(name='non_core').run()"
 fi
+
+echo "Running ays core tests"
+js9 "from ays_testrunner.testrunner import AYSCoreTestRunner;AYSCoreTestRunner(name='core').run()"
+

@@ -1,4 +1,0 @@
-test_disk_ovc__disk:
-
-actions:
-  - action: test_create

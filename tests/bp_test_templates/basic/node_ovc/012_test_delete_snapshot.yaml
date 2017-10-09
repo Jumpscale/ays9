@@ -2,6 +2,9 @@ node.ovc__testnodeovc:
   # snapshotEpoch is set by list_snapshots test
 
 test_node_ovc__test:
+    node: testnodeovc
+    g8client: env
+    vdc: testnodeovc
 
 actions:
   - action: delete_snapshot

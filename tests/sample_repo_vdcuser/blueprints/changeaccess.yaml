@@ -1,4 +1,0 @@
-vdc__testvdc:
-   uservdc:
-      - name: 'usertest'
-        accesstype: 'ACDRUX'

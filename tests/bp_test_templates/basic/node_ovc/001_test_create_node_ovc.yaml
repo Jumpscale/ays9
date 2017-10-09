@@ -19,6 +19,9 @@ node.ovc__testnodeovc:
     clone.name: 'testnode_clone'
 
 test_node_ovc__testnodeovc:
+    node: testnodeovc
+    g8client: env
+    vdc: testnodeovc
 
 actions:
   - action: install
