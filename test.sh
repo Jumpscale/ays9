@@ -22,16 +22,11 @@ for schema in $(find -name schema.capnp); do
   capnp compile -oc++ $schema
 done
 
-# run rq workers
-echo "Starting RQ workers"
-js9 "for index in range(10): j.tools.prefab.local.tmux.executeInScreen('main', 'rqworker{}'.format(index), cmd='rq worker', wait=0)"
-
-
 # running testsuite
 echo "Running ays core tests"
-js9 "from ays_testrunner.testrunner import AYSCoreTestRunner;AYSCoreTestRunner(name='core', config='/hostcfg/ays_testrunner.json').run()"
+js9 "from ays_testrunner.testrunner import AYSTestRunnerFactory;runner = AYSTestRunnerFactory.get(name='core', execution_type='threaded', config='/hostcfg/ays_testrunner.json').run()
 
 if [ -n $RUNTYPE ] && [ $RUNTYPE == "cron" ]; then
   echo "Running ays non-core tests"
-  js9 "from ays_testrunner.testrunner import AYSTestRunner;AYSTestRunner(name='non_core', config='/hostcfg/ays_testrunner.json').run()"
+  js9 "from ays_testrunner.testrunner import AYSTestRunnerFactory;runner = AYSTestRunnerFactory.get(name='none-core', execution_type='threaded', test_type='non-core', config='/hostcfg/ays_testrunner.json').run()"
 fi
