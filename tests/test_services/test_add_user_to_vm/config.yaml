@@ -3,11 +3,11 @@ doc:
   - result: ''
 links:
   consume:
-    - argname: vdc
+    - argname: node
       auto: true
       max: 100
       min: '1'
-      role: vdc
+      role: node.ovc
     - argname: g8client
       auto: true
       max: 100

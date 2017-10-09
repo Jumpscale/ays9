@@ -48,11 +48,11 @@ def test(job):
 
         response = session.get(url=API_URL)
         if account.model.data.consumptionData == response.content:
-            service.model.data.result = 'RESULT_OK : test_create_accounts_with_specs'
+            service.model.data.result = 'OK : test_create_accounts_with_specs'
         else:
-            service.model.data.result = 'RESULT_FAILED : test_create_accounts_with_specs'
+            service.model.data.result = 'FAILED : test_create_accounts_with_specs'
     except:
-        service.model.data.result = 'RESULT_ERROR :  %s %s' % ('test_create_accounts_with_specs', str(sys.exc_info()[:2]))
+        service.model.data.result = 'ERROR :  %s %s' % ('test_create_accounts_with_specs', str(sys.exc_info()[:2]))
     finally:
         if 'g8client' in service.producers and 'account' in service.producers:
             session = authenticate(service.producers['g8client'][0])

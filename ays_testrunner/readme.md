@@ -33,12 +33,13 @@ Test runner's main purpose is to be able to run tests and report their result, i
 
 ## Configurations
 When creating an instance of a test runner you can pass a configuration dictionary, the runner will support the following keys in the configuration dictionary
-- bp_paths: this will allow you to specifiy a specific list of paths for tests to be collected from, each element of the list can be 
+- bp_paths: [default: depends on the type of the runner] this will allow you to specifiy a specific list of paths for tests to be collected from, each element of the list can be 
 a path to a blueprint file or a path to a directory that contian blueprints.
 - BACKEND_ENV: this show contian all the key the that you want to be replaced in the blueprints before running them. Each key in this
 dictionary will be searched for in the test blueprints as <KEY> and if found then it will be replaced with the value provided.
 - TEST_TIMEOUT: this sets the timeout value per test in seconds (default to 600)
-- BACKEND_ENV_CLEANUP: this will clean up the backend env if set to True
+- BACKEND_ENV_CLEANUP: [default: False] this will clean up the backend env if set to True
+- preprocess: [default: True] if set to False, then the preprocess step of the test bp e.g replacing placeholders will be skipped. (only relevant for running the tests in parallel using different processes)
 
 If you create the a core test runner then the bp_paths will default to the core tests path and if you create a non-core test runner 
 then the bp_paths will default to the non-core test paths.
