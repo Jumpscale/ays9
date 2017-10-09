@@ -36,7 +36,6 @@ def test(job):
         credential = {'name': username, 'secret': password}
         session = requests.Session()
         session.post(url=login_url, data=credential)
-        import ipdb; ipdb.set_trace()
 
         log.info('triggering jumscript on the controller to collect account\'s information')
         js_url = url + '/restmachine/system/agentcontroller/executeJumpscript'

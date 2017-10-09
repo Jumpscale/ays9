@@ -515,7 +515,7 @@ class BaseRunner:
         self._task_queue = Queue(connection=Redis(), default_timeout=self._config.get('TEST_TIMEOUT', DEFAULT_TEST_TIMEOUT))
         self._failed_tests = {}
         self._tests = []
-        
+
         self._default_bp_paths = []
 
 

@@ -3,10 +3,11 @@ from js9 import j
 
 
 class RunStep:
-
+    """
+    A run step is a portion of a run
+    It consist of multiple jobs that can be execute concurently
+    """
     def __init__(self, run, nr, dbobj):
-        """
-        """
         self.run = run
         self.dbobj = dbobj
         self.dbobj.number = nr
@@ -77,8 +78,10 @@ class RunStep:
 
         results = await asyncio.gather(*coros, return_exceptions=True)
         self.state = 'ok'
-        for result in results:
+        for i, result in enumerate(results):
+            job = jobs[i]
             if isinstance(result, Exception):
+                self.logger.error("{} failed:\n{}".format(job, result))
                 self.state = 'error'
 
         self.logger.info("runstep {}: {}".format(self.dbobj.number, self.state))

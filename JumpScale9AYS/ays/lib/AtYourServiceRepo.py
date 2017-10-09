@@ -137,7 +137,7 @@ class AtYourServiceRepo():
         self._loop = loop or asyncio.get_event_loop()
 
         self.run_scheduler = RunScheduler(self)
-        self._run_scheduler_task = self._loop.create_task(self.run_scheduler.start())
+        self._run_scheduler_task = asyncio.ensure_future(self.run_scheduler.start(), loop=self._loop)
 
         j.atyourservice.server._loadActionBase()
 
