@@ -24,7 +24,7 @@ prefab.apps.atyourservice.install(install_portal=True)
 
 This will start the AYS Portal in a new TMUX window.
 
-The AYS Portal is configured in `/optvar/cfg/portals/main/config.yaml`, which is the configuration that common to all portal apps using the JumpScale portal framework in your JumpScale environment.
+The AYS Portal is configured in `/opt/cfg/portals/main/config.yaml`, which is the configuration that common to all portal apps using the JumpScale portal framework in your JumpScale environment.
 
 Here's the default configuration:
 ```yaml
@@ -88,4 +88,6 @@ While you can specify the same organization for both `oauth.organization` and `o
 
 ![](images/iyo-organizations.png)
 
+If you need to link the portal with a remote AYS server, you need to add `ays_uri` parameter in portal config file `/opt/cfg/portals/main/config.yaml`
+`ays_uri: http://REMOTE_URL:REMOTE_AYS_PORT`
 After having updated the configuration, you'll need to restart the portal. This is typically achieved by using CTRL+C in the TMUX window where the portal is running, and re-executing the last command.
