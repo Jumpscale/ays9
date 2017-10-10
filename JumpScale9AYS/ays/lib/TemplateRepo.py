@@ -28,8 +28,8 @@ def searchActorTemplates(path, is_global=False):
     res = set()
     actortemplatessearch = ""
     if not is_global:
-        actortemplatessearch = " -or -wholename '*actorTemplates/*actions.py' -or -wholename '*actorTemplates/*schema.capnp' -or -wholename '*actorTemplates/*config.yaml'"
-    cmd = """find %s \( -wholename '*templates/*actions.py' -or -wholename '*templates/*schema.capnp' -or -wholename '*templates/*config.yaml' -or -wholename '*tests/*actions.py' -or -wholename '*tests/*schema.capnp' -or -wholename '*tests/*config.yaml' %s \) -exec readlink -f {} \;""" % (path, actortemplatessearch)
+        actortemplatessearch = " -or -wholename '*/actorTemplates/*actions.py' -or -wholename '*/actorTemplates/*schema.capnp' -or -wholename '*/actorTemplates/*config.yaml'"
+    cmd = """find %s \( -wholename '*/templates/*actions.py' -or -wholename '*/templates/*schema.capnp' -or -wholename '*/templates/*config.yaml' -or -wholename '*/tests/*actions.py' -or -wholename '*/tests/*schema.capnp' -or -wholename '*/tests/*config.yaml' %s \) -exec readlink -f {} \;""" % (path, actortemplatessearch)
     rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
     if rc == 0:
         return out.splitlines()
