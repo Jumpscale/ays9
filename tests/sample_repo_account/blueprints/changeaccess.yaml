@@ -1,6 +1,0 @@
-account__acc:
-  accountusers:
-      - name: '<login>'
-        accesstype: 'CXDRAU'
-      - name: 'usertest'
-        accesstype: 'ACDRUX'
