@@ -648,14 +648,17 @@ async def listServices(request, repository):
     List all services in the repository
     It is handler for GET /ays/repository/<repository>/service
     '''
+    actor = request.args.get('actor', '')
+    role = request.args.get('role', '')
+    service = request.args.get('service', '')
     try:
         repo = get_repo(repository)
     except j.exceptions.NotFound as e:
         return json({'error': e.message}, 404)
 
     services = list()
-    for s in repo.services:
-        services.append({'role': s.model.role, 'name': s.name})
+    for s in repo.servicesFind(actor=actor, role=role, name=service):
+        services.append({'actor': s.model.dbobj.actorName, 'name': s.name, 'role': s.model.role})
     services = sorted(services, key=lambda service: service['role'])
 
     return json(services, 200)
