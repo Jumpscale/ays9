@@ -53,7 +53,9 @@ def _execute_cb(job, future):
         job.model.dbobj.state = 'error'
         if service_action_obj:
             service_action_obj.state = 'error'
-            service_action_obj.errorNr += 1
+            # make sure we don't keep increasing this number forever, it could overflow.
+            if service_action_obj.errorNr < 5:
+                service_action_obj.errorNr += 1
             job.service.model.dbobj.state = 'error'
 
         ex = exception if exception is not None else TimeoutError()
