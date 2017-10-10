@@ -25,7 +25,6 @@ class Service:
         self = cls(aysrepo)
         try:
             await self._initFromActor(actor=actor, args=args, name=name, context=context)
-            self.aysrepo.db.services.services[self.model.key] = self
             self._ensure_recurring()
             self._ensure_longjobs()
             return self
@@ -47,7 +46,6 @@ class Service:
     def init_from_fs(cls, aysrepo, path, context=None):
         self = cls(aysrepo=aysrepo)
         self._loadFromFS(path)
-        self.aysrepo.db.services.services[self.model.key] = self
         self._ensure_recurring()
         self._ensure_longjobs()
         return self
@@ -137,8 +135,8 @@ class Service:
 
         await self._initProducers(actor, args)
 
-        self.save()
         self.aysrepo.db.services.services[self.model.key] = self
+        self.save()
 
         await self.init(context=context)
 
@@ -313,6 +311,7 @@ class Service:
             if actor_action.name in self.model.actions:
                 self.model.actions[actor_action.name].actionKey = actor_action.actionKey
 
+        self.aysrepo.db.services.services[self.model.key] = self
         self.save()
 
     def saveToFS(self):
