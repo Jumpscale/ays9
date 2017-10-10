@@ -55,13 +55,12 @@ class TemplateRepoCollection:
     def __load(self, path):
         for path in searchActorTemplates(path, is_global=True):
             template_repo = None
-            if 'templates' in path:
-                template_repo = path.split("templates")[0]
-            elif 'tests' in path:
-                template_repo = path.split("tests")[0]
-            elif 'actorTemplates' in path:
-                template_repo = path.split("actorTemplates")[0]
-
+            if '/templates' in path:
+                template_repo = path.split("/templates")[0]
+            elif '/tests' in path:
+                template_repo = path.split("/tests")[0]
+            elif '/actorTemplates' in path:
+                template_repo = path.split("/actorTemplates")[0]
             template_repo_name = j.sal.fs.getBaseName(template_repo)
             if template_repo_name.startswith("_") or template_repo_name.startswith("."):
                 continue
