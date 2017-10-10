@@ -529,6 +529,16 @@ types:
         get:
           displayName: listServices
           description: List all services in the repository
+          queryParameters:
+            actor:
+              description: Name of the actor to filter services by.
+              type: string
+            role:
+              description: Specifies role to filter the services list with.
+              type: string
+            service:
+              description: Name of service to filter the services list with.
+              type: string
           responses:
             200:
               body:
@@ -536,8 +546,10 @@ types:
                   type: ServicePointer[]
                   example:
                     - role: node
+                      actor: node.ovc
                       name: storage1
                     - role: node
+                      actor: node.ovc
                       name: storage2
         /{role}:
           uriParameters:
