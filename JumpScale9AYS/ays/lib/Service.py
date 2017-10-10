@@ -30,7 +30,7 @@ class Service:
             return self
         except Exception as e:
             # cleanup if init fails
-            await self.asyncDelete()
+            self.delete()
             raise e
 
     @classmethod
@@ -340,7 +340,7 @@ class Service:
         # service are kept in memory so we never need to relad anyomre
         pass
 
-    async def checkDelete(self):
+    def checkDelete(self):
         """
         Executes a dryrun to check if deleting service is OK.
         To ensure that removal won't break minimum consumption required by a consumer for the service or any of its children.
@@ -348,7 +348,7 @@ class Service:
         """
         if self.children:
             for child in self.children:
-                oktodelete, msg = await child.checkDelete()
+                oktodelete, msg = child.checkDelete()
                 if not oktodelete:
                     return False, msg
 
@@ -366,14 +366,6 @@ class Service:
         return True, "OK"
 
     def delete(self):
-        futur = asyncio.run_coroutine_threadsafe(self.asyncDelete(), loop=self.aysrepo._loop)
-        try:
-            return futur.result()
-        except Exception as e:
-            self.logger.error("error during delete service: %s" % e)
-            raise
-
-    async def asyncDelete(self):
         """
         Deletes service and its children from database and filesystem if safe.
 
@@ -381,14 +373,14 @@ class Service:
         """
         producer_removed = "{}!{}".format(self.model.role, self.name)
 
-        oktodelete, msg = await self.checkDelete()
+        oktodelete, msg = self.checkDelete()
         if not oktodelete:
             raise j.exceptions.RuntimeError(msg)
 
         self._deleted = True
         if self.children:
             for service in self.children:
-                await service.asyncDelete()
+                service.delete()
 
         # cancel all recurring tasks
         self.stop()
