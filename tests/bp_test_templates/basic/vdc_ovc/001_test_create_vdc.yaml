@@ -10,6 +10,8 @@ vdc__testcreatevdc:
     location: <LOCATION>
 
 test_vdc__testcreatevdc:
+    vdc: testcreatevdc
+    g8client: env
 
 actions:
   - action: install

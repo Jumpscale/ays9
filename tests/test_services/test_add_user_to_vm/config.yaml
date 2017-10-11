@@ -1,0 +1,17 @@
+doc:
+  property:
+  - result: ''
+links:
+  consume:
+    - argname: node
+      auto: true
+      max: 100
+      min: '1'
+      role: node.ovc
+    - argname: g8client
+      auto: true
+      max: 100
+      min: 1
+      role: g8client
+
+recurring: []

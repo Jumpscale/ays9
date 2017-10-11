@@ -648,14 +648,17 @@ async def listServices(request, repository):
     List all services in the repository
     It is handler for GET /ays/repository/<repository>/service
     '''
+    actor = request.args.get('actor', '')
+    role = request.args.get('role', '')
+    service = request.args.get('service', '')
     try:
         repo = get_repo(repository)
     except j.exceptions.NotFound as e:
         return json({'error': e.message}, 404)
 
     services = list()
-    for s in repo.services:
-        services.append({'role': s.model.role, 'name': s.name})
+    for s in repo.servicesFind(actor=actor, role=role, name=service):
+        services.append({'actor': s.model.dbobj.actorName, 'name': s.name, 'role': s.model.role})
     services = sorted(services, key=lambda service: service['role'])
 
     return json(services, 200)
@@ -754,7 +757,7 @@ async def deleteServiceByName(request, name, role, repository):
         return json({'error': 'Service role:%s name:%s not found in the repo %s' % (role, name, repository)}, 404)
 
     try:
-        await service.delete()
+        service.delete()
     except j.exceptions.RuntimeError as e:
         error_msg = "Error during deletion of service:\n %s" % str(e)
         j.atyourservice.server.logger.exception(error_msg)
@@ -810,9 +813,15 @@ async def updateActor(request, name, repository):
         actor = repo.actorGet(name=name)
     except j.exceptions.NotFound:
         return json({'error': 'actor {} not found'.format(name)}, 404)
+    except Exception as err:
+        return json({'error': 'unexpected error: {}'.format(err)}, 500)
 
     reschedule = j.data.types.bool.fromString(request.args.get('reschedule', False))
-    actor.update(reschedule=reschedule, context={'token': extract_token(request)})
+    try:
+        actor.update(reschedule=reschedule, context={'token': extract_token(request)})
+    except Exception as err:
+        logger.error("error during actor update of {}: {}".format(name, err))
+        return json({'error': 'unexpected error: {}'.format(err)}, 500)
 
     return json(actor_view(actor), 200)
 

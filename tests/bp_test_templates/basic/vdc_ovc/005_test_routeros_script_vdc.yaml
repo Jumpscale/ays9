@@ -9,6 +9,8 @@ vdc__conflictvdc:
     script: '/ip service set www address=0.0.0.0/0'
 
 test_vdc__testrouteros:
+    vdc: testcreatevdc
+    g8client: env
 
 actions:
   - action: execute_routeros_script

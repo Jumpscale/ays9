@@ -9,18 +9,22 @@ core = AYSCoreTestRunner('core', config={'bp_paths': ['/root/gig/code/github/jum
 core.run()
 """
 from js9 import j
+
 import os
 import random
 from redis import Redis
 from rq import Queue
-import logging
 import time
+import logging
 
-AYS_CORE_BP_TESTS_PATH = [j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'core')]
 
-AYS_NON_CORE_BP_TESTS_PATH = [j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'basic'),
-                              j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'advanced'),
-                              j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'extend')]
+
+AYS_CORE_BP_TESTS_PATH = [os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'core')]
+
+AYS_NON_CORE_BP_TESTS_PATH = [os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'basic'),
+                            #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'advanced'),
+                            #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'extend')
+                            ]
                               
 # AYS_DEFAULT_PLACEHOLDERS = ['URL', 'LOGIN', 'ACCOUNT', 'PASSWORD', 'LOCATION']
 AYS_TESTRUNNER_REPO_NAME = 'ays_testrunner'
@@ -45,6 +49,7 @@ def ensure_test_repo(cli, repo_name, logger=None):
     """
     Ensure a new repo for running tests is created with unique name
     """
+
     if logger is None:
         logger = j.logger.logging
 
@@ -78,6 +83,7 @@ def execute_blueprint(cli, blueprint, repo_info, logger=None):
     """
     Execute a blueprint
     """
+
     if logger is None:
         logger = j.logger.logging
 
@@ -99,6 +105,7 @@ def create_run(cli, repo_info, logger=None):
     """
     Create a run and execute it
     """
+
     if logger is None:
         logger = j.logger.logging
 
@@ -120,6 +127,7 @@ def report_run(cli, repo_info, logger=None):
     check run status and report errors and logs if status is not ok
     if run status is ok then check the services result attribute and report errors if found
     """
+
     if logger is None:
         logger = j.logger.logging
 
@@ -139,9 +147,9 @@ def report_run(cli, repo_info, logger=None):
                     for step in run_details['steps']:
                         if step['state'] == 'error':
                             for job in step['jobs']:
-                                msg = 'Actor: {} Action: {}'.format(job['actor_name'], job['action_name'])
-                                errors.append('\n%s' % msg)
-                                errors.append('%s\n' % ('-' * len(msg)))
+                                msg = 'Actor: [{}] Action: [{}]'.format(job['actor_name'], job['action_name'])
+                                errors.append(msg)
+                                errors.append('-' * len(msg))
                                 for log in job['logs']:
                                     if log['log']:
                                         errors.append(log['log'])
@@ -158,9 +166,9 @@ def report_run(cli, repo_info, logger=None):
                 if ok:
                     service_details = res.json()
                     if service_details['data'].get('result') and not service_details['data']['result'].startswith('OK'):
-                        msg = 'Service role: {} Service instance: {}'.format(service_info['role'], service_info['name'])
-                        errors.append('\n%s' % msg)
-                        errors.append('%s\n' % ('-' * len(msg)))
+                        msg = 'Service role: [{}] Service instance: [{}]'.format(service_info['role'], service_info['name'])
+                        errors.append(msg)
+                        errors.append('-' * len(msg))
                         errors.append(service_details['data']['result'])
                 else:
                     errors.append('Failed to get service [{}!{}]'.format(service_info['role'], service_info['name']))
@@ -171,13 +179,14 @@ def report_run(cli, repo_info, logger=None):
 
     return errors
 
-def collect_tests(paths, logger=None, setup=None, teardown=None):
+def collect_tests(paths, logger=None, setup=None, teardown=None, repo_info=None):
     """
     Collects all test bp from the given paths
     This will only scan only one level of the paths and collect all the files that that ends with .yaml and .bp files
     If path in the list is a file then it will be considered a test file
     For all the directories on the same level, a group test will be created for each directory
     """
+
     if logger is None:
         logger = j.logger.logging
 
@@ -189,7 +198,7 @@ def collect_tests(paths, logger=None, setup=None, teardown=None):
             continue
         if j.sal.fs.isFile(path):
             name = j.sal.fs.getBaseName(path)
-            result.append(AYSTest(name=name, path=path))
+            result.append(AYSTest(name=name, path=path, setup=setup, teardown=teardown, repo_info=repo_info))
             continue
         for dir_ in j.sal.fs.listDirsInDir(path):
             logger.debug('Creating group test for path {}'.format(dir_))
@@ -198,7 +207,7 @@ def collect_tests(paths, logger=None, setup=None, teardown=None):
                                                                                   (file__.endswith('{}yaml'.format(os.path.extsep)) or
                                                                                   file__.endswith('{}bp'.format(os.path.extsep)))]):
             logger.debug('Creating test for path {}'.format(file_))
-            result.append(AYSTest(name=j.sal.fs.getBaseName(file_), path=file_, setup=setup, teardown=teardown))
+            result.append(AYSTest(name=j.sal.fs.getBaseName(file_), path=file_, setup=setup, teardown=teardown, repo_info=repo_info))
     return result
 
 
@@ -215,6 +224,8 @@ class AYSGroupTest:
         @param path: Path to the hosting folder of the test bps
         @param logger: Logger object to use for logging
         """
+    
+        
         self._name = name
         self._path = path
         self._errors = []
@@ -224,7 +235,15 @@ class AYSGroupTest:
             self._logger = logging.getLogger()
         else:
             self._logger = logger
-        self._tests = collect_tests(paths=[path], logger=self._logger, setup=self.setup, teardown=self.teardown)
+        # create a repo per group test
+        try:
+            self._cli = j.clients.atyourservice.get().api.ays
+            self._repo_info = ensure_test_repo(self._cli, AYS_TESTRUNNER_REPO_NAME, logger=self._logger)
+        except Exception as ex:
+            self._repo_info = None
+            self._errors.append('Failed to create new ays repository for test {}'.format(self._name))
+            
+        self._tests = collect_tests(paths=[path], logger=self._logger, setup=self.setup, teardown=self.singletest_teardwon, repo_info=self._repo_info)
 
 
     @property
@@ -252,13 +271,33 @@ class AYSGroupTest:
         pass
 
 
+    def singletest_teardwon(self):
+        """
+        Override single test member teardown
+        """
+        pass
+
+
     def teardown(self):
         """
         Teardown steps
         """
+        repo_exist = False
         try:
             for test in self._tests:
                 test.teardown()
+            res, ok = check_status_code(self._cli.listRepositories())
+            if ok:
+                for repo_info in res.json():
+                    if repo_info['name'] == self._repo_info.get('name', None):
+                        repo_exist = True
+                        break
+
+            if repo_exist:
+                # destroy repo
+                self._cli.destroyRepository(data={}, repository=self._repo_info['name'])
+                # delete repo
+                self._cli.deleteRepository(repository=self._repo_info['name'])
         except Exception as err:
             self._errors.append('Errors while executing teardown for group test {}. Errors: {}'.format(self._name, err))
 
@@ -284,7 +323,10 @@ class AYSGroupTest:
                 self._errors = test.errors
                 break
 
-        self.teardown()
+        # only teardown if there is no errors, otherwise leave repo test for inspection 
+        if not self._errors:
+            self.teardown()
+            
         return self._errors
 
 
@@ -293,7 +335,7 @@ class AYSTest:
     """
     Represents an AYS test bp
     """
-    def __init__(self, name, path, logger=None, setup=None, teardown=None):
+    def __init__(self, name, path, logger=None, setup=None, teardown=None, repo_info=None):
         """
         Initialize the test
 
@@ -303,6 +345,8 @@ class AYSTest:
         @param setup: Setup function to be called before the test
         @param teardown: Teardown function to be called after the test
         """
+    
+        
         self._path = path
         self._name = name
         self._prefab = j.tools.prefab.local
@@ -311,10 +355,10 @@ class AYSTest:
         self._cli  = None
         self._starttime = None
         self._endtime = None
-        if setup is None:
-            self._setup = self.setup
-        if teardown is None:
-            self._teardown = self.teardown
+        if setup is not None:
+            self.setup = setup
+        if teardown is not None:
+            self.teardown = teardown
 
         if logger is None:
             # FIXME: problem with using the js logger when pickling the object
@@ -326,7 +370,10 @@ class AYSTest:
         # create a repo per test
         try:
             self._cli = j.clients.atyourservice.get().api.ays
-            self._repo_info = ensure_test_repo(self._cli, AYS_TESTRUNNER_REPO_NAME, logger=self._logger)
+            if repo_info is None:
+                self._repo_info = ensure_test_repo(self._cli, AYS_TESTRUNNER_REPO_NAME, logger=self._logger)
+            else:
+                self._repo_info = repo_info
         except Exception as ex:
             self._errors.append('Failed to create new ays repository for test {}'.format(self._name))
 
@@ -364,7 +411,10 @@ class AYSTest:
         self._logger.info('Replacing placeholders for test blueprint {}'.format(self._path))
         for item, value in config.items():
             cmd = sed_base_command.format(key=item, value=value, path=self._path)
-            self._prefab.core.run(cmd)
+            try:
+                self._prefab.core.run(cmd)
+            except:
+                self._logger.warning('Failed to replace placeholder {}'.format(item))
 
 
     def setup(self):
@@ -391,7 +441,7 @@ class AYSTest:
                 # destroy repo
                 self._cli.destroyRepository(data={}, repository=self._repo_info['name'])
                 # delete repo
-                # self._cli.deleteRepository(repository=self._repo_info['name'])
+                self._cli.deleteRepository(repository=self._repo_info['name'])
         except Exception as err:
             self._errors.append('Failed to destroy/delete repository {}. Error: {}'.format(self._repo_info['name'], err))
 
@@ -406,13 +456,14 @@ class AYSTest:
         - Collect run results
         - Destroy repo
         """
+    
         self.setup()
 
         try:
             if self._repo_info is None:
                 self._errors.append('Failed to create new ays repository for test {}'.format(self._name))
             else:
-                j.sal.fs.copyFile(self._path, j.sal.fs.joinPaths(self._repo_info['path'], 'blueprints', self._name))
+                j.sal.fs.copyFile(self._path, os.path.join(self._repo_info['path'], 'blueprints', self._name))
                 # execute bp
                 self._errors.extend(execute_blueprint(self._cli, self._name, self._repo_info, logger=self._logger))
                 if not self._errors:
@@ -423,7 +474,9 @@ class AYSTest:
         except Exception as err:
             self._errors.append('Test {} failed withe error: {}'.format(self._name, err))
 
-        self.teardown()
+        # only teardown if there is no errors, otherwise leave repo test for inspection 
+        if not self._errors:
+            self.teardown()
 
         return self._errors
 
@@ -453,15 +506,16 @@ class BaseRunner:
         """
         Intialize test runner
         """
-        
+    
+        if config is None:
+            config = {}
+        self._config = config
         self._logger = j.logger.get('aystestrunner.{}'.format(name))
-        # check if config is a file, then load cofnig from the file
-        self._config = self._check_config(config)
         self._name = name
         self._task_queue = Queue(connection=Redis(), default_timeout=self._config.get('TEST_TIMEOUT', DEFAULT_TEST_TIMEOUT))
         self._failed_tests = {}
         self._tests = []
-        
+
         self._default_bp_paths = []
 
 
@@ -476,23 +530,7 @@ class BaseRunner:
         report tests
         """
         raise NotImplementedError("Not Implemented")
-
-    
-    def _check_config(self, config):
-        """
-        Check if config is file the it will try to read it as a json file
-        """
-        config = {}
-        try:
-            if type(self._config) is str:
-                if j.sal.fs.exists(config):
-                    config = json.load(open(config))
-                else:
-                    self._logger.warning('Config file {} does not exist. Default values will be used'.format(self._config))
-        finally:
-            return config
-                
-
+            
 
 
 
@@ -515,6 +553,15 @@ class AYSCoreTestRunner(BaseRunner):
         """
         for test in self._tests:
             test.replace_placehlders(self._config.get('BACKEND_ENV', {}))
+    
+    def _collect_and_preprocess(self):
+        """
+        This is a workaround method that will be called from the run test scripts to avoid opening of the files during replacing the placeholders
+        RQ is trying to pickle objects behind the scene and it fails if we open files in the same process.
+        """
+        self._tests = collect_tests(paths=self._config.get('bp_paths', self._default_bp_paths), logger=self._logger)
+        if self._config.get('preprocess', True):
+            self._pre_process_tests()
 
 
     def run(self):
@@ -529,8 +576,7 @@ class AYSCoreTestRunner(BaseRunner):
         """
         try:
             jobs = {}
-            self._tests = collect_tests(paths=self._config.get('bp_paths', self._default_bp_paths), logger=self._logger)
-            self._pre_process_tests()
+            self._collect_and_preprocess()
             for test in self._tests:
                 self._logger.info('Scheduling test {}'.format(test.name))
                 jobs[test] = self._task_queue.enqueue(test.run)
@@ -561,6 +607,7 @@ class AYSCoreTestRunner(BaseRunner):
         finally:
             # clean up the BACKEND env if requested
             if self._config.get('BACKEND_ENV_CLEANUP', False):
+                self._logger.debug('Cleaning up backend environment')
                 self._cleanup()
 
 
@@ -573,9 +620,22 @@ class AYSCoreTestRunner(BaseRunner):
             backend_config = self._config.get('BACKEND_ENV', {})
             if backend_config:
                 ovc_cli = j.clients.openvcloud.get(url=backend_config.get('URL'), login=backend_config.get('LOGIN'), password=backend_config.get('PASSWORD'))
+                main_account = ovc_cli.account_get(name=backend_config.get('ACCOUNT'), create=False)
+                # clean up accounts
+                self._logger.debug('Cleaning up accounts')
+                for account_info in ovc_cli.api.cloudapi.accounts.list():
+                    if account_info['id'] != main_account.id:
+                        ovc_cli.api.cloudapi.accounts.delete(accountId=account_info['id'])
+                self._logger.debug('Cleaning up disks')
+                # delete disks
+                for disk_info in ovc_cli.api.cloudapi.disks.list(accountId=main_account.id):
+                    ovc_cli.api.cloudapi.disks.delete(diskId=disk_info['id'], detach=True)
+                self._logger.debug('Cleaning up cloudspaces')
                 # DELETE ALL THE CREATED CLOUDSPACES
-                for cloudspace_info in ovc_cli.api.cloudapi.cloudspaces.list():
-                    ovc_cli.api.cloudapi.cloudspaces.delete(cloudspaceId=cloudspace_info['id'])
+                for cloudspace in main_account.spaces:
+                    for machine_info in ovc_cli.api.cloudapi.machines.list(cloudspaceId=cloudspace.id):
+                        ovc_cli.api.cloudapi.machines.delete(machineId=machine_info['id'])
+                    ovc_cli.api.cloudapi.cloudspaces.delete(cloudspaceId=cloudspace.id)
         except Exception as err:
             self._logger.error('Failed to execute cleanup. Error {}'.format(err))
 
@@ -602,6 +662,7 @@ class AYSCoreTestRunner(BaseRunner):
                     print('\n'.join(failed_test.result))
                 if failed_test.exc_info:
                     print(failed_test.exc_info)
+                print('\n')
             raise RuntimeError('Failures while running ays tests')
 
 

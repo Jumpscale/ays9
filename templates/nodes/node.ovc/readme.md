@@ -8,6 +8,10 @@ This actor template is responsible for creating a virtual machine on any openVCl
 - description: arbitrary description of the vm. **optional**
 - bootdisk.size: boot disk size in GB default:10.
 - memory: memory available for the vm in GB. default:1.
+
+> Make sure to pass a value for `memory` that matches a VM size that supports the specified `bootdisksize`.
+> Check the POST /cloudapi/sizes/list Cloud API for all available VM sizes for a given cloud space (values are in MB, so multiply `memory` with 1024).
+
 - sizeID: will override memory parameter. Denotes type of VM, this size impact the number of CPU and memory available for the vm.
 - os.image: OS image to use for the VM. default:'Ubuntu 15.10'.
 - ports: List of port forwards to create. Format is `Public_port:VM_port` or `VM_port`.

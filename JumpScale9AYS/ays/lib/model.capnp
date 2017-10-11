@@ -166,7 +166,7 @@ struct Service {
 
   }
 
-  #list of filter statements, when match call service.executeActionService("processEvent",event)
+  #list of filter statements, when match call service._executeActionService("processEvent",event)
   eventFilters @6 :List(EventFilter);
   struct EventFilter {
       # channel e.g. telegram, leave empty if all

@@ -25,13 +25,12 @@ class Service:
         self = cls(aysrepo)
         try:
             await self._initFromActor(actor=actor, args=args, name=name, context=context)
-            self.aysrepo.db.services.services[self.model.key] = self
             self._ensure_recurring()
             self._ensure_longjobs()
             return self
         except Exception as e:
             # cleanup if init fails
-            await self.delete()
+            self.delete()
             raise e
 
     @classmethod
@@ -47,7 +46,6 @@ class Service:
     def init_from_fs(cls, aysrepo, path, context=None):
         self = cls(aysrepo=aysrepo)
         self._loadFromFS(path)
-        self.aysrepo.db.services.services[self.model.key] = self
         self._ensure_recurring()
         self._ensure_longjobs()
         return self
@@ -65,7 +63,6 @@ class Service:
         return self._path
 
     async def _initFromActor(self, actor, name, args={}, context=None):
-
         self.logger.info("init service %s from %s" % (name, actor.model.name))
         if j.data.types.string.check(actor):
             raise j.exceptions.RuntimeError("no longer supported, pass actor")
@@ -138,8 +135,8 @@ class Service:
 
         await self._initProducers(actor, args)
 
-        self.save()
         self.aysrepo.db.services.services[self.model.key] = self
+        self.save()
 
         await self.init(context=context)
 
@@ -226,6 +223,9 @@ class Service:
                 if svname:
                     # foundservices = self.aysrepo.servicesFind(name=svname, actor="%s(\..*)?" % producer_model.actorRole)
                     foundservices = self.aysrepo.servicesFind(name=svname, role=producer_model.actorRole)
+                    if not foundservices:
+                        raise j.exceptions.Input(message="no service with name [%s] and role [%s] found" % (svname, producer_model.actorRole),
+                                                 level=1, source="", tags="", msgpub="")
                     usersetservices.extend(foundservices)
 
             available_services = self.aysrepo.servicesFind(role=producer_role)
@@ -311,6 +311,7 @@ class Service:
             if actor_action.name in self.model.actions:
                 self.model.actions[actor_action.name].actionKey = actor_action.actionKey
 
+        self.aysrepo.db.services.services[self.model.key] = self
         self.save()
 
     def saveToFS(self):
@@ -327,11 +328,11 @@ class Service:
             j.sal.fs.writeFile(path4, self.model.dbobj.dataSchema)
 
     def save(self):
-        if not self._deleted:
+        if not self._deleted and self.model.key in self.aysrepo.db.services.services:
             self.model.save()
 
     def saveAll(self):
-        if not self._deleted:
+        if not self._deleted and self.model.key in self.aysrepo.db.services.services:
             self.model.save()
             self.saveToFS()
 
@@ -339,7 +340,7 @@ class Service:
         # service are kept in memory so we never need to relad anyomre
         pass
 
-    async def checkDelete(self):
+    def checkDelete(self):
         """
         Executes a dryrun to check if deleting service is OK.
         To ensure that removal won't break minimum consumption required by a consumer for the service or any of its children.
@@ -347,7 +348,7 @@ class Service:
         """
         if self.children:
             for child in self.children:
-                oktodelete, msg = await child.checkDelete()
+                oktodelete, msg = child.checkDelete()
                 if not oktodelete:
                     return False, msg
 
@@ -356,7 +357,7 @@ class Service:
                 constemplate = self.aysrepo.templateGet(name=consumer.model.dbobj.actorName)
                 consumptionconfig = constemplate.consumptionConfig
                 for conf in consumptionconfig:
-                    minimum = conf.get('min', 0)  >= len(consumer.producers.get(self.model.role, []))
+                    minimum = conf.get('min', 0) >= len(consumer.producers.get(self.model.role, []))
                     if minimum == 0:
                         continue
                     if conf['role'] == self.model.role and minimum <= len(consumer.producers.get(self.model.role, [])):
@@ -364,7 +365,7 @@ class Service:
                         return False, msg
         return True, "OK"
 
-    async def delete(self):
+    def delete(self):
         """
         Deletes service and its children from database and filesystem if safe.
 
@@ -372,14 +373,14 @@ class Service:
         """
         producer_removed = "{}!{}".format(self.model.role, self.name)
 
-        oktodelete, msg = await self.checkDelete()
+        oktodelete, msg = self.checkDelete()
         if not oktodelete:
             raise j.exceptions.RuntimeError(msg)
 
         self._deleted = True
         if self.children:
             for service in self.children:
-                await service.delete()
+                service.delete()
 
         # cancel all recurring tasks
         self.stop()
@@ -397,7 +398,7 @@ class Service:
                 consumer.model.reSerialize()
                 consumer.saveAll()
                 # here we trigger processChange with `links` category with args of removed producer role and name
-                consumer.processChange(actor=self.aysrepo.actorGet(consumer.model.dbobj.actorName), changeCategory="links", args={"producer_removed":producer_removed})
+                consumer.processChange(actor=self.aysrepo.actorGet(consumer.model.dbobj.actorName), changeCategory="links", args={"producer_removed": producer_removed})
 
         self.model.delete()
         j.sal.fs.removeDirTree(self.path)
@@ -434,9 +435,10 @@ class Service:
         producers = {}
         for prod in self.model.dbobj.producers:
             role = prod.actorName.split(".")[0]
-            if role not in producers:
-                producers[role] = []
-            producers[role].append(self.aysrepo.serviceGet(key=prod.key))
+            if prod.key in self.aysrepo.db.services.services:
+                if role not in producers:
+                    producers[role] = []
+                producers[role].append(self.aysrepo.serviceGet(key=prod.key))
         return producers
 
     @property
@@ -445,8 +447,9 @@ class Service:
         consumers = {}
         for cons in self.model.dbobj.consumers:
             role = cons.actorName.split(".")[0]
-            if role not in consumers:
-                consumers[role] = []
+            if cons.key in self.aysrepo.db.services.services:
+                if role not in consumers:
+                    consumers[role] = []
             consumers[role].append(self.aysrepo.serviceGet(key=cons.key))
         return consumers
 
@@ -715,13 +718,21 @@ class Service:
 
         self.saveAll()
 
-    async def executeAction(self, action, args={}, context=None):
+    def executeAction(self, action, args={}, context=None):
         if action[-1] == "_":
-            return self.executeActionService(action)
+            return self._executeActionService(action)
         else:
-            return await self.executeActionJob(action, args, context=context)
+            futur = asyncio.run_coroutine_threadsafe(self._executeActionJob(action, args, context=context), loop=self.aysrepo._loop)
+            try:
+                return futur.result()
+            except Exception as e:
+                self.logger.error("error during execute action: %s" % e)
+                raise
 
-    def executeActionService(self, action, args={}):
+    async def asyncExecuteAction(self, action, args={}, context=None):
+        return await self._executeActionJob(action, args, context=context)
+
+    def _executeActionService(self, action, args={}):
         # execute an action in process without creating a job
         # usefull for methods called very often.
         action_id = self.model.actions[action].actionKey
@@ -733,7 +744,7 @@ class Service:
         res = eval(action)(service=self, args=args)
         return res
 
-    async def executeActionJob(self, actionName, args={}, context=None):
+    async def _executeActionJob(self, actionName, args={}, context=None):
         """
         creates a job and execute the action names actionName
         @param actionName: name of the action to execute
@@ -776,7 +787,7 @@ class Service:
         can start
         """
         if dc is None:
-            dependency_chain = self.executeActionService('init_actions_', args={'action': action})
+            dependency_chain = self._executeActionService('init_actions_', args={'action': action})
         if action in parents:
             raise RuntimeError('cyclic dep: %s' % parents)
         if action in ds:
@@ -798,7 +809,6 @@ class Service:
                 task = LongRunningTask(service=self, action=action, loop=self._loop)
                 task.start()
                 self._longrunning_tasks[action] = task
-
 
     def _ensure_recurring(self):
         """
@@ -920,7 +930,7 @@ class Service:
         # Check if the action job is already existing at any run in the repo before
         # rescheduling it again
         existing_jobs = j.core.jobcontroller.db.jobs.find(actor=self.model.role, action=action, service=self.name,
-                                                          state="new|running|error", tags=["self_heal_internal"])
+                                                          state="(new|running|error)", tags=["self_heal_internal"])
         if not existing_jobs:
             self.scheduleAction(action, force=True)
             action_chain = []
@@ -928,4 +938,11 @@ class Service:
             action_chain.reverse()
             to_execute_actions = {self: [action_chain]}
             run = self.aysrepo.runCreate(to_execute_actions, jobs_tags=['self_heal_internal'])
-            asyncio.run_coroutine_threadsafe(self.aysrepo.run_scheduler.add(run), loop=self._loop)
+            future = asyncio.run_coroutine_threadsafe(self.aysrepo.run_scheduler.add(run), loop=self._loop)
+            def callback(future):
+                try:
+                    future.result()
+                except Exception as e:
+                    self.logger.error("error during long job: %s" % e)
+                    raise
+            future.add_done_callback(callback)

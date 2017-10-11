@@ -10,6 +10,7 @@ import functools
 import logging
 import traceback
 from collections import MutableMapping
+import time
 
 
 colored_traceback.add_hook(always=True)
@@ -24,6 +25,9 @@ def _execute_cb(job, future):
     if job._cancelled is True:
         return
 
+    elapsed = time.time() - job._started
+    job.logger.info("{} took {} sec to execute".format(job, elapsed))
+
     service_action_obj = None
 
     if job.service is not None:
@@ -32,29 +36,39 @@ def _execute_cb(job, future):
             service_action_obj = job.service.model.actions[action_name]
             service_action_obj.lastRun = j.data.time.epoch
 
+    # check if an exception happend during job execution
     exception = None
     try:
         exception = future.exception()
     except asyncio.CancelledError as err:
+        # catch CancelledError since it's not an anormal to have some job cancelled
         exception = err
         job.logger.info("{} has been cancelled".format(job))
+
+
     if exception is not None:
+        # state state of job and run to error
+        # this state will be check by RunStep and Run and it will raise an exception
         job.state = 'error'
         job.model.dbobj.state = 'error'
         if service_action_obj:
             service_action_obj.state = 'error'
-            service_action_obj.errorNr += 1
+            # make sure we don't keep increasing this number forever, it could overflow.
+            if service_action_obj.errorNr < 5:
+                service_action_obj.errorNr += 1
             job.service.model.dbobj.state = 'error'
 
         ex = exception if exception is not None else TimeoutError()
 
-        eco = j.errorhandler.processPythonExceptionObject(ex)
+        eco = j.errorhandler.processPythonExceptionObject(exception)
         job._processError(eco)
 
-        if exception:
+        if not isinstance(exception, asyncio.CancelledError):
             tb_lines = [line.rstrip('\n') for line in traceback.format_exception(exception.__class__, exception, exception.__traceback__)]
-            job.logger.error('\n'.join(tb_lines))
+            job.logger.error("{} failed:\n{}".format(job, '\n'.join(tb_lines)))
+
     else:
+        # job executed succefully
         job.state = 'ok'
         job.model.dbobj.state = 'ok'
         if service_action_obj:
@@ -63,7 +77,7 @@ def _execute_cb(job, future):
         if job.service:
             job.service.model.dbobj.state = 'ok'
 
-        job.logger.info("job {} done sucessfuly".format(str(job)))
+        job.logger.info("{} done successfuly".format(job))
 
     if service_action_obj.period > 0:   # recurring action.
         job.model.save()
@@ -150,6 +164,8 @@ class Job:
     """
 
     def __init__(self, model):
+        # used to track how long the job takes to execute
+        self._started = None
         self.model = model
         self.context = JobContext(model)
         self._cancelled = False
@@ -167,12 +183,7 @@ class Job:
 
     @property
     def _loop(self):
-        try:
-            loop = asyncio.get_event_loop()
-        except:
-            loop = asyncio.new_event_loop()
-            asyncio.set_event_loop(loop)
-        return loop
+        return j.atyourservice.server.loop
 
     def cleanup(self):
         """
@@ -231,7 +242,7 @@ class Job:
                     self._service = repo.serviceGetByKey(self.model.dbobj.serviceKey)
                 except j.exceptions.NotFound:
                     # If run contains a delete, this is perfectly acceptable
-                    self.logger.warning("job {} tried to access a non existing service {}.".format(self,self.model.dbobj.serviceKey))
+                    self.logger.warning("job {} tried to access a non existing service {}.".format(self, self.model.dbobj.serviceKey))
                     return None
         return self._service
 
@@ -329,10 +340,16 @@ class Job:
 
         ex: result, stdout, stderr = await job.execute()
         """
+        self._started = time.time()
+
         # for now use default ThreadPoolExecutor
         if self.model.dbobj.debug is False:
             self.model.dbobj.debug = self.sourceLoader.source.find('ipdb') != -1 or \
                                      self.sourceLoader.source.find('IPython') != -1
+
+        # In case dev mode is enabled, long running job are never schedule.
+        # This is to be able to unblock AYS main thread in case the long job is buggy.
+        # Once the actor has been updated in dev mode, you can disable dev mode and continue normal execution
         if j.atyourservice.server.dev_mode or self.service.model.actions[self.action.dbobj.name].longjob is False:
             self._future = self._loop.run_in_executor(None, self.method, self)
         else:
@@ -344,8 +361,11 @@ class Job:
             #         ## code here
             #     return inner(job)
             # self.method here is longjob and u need to call it with job to get the coroutine object returned `inner`
+            coroutine = self.method(self)
+            if not asyncio.iscoroutine(coroutine):
+                raise RuntimeError("the method used for a the long job %s of service %s is not a courotine" % (self.action.dbobj.name, self.service))
 
-            self._future = self._loop.create_task(self.method(self))
+            self._future = asyncio.ensure_future(coroutine, loop=self._loop)
 
         # register callback to deal with logs and state of the job after execution
         self._future.add_done_callback(functools.partial(_execute_cb, self))

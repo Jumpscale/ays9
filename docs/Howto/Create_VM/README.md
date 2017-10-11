@@ -119,6 +119,10 @@ actions:
 - `{location}`: location where the VDC needs to be created
 - `{bootdiskSize}`: size of the boot disk in GB, default is 10
 - `{memory}`: memory available for the virtual machine in GB, default is 1
+
+> Make sure to pass a value for `memory` that matches a VM size that supports the specified `bootdisksize`.
+> Check the POST /cloudapi/sizes/list Cloud API for all available VM sizes for a given cloud space (values are in MB, so multiply `memory` with 1024)
+
 - `{osImage}`: OS image to use for the virtual machine, default is 'Ubuntu 15.10'
 - `{sizeID}`: specifies the number of virtual CPU cores, when specified you also override the value of `memory` since sizes are about the combination of the number of virtual CPU cores and memory
 - `{ports}`: optional list of port forwards to create, formatted as `"public_port:VM_port"` or `"VM_port"`; if the public port is not specified, it will be choose automatically from the available VDC ports, e.g. in order to expose port 22 of the virtual machine to VDC port 9000 use `"9000:22"`

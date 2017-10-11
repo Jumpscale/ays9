@@ -147,4 +147,6 @@ While you can specify the same organization for both `oauth.organization` and `o
 
 ![](images/iyo-organizations.png)
 
+If you need to link the portal with a remote AYS server, you need to add `ays_uri` parameter in portal config file `/opt/cfg/portals/main/config.yaml`
+`ays_uri: http://REMOTE_URL:REMOTE_AYS_PORT`
 After having updated the configuration, you'll need to restart the portal. This is typically achieved by using CTRL+C in the TMUX window where the portal is running, and re-executing the last command.
