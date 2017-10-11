@@ -435,9 +435,10 @@ class Service:
         producers = {}
         for prod in self.model.dbobj.producers:
             role = prod.actorName.split(".")[0]
-            if role not in producers:
-                producers[role] = []
-            producers[role].append(self.aysrepo.serviceGet(key=prod.key))
+            if prod.key in self.aysrepo.db.services.services:
+                if role not in producers:
+                    producers[role] = []
+                producers[role].append(self.aysrepo.serviceGet(key=prod.key))
         return producers
 
     @property
@@ -446,8 +447,9 @@ class Service:
         consumers = {}
         for cons in self.model.dbobj.consumers:
             role = cons.actorName.split(".")[0]
-            if role not in consumers:
-                consumers[role] = []
+            if cons.key in self.aysrepo.db.services.services:
+                if role not in consumers:
+                    consumers[role] = []
             consumers[role].append(self.aysrepo.serviceGet(key=cons.key))
         return consumers
 

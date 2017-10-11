@@ -337,7 +337,7 @@ class AtYourServiceRepo():
             try:
                 return self.db.services.services[key]
             except KeyError:
-                self.logger.error('cannot find service with key %s' % key)
+                raise j.exceptions.NotFound('cant find service with key %s' % key)
 
         actor_role = role.replace(".", "\.")
         models = self.db.services.find(actor="({role}|{role}\..*)".format(role=actor_role), name=instance)
