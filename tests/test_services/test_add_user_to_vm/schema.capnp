@@ -1,8 +1,8 @@
 
-@0xae7d0cb1a106e293;
+@0xe2991883f9586c3a;
 struct Schema {
 	result @0 :Text;
-	vdc @1: Text;
+	node @1: Text;
 	g8client @2: Text;
 
 }

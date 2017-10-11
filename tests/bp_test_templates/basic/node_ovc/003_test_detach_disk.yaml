@@ -3,7 +3,10 @@ node.ovc__testnodeovc:
       - testnodeovcdisk1
 
 test_node_ovc__testnodeovcdetachdisk:
-
+    node: testnodeovc
+    g8client: env
+    vdc: testnodeovc
+    
 actions:
   - action: test_node_disks
     actor: test_node_ovc

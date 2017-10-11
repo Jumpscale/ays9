@@ -20,7 +20,7 @@ class RecurringTask:
             # time they are started. This is to prevent spawning too many jobs at the same time
             action_info = self.service.model.actions[self.action]
             sleep = random.randint(1, action_info.period)
-            self.logger.debug("wait for %d before starting recurring job", sleep)
+            self.logger.debug("wait for %d sec before starting recurring job", sleep)
             await asyncio.sleep(sleep)
 
             while self.started:
@@ -57,6 +57,8 @@ class RecurringTask:
         def callback(future):
             try:
                 future.result()
+            except asyncio.CancelledError:
+                self.logger.warning("recurring job canceled")
             except Exception as e:
                 self.logger.error("error during recurring job: %s" % e)
                 raise

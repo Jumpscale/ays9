@@ -7,7 +7,9 @@ node.ovc__testnodeovc:
       - testnodeovcdisk2
 
 test_node_ovc__testnodeovcattachdisk:
-
+    node: testnodeovc
+    g8client: env
+    vdc: testnodeovc
 
 actions:
   - action : test_node_disks

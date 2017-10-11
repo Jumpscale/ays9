@@ -1,0 +1,4 @@
+node.ovc__useraccess:
+    uservdc:
+      - name: vm_user
+        accesstype: 'RCX'
