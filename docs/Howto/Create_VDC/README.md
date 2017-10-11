@@ -155,7 +155,7 @@ You first need to create an AYS repository, as documented in [How to Create a Ne
 Once created make the AYS directory of your repository the current directory:
 ```bash
 REPO_NAME="..."
-cd /optvar/cockpit_repos/$REPO_NAME
+cd /host/var/cockpit_repos/$REPO_NAME
 ```
 
 Create a blueprint:
@@ -294,7 +294,7 @@ ays run show -k d1542eda4e69fca3989c8a11865a0172 --logs
 In case an error condition is mentioned, and you've access to the Cloud Broker Portal, use following URL:
 https://be-gen-1.demo.greenitglobe.com/grid/error%20condition?id=fdc34b88-db89-8367-a682-fd7c42d88a74
 
-Also see logs in ``/optvar/log/`:
+Also see logs in ``/host/var/log/`:
 ```bash
 tail -f jumpscale.log
 ```
