@@ -450,7 +450,7 @@ class Service:
             if cons.key in self.aysrepo.db.services.services:
                 if role not in consumers:
                     consumers[role] = []
-            consumers[role].append(self.aysrepo.serviceGet(key=cons.key))
+                consumers[role].append(self.aysrepo.serviceGet(key=cons.key))
         return consumers
 
     def isConsumedBy(self, service):
