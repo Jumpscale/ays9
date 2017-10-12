@@ -29,7 +29,7 @@ if [ -n $TRAVIS_EVENT_TYPE ] && [ $TRAVIS_EVENT_TYPE == "cron" ]; then
 
     # starting vpn connection in deamon mode
     echo "Starting VPN connection to backend environment"
-    sudo openvpn --config gig.tech.ovpn --daemon
+    sudo openvpn --config gig.tech.ovpn
     popd
 else
     # Start ays9 container
