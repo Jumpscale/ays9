@@ -174,6 +174,16 @@ class ays_repository_byrepository_templateView(HTTPMethodView):
 
 ays_if.add_route(ays_repository_byrepository_templateView.as_view(), '/ays/repository/<repository>/template')
 
+
+class ays_repository_byrepository_templateUpdate(HTTPMethodView):
+
+    async def get(self, request, repository):
+        return await auth(request=request, funcname='updateTemplates', repository=repository)
+
+
+ays_if.add_route(ays_repository_byrepository_templateView.as_view(), '/ays/repository/<repository>/template/update')
+
+
 class ays_repository_byrepository_template_bynameView(HTTPMethodView):
 
     async def get(self, request, name, repository):

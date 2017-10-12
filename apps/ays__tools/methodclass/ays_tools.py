@@ -60,26 +60,12 @@ class ays_tools(j.tools.code.classGetBase()):
         aysrun = cl.createRun(data=None, repository=repository).json()
         return aysrun['key']
 
-    def templatesUpdate(self, repo=None, template_name=None, ays_repo=None, **kwargs):
+    def templatesUpdate(self, repo=None, **kwargs):
         cl = self.get_client(**kwargs)
-        if not repo and not template_name:
-            if not ays_repo:
-                updated = list()
-                for domain, domain_info in j.atyourservice.server.config['metadata'].items():
-                    base, provider, account, repo, dest, url = j.clients.git.getGitRepoArgs(domain_info.get('url'),
-                                                                                   codeDir=j.dirs.CODEDIR)
-                    self.cuisine.development.git.pullRepo(domain_info.get('url'),
-                                                          branch=domain_info.get('branch', 'master'),
-                                                          dest=dest)
-                    updated.append(domain)
-                return "template repos [" + ', '.join(updated) + "] are updated"
-            else:
-                updated = self.cuisine.development.git.pullRepo(ays_repo, codedir=j.dirs.CODEDIR)
-                return "template %s repo updated" % updated
-        elif not template_name:
+        if not repo:
+            cl.reload(data=None)
+        else:
             cl.updateTemplates(repo)
-            return "templates updated"
-        cl.updateTemplate(repo, template_name)
         return "template updated"
 
     def addTemplateRepo(self, url, branch='master', **kwargs):

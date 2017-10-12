@@ -174,6 +174,21 @@ async def getCurrentRun(request, repository):
     return json({}, 204)
 
 
+async def updateTemplates(request, repository):
+    '''
+    update templates in a repo
+    It is handler for GET /ays/repository/<repository>/template/update
+    '''
+    try:
+        repo = get_repo(repository)
+    except j.exceptions.NotFound as e:
+        return json({'error': e.message}, 404)
+    repo_params = repository_view(repo)
+    j.clients.git.pullGitRepo(url=repo_params['url'], dest=repo_params['path'])
+    template_repo_collection = j.atyourservice.server.templateRepos
+    template_repo_collection._template_repos[repo_params['path']]._load()
+    return json({'message': 'Templates Updated'}, 200)
+
 async def listTemplates(request, repository):
     '''
     list all templates
