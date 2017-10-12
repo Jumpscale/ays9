@@ -1,14 +1,14 @@
-sshkey__main:
-vdcfarm__parent:
+srv__main:
+test_dummy__parent:
 
 test_dependency_tree__parent:
-   vdcfarm: parent
-   sshkeys:
+   testDummy: parent
+   srvs:
       - main
 
 test_dependency_tree__consumers:
-   sshkeys:
-      - main         
+   srvs:
+      - main
 
 actions:
    - action: 'test'

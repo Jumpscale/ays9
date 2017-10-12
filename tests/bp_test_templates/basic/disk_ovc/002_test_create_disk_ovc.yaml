@@ -1,9 +1,0 @@
-test_disk_ovc__testcreatedisk:
-    disk: 
-      - testdisk
-
-actions:
-
-  - action: test_create
-    actor: test_disk_ovc
-    service: testcreatedisk

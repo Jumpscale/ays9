@@ -1,9 +1,0 @@
-test_add_user_to_cloudspace__useraccess:
-   vdc: cloudspace_user
-   g8client: env
-
-
-actions:
-  - action: test_user_access
-    service: useraccess
-    actor: test_add_user_to_cloudspace

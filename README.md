@@ -20,3 +20,15 @@ bash install.sh
 To connect to a remote AYS server without installing JumpScale, it is possible to use the [AYS client](docs/gettingstarted/python.md).
 
 For information about the AYS portal and how to load it to the [portal](https://github.com/Jumpscale/portal9) see [here](docs/AYS-Portal)
+
+## OVC templates
+
+To use OVC templates, which are templates used to perform various actions on OpenVCloud environments(like creating a cloudspace,vm, ...) you need to add the actor templates to your system.
+
+This can be done by executing the following code in a js9 shell(type `js9` in the command line), in this instance it will clone from master:
+
+```python
+ayscl = j.clients.atyourservice.get()
+ayscl.api.ays.addTemplateRepo(data={'url': 'https://github.com/openvcloud/ays_templates','branch': 'master'})
+
+```

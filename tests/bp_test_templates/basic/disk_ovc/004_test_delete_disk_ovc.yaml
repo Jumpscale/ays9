@@ -1,9 +1,0 @@
-test_disk_ovc__testdeletedisk:
-    disk: 
-      - testdisk
-
-actions:
-
-  - action: test_delete
-    actor: test_disk_ovc
-    service: testdeletedisk
