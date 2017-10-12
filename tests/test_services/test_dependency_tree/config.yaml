@@ -6,13 +6,14 @@ doc:
   - sshkeys: ''
 links:
   consume:
-  - argname: sshkeys
+  - argname: srvs
     auto: false
     max: '3'
     min: '1'
-    role: sshkey
+    role: srv
   parent:
+    argname: testDummy
     auto: true
     optional: false
-    role: vdcfarm
+    role: test_dummy
 recurring: []

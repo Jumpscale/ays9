@@ -13,7 +13,7 @@ def init_actions_(service, args):
         'test': ['install']
 
     }
-    
+
 
 def test(job):
     """
@@ -37,10 +37,10 @@ def test(job):
                 failures.append(RESULT_FAILED % ("Current service is not added in the consumers list of the parent"))
 
         if job.service.name == 'consumers':
-            if 'vdcfarm' not in job.service.producers:
-                failures.append(RESULT_FAILED % ("vdcfarm is not added to producers"))
-            elif len(job.service.producers['sshkey']) != 1:
-                failures.append(RESULT_FAILED % ("Wrong number of sshkey producers"))
+            if 'test_dummy' not in job.service.producers:
+                failures.append(RESULT_FAILED % ("test_dummy service is not added to producers"))
+            elif len(job.service.producers['srv']) != 1:
+                failures.append(RESULT_FAILED % ("Wrong number of producers of service srv"))
         if failures:
             model.data.result = '\n'.join(failures)
     except:

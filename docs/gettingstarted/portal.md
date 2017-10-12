@@ -13,7 +13,7 @@ prefab = j.tools.prefab.local
 prefab.apps.atyourservice.install()
 ```
 
-This will install and start the AYS Portal on port 8200, as pre-configured in `/optvar/cfg/portals/main/config.yaml`, which is the configuration common to all portals using the JumpScale Portal Framework of your JumpScale environment. See [AYS Portal Configuration](../AYS-Portal/README.md) for more details.
+This will install and start the AYS Portal on port 8200, as pre-configured in `/opt/cfg/portals/main/config.yaml`, which is the configuration common to all portals using the JumpScale Portal Framework of your JumpScale environment. See [AYS Portal Configuration](../AYS-Portal/README.md) for more details.
 
 When attaching to the main TMUX session, you'll see that two additional TMUX windows have been added, one for MongoDB and another one for the Portal:
 ```shell

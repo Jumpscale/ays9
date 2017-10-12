@@ -1,3 +1,0 @@
-test_add_user_to_cloudspace__p1:
-actions:
-  - action: test_vdc_user
