@@ -682,6 +682,16 @@ types:
                     body:
                       application/json:
                         type: Error
+        /update:
+          get:
+            displayName: updateTemplates
+            description: update all templates in a repository
+            responses:
+              200:
+                body:
+                  application/json:
+                    example:
+                      - message: 'Templates Updated'
       /aysrun:
         get:
             displayName: listRuns
