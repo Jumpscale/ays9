@@ -21,7 +21,8 @@ import logging
 
 AYS_CORE_BP_TESTS_PATH = [os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'core')]
 
-AYS_NON_CORE_BP_TESTS_PATH = [os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'basic'),
+AYS_NON_CORE_BP_TESTS_PATH = [
+                            #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'basic'),
                             #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'advanced'),
                             #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'extend')
                             ]
