@@ -1,7 +1,7 @@
 
-@0x8e65922e4e387d5d;
+@0xad7b38b029225ff0;
 struct Schema {
-	sshkeys @0 :List(Text);
+	srvs @0 :List(Text);
 	result @1 :Text;
 
 }

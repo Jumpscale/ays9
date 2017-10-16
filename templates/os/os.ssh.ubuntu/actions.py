@@ -3,7 +3,6 @@ def install(job):
     if 'sshkey' not in service.producers:
         raise j.exceptions.AYSNotFound("No sshkey service consumed. please consume an sshkey service")
 
-    sshkey = service.producers['sshkey'][0]
     service.logger.info("authorize ssh key to machine")
     node = service.parent
 
@@ -62,5 +61,4 @@ def getExecutor(job):
                                             login='root', passwd=None,
                                             allow_agent=True, look_for_keys=True, timeout=5, usecache=False,
                                             passphrase=passphrase, key_filename=key_path)
-    j.tools.prefab.resetAll()
     return executor

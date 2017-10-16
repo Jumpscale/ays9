@@ -1,9 +1,0 @@
-test_add_user_to_vm__deleteuser:
-   node: useraccess
-   g8client: example
-
-
-actions:
-  - action: test_delete_user_access
-    service: deleteuser
-    actor: test_add_user_to_vm

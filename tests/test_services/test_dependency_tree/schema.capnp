@@ -1,8 +1,7 @@
-
-@0xcb25c2cba32bc47a;
+@0xc90fdd0e1f030050;
 struct Schema {
-	vdcfarm @0 :Text;
-	sshkeys @1 :List(Text);
+	testDummy @0 :Text;
+	srvs @1 :List(Text);
 	description @2 :Text = "description";
 	result @3 :Text;
 
