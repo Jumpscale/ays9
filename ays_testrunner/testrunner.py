@@ -21,7 +21,8 @@ import logging
 
 AYS_CORE_BP_TESTS_PATH = [os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'core')]
 
-AYS_NON_CORE_BP_TESTS_PATH = [os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'basic'),
+AYS_NON_CORE_BP_TESTS_PATH = [
+                            #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'basic'),
                             #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'advanced'),
                             #   os.path.join(os.path.dirname(os.path.dirname(__file__)), 'tests', 'bp_test_templates', 'extend')
                             ]
@@ -512,11 +513,18 @@ class BaseRunner:
         self._config = config
         self._logger = j.logger.get('aystestrunner.{}'.format(name))
         self._name = name
-        self._task_queue = Queue(connection=Redis(), default_timeout=self._config.get('TEST_TIMEOUT', DEFAULT_TEST_TIMEOUT))
         self._failed_tests = {}
         self._tests = []
 
         self._default_bp_paths = []
+
+
+    def _pre_process_tests(self):
+        """
+        Execute any required pre-processing steps
+        """
+        for test in self._tests:
+            test.replace_placehlders(self._config.get('BACKEND_ENV', {}))
 
 
     def run(self):
@@ -529,30 +537,134 @@ class BaseRunner:
         execute teardown setps
         report tests
         """
-        raise NotImplementedError("Not Implemented")
-            
+        try:
+            jobs = {}
+            self._tests = collect_tests(paths=self._config.get('bp_paths', self._default_bp_paths), logger=self._logger)
+            self._pre_process_tests()
+            for test in self._tests:
+                self._logger.info('Running test {}'.format(test.name))
+                try:
+                    test.starttime = time.time()
+                    test.run()
+                    test.endtime = time.time()
+                except Exception as e:
+                    test.errors.append('Failed to run test {}. Errors: [{}]'.format(test.name, str(e)))
+            # report final results
+            self._report_results()
+        finally:
+            # clean up the BACKEND env if requested
+            if self._config.get('BACKEND_ENV_CLEANUP', False):
+                self._cleanup()
+
+
+    def _cleanup(self):
+        """
+        Will clean up a BACKEND environment. Typically should be called for test environment where all the resources created can be safely cleanup to make sure that tests are
+        starting from a clean state
+        """
+        try:
+            backend_config = self._config.get('BACKEND_ENV', {})
+            if backend_config:
+                ovc_cli = j.clients.openvcloud.get(url=backend_config.get('URL'), login=backend_config.get('LOGIN'), password=backend_config.get('PASSWORD'))
+                # DELETE ALL THE CREATED CLOUDSPACES
+                for cloudspace_info in ovc_cli.api.cloudapi.cloudspaces.list():
+                    ovc_cli.api.cloudapi.cloudspaces.delete(cloudspaceId=cloudspace_info['id'])
+        except Exception as err:
+            self._logger.error('Failed to execute cleanup. Error {}'.format(err))
 
 
 
-class AYSCoreTestRunner(BaseRunner):
+    def _report_results(self):
+        """
+        Report final results after running all tests
+        """
+        nr_of_tests = len(self._tests)
+        nr_of_failed = len(self._failed_tests)
+        nr_of_ok = nr_of_tests - nr_of_failed
+        print("AYS testrunner results\n---------------------------\n")
+        print("Total number of tests: {}".format(nr_of_tests))
+        print("Number of passed tests: {}".format(nr_of_ok))
+        print("Number of failed/error tests: %s" % nr_of_failed)
+        if self._failed_tests:
+            print("Errors:\n")
+            for test, failed_test in self._failed_tests.items():
+                header = 'Test {}'.format(test.name)
+                print(header)
+                print('-' * len(header))
+                if failed_test.result:
+                    print('\n'.join(failed_test.result))
+                if failed_test.exc_info:
+                    print(failed_test.exc_info)
+            raise RuntimeError('Failures while running ays tests')
+
+
+
+
+class ThreadedTestRunner(BaseRunner):
     """
-    Test Runner to run ays core tets
+    Thread based testrunner
     """
 
+    def run(self):
+        """
+        Run tests and report their results
+        collects tests
+        pre-process tests
+        execute setup steps
+        execute test
+        execute teardown setps
+        report tests
+        """
+        import threading
+        try:
+            jobs = {}
+            self._tests = collect_tests(paths=self._config.get('bp_paths', self._default_bp_paths), logger=self._logger)
+            self._pre_process_tests()
+            for test in self._tests:
+                self._logger.info('Scheduling test {}'.format(test.name))
+                jobs[test] = threading.Thread(target=test.run, name=test.name)
+                jobs[test].start()
+                test.starttime = time.time()
+            # block until all jobs are done
+            while True:
+                for test, job in jobs.copy().items():
+                    self._logger.debug('Checking status of test {}'.format(test.name))
+                    if job.is_alive():
+                        self._logger.info('Test {} still running'.format(test.name))
+                        if time.time() - test.starttime > self._config.get('TEST_TIMEOUT', DEFAULT_TEST_TIMEOUT):
+                            self._logger.error('Test {} timed out'.format(test.name))
+                            jobs.pop(test)
+                            test.errors.append('Test {} timed out'.format(test.name))
+                            self._failed_tests[test] = job
+                    else:
+                        self._logger.info('Test {} completed successfully'.format(test.name))
+                        jobs.pop(test)
+                        test.endtime = time.time()
+                if jobs:
+                    time.sleep(10)
+                else:
+                    break
+
+            # report final results
+            self._report_results()
+        finally:
+            # clean up the BACKEND env if requested
+            if self._config.get('BACKEND_ENV_CLEANUP', False):
+                self._cleanup()
+
+
+
+class ParallelTestRunner(BaseRunner):
+    """
+    Parallel process based test runner
+    """
     def __init__(self, name, config=None):
         """
-        Initialize core test runner
+        Intialize test runner
         """
-        super().__init__(name, config)
-        self._default_bp_paths = AYS_CORE_BP_TESTS_PATH
+        super().__init__(name=name, config=config)
+        self._task_queue = Queue(connection=Redis(), default_timeout=self._config.get('TEST_TIMEOUT', DEFAULT_TEST_TIMEOUT))
 
-
-    def _pre_process_tests(self):
-        """
-        Execute any required pre-processing steps
-        """
-        for test in self._tests:
-            test.replace_placehlders(self._config.get('BACKEND_ENV', {}))
     
     def _collect_and_preprocess(self):
         """
@@ -611,62 +723,21 @@ class AYSCoreTestRunner(BaseRunner):
                 self._cleanup()
 
 
-    def _cleanup(self):
+class AYSCoreTestRunner(BaseRunner):
+    """
+    Test Runner to run ays core tets
+    """
+
+    def __init__(self, name, config=None):
         """
-        Will clean up a BACKEND environment. Typically should be called for test environment where all the resources created can be safely cleanup to make sure that tests are
-        starting from a clean state
+        Initialize core test runner
         """
-        try:
-            backend_config = self._config.get('BACKEND_ENV', {})
-            if backend_config:
-                ovc_cli = j.clients.openvcloud.get(url=backend_config.get('URL'), login=backend_config.get('LOGIN'), password=backend_config.get('PASSWORD'))
-                main_account = ovc_cli.account_get(name=backend_config.get('ACCOUNT'), create=False)
-                # clean up accounts
-                self._logger.debug('Cleaning up accounts')
-                for account_info in ovc_cli.api.cloudapi.accounts.list():
-                    if account_info['id'] != main_account.id:
-                        ovc_cli.api.cloudapi.accounts.delete(accountId=account_info['id'])
-                self._logger.debug('Cleaning up disks')
-                # delete disks
-                for disk_info in ovc_cli.api.cloudapi.disks.list(accountId=main_account.id):
-                    ovc_cli.api.cloudapi.disks.delete(diskId=disk_info['id'], detach=True)
-                self._logger.debug('Cleaning up cloudspaces')
-                # DELETE ALL THE CREATED CLOUDSPACES
-                for cloudspace in main_account.spaces:
-                    for machine_info in ovc_cli.api.cloudapi.machines.list(cloudspaceId=cloudspace.id):
-                        ovc_cli.api.cloudapi.machines.delete(machineId=machine_info['id'])
-                    ovc_cli.api.cloudapi.cloudspaces.delete(cloudspaceId=cloudspace.id)
-        except Exception as err:
-            self._logger.error('Failed to execute cleanup. Error {}'.format(err))
+        super().__init__(name=name, config=config)
+        self._default_bp_paths = AYS_CORE_BP_TESTS_PATH
 
 
 
-    def _report_results(self):
-        """
-        Report final results after running all tests
-        """
-        nr_of_tests = len(self._tests)
-        nr_of_failed = len(self._failed_tests)
-        nr_of_ok = nr_of_tests - nr_of_failed
-        print("AYS testrunner results\n---------------------------\n")
-        print("Total number of tests: {}".format(nr_of_tests))
-        print("Number of passed tests: {}".format(nr_of_ok))
-        print("Number of failed/error tests: %s" % nr_of_failed)
-        if self._failed_tests:
-            print("Errors:\n")
-            for test, failed_test in self._failed_tests.items():
-                header = 'Test {}'.format(test.name)
-                print(header)
-                print('-' * len(header))
-                if failed_test.result:
-                    print('\n'.join(failed_test.result))
-                if failed_test.exc_info:
-                    print(failed_test.exc_info)
-                print('\n')
-            raise RuntimeError('Failures while running ays tests')
-
-
-class AYSTestRunner(AYSCoreTestRunner):
+class AYSTestRunner(BaseRunner):
     """
     Test runner for non-core tests
     """
@@ -677,3 +748,90 @@ class AYSTestRunner(AYSCoreTestRunner):
         """
         super().__init__(name=name, config=config)
         self._default_bp_paths = AYS_NON_CORE_BP_TESTS_PATH
+
+
+
+class AYSCoreThreadedTestRunner(ThreadedTestRunner):
+    """
+    Test Runner to run ays core tets
+    """
+
+    def __init__(self, name, config=None):
+        """
+        Initialize core test runner
+        """
+        super().__init__(name=name, config=config)
+        self._default_bp_paths = AYS_CORE_BP_TESTS_PATH
+
+
+
+class AYSThreadedTestRunner(ThreadedTestRunner):
+    """
+    Test runner for non-core tests
+    """
+
+    def __init__(self, name, config=None):
+        """
+        Initialize non-core test runner
+        """
+        super().__init__(name=name, config=config)
+        self._default_bp_paths = AYS_NON_CORE_BP_TESTS_PATH
+
+
+
+class AYSCoreParallelTestRunner(ParallelTestRunner):
+    """
+    Test Runner to run ays core tets
+    """
+
+    def __init__(self, name, config=None):
+        """
+        Initialize core test runner
+        """
+        super().__init__(name=name, config=config)
+        self._default_bp_paths = AYS_CORE_BP_TESTS_PATH
+
+
+
+class AYSParallelTestRunner(ParallelTestRunner):
+    """
+    Test runner for non-core tests
+    """
+
+    def __init__(self, name, config=None):
+        """
+        Initialize non-core test runner
+        """
+        super().__init__(name=name, config=config)
+        self._default_bp_paths = AYS_NON_CORE_BP_TESTS_PATH
+
+
+
+
+class AYSTestRunnerFactory(object):
+    """
+    Factory class for creating aystestrunners
+    """
+
+    @staticmethod
+    def get(name, execution_type='seq', test_type='core', config=None):
+        if config is None:
+            config = {}
+        
+        if execution_type == 'seq':
+            if test_type == 'core':
+                return AYSCoreTestRunner(name=name, config=config)
+            else:
+                return AYSTestRunner(name=name, config=config)
+        elif execution_type == 'parallel':
+            if test_type == 'core':
+                return AYSCoreParallelTestRunner(name=name, config=config)
+            else:
+                return AYSParallelTestRunner(name=name, config=config)
+        elif execution_type == 'threaded':
+            if test_type == 'core':
+                return AYSCoreThreadedTestRunner(name=name, config=config)
+            else:
+                return AYSThreadedTestRunner(name=name, config=config)
+        else:
+            raise ValueError('Invalid value for execution_type {}, allowed values are [seq, parallel, threaded]'.format(execution_type))

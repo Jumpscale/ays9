@@ -13,24 +13,6 @@ if [ -n $TRAVIS_EVENT_TYPE ] && [ $TRAVIS_EVENT_TYPE == "cron" ]; then
     fi
     # Install RQ
     sudo -HE bash -c "ssh -tA root@localhost -p 2222 \"pip install rq\""
-
-    # Install openvpn
-    sudo apt-get install -y openvpn
-
-    # make dir for vpn files
-    mkdir ~/backend_vpn
-
-    pushd ~/backend_vpn
-    # write files
-    echo "$VPN_USER_CRT" > user.crt
-    echo "$VPN_USER_KEY" > user.key
-    echo "$VPN_CRT" > ca.crt
-    echo "$VPN_OVPN_FILE" > gig.tech.ovpn
-
-    # starting vpn connection in deamon mode
-    echo "Starting VPN connection to backend environment"
-    sudo openvpn --config gig.tech.ovpn --daemon
-    popd
 else
     # Start ays9 container
     sudo -HE bash -c "source /opt/code/github/jumpscale/bash/zlibs.sh; ZKeysLoad; ZDockerActive -b jumpscale/ays9nightly -i ays9"
