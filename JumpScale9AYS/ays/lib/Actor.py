@@ -120,12 +120,16 @@ class Actor():
         if self.model.dbobj.serviceDataSchema != template.schemaCapnpText:
             # update schema in the actor itself
             self.model.dbobj.serviceDataSchema = template.schemaCapnpText
-            # update existsing service schema
-            for service in services:
+
+        # update existsing service schema
+        for service in services:
+            if service.model.dbobj.dataSchema != self.model.dbobj.serviceDataSchema:
                 service.model.dbobj.dataSchema = self.model.dbobj.serviceDataSchema
                 service.model._data = None  # force recreation of the capnp data object.
                 # no need to manually copy the data cause they are still in the service.model.dbobj.data
                 # setting _data to None force to recreate the capnp msg and fill it with content of service.model.dbobj.data
+
+        if self.model.dbobj.serviceDataSchema != template.schemaCapnpText:
             self.processChange("dataschema", context=context)
 
         if self.model.dbobj.dataUI != template.dataUI:
@@ -135,11 +139,8 @@ class Actor():
         self.saveAll()
 
         for s in services:
-            dirtyservice = False
-            ensure_longjobs = False
             for action in self.model.dbobj.actions:
                 if action.period > 0:
-                    dirtyservice = True
                     act = s.model.actionGet(action.name)
                     act.period = action.period
                     act.log = action.log
@@ -151,15 +152,10 @@ class Actor():
                         print("Restarting longjob: ", action.name)
                         s._longrunning_tasks[action.name].stop()
                         del s._longrunning_tasks[action.name]
-                        ensure_longjobs = True
+                        s._ensure_longjobs()
 
-
-            if ensure_longjobs:
-                s._ensure_longjobs()
-
-            if dirtyservice:
-                s.model.reSerialize()
-                s.saveAll()
+            s.model.reSerialize()
+            s.saveAll()
 
     def _initFromTemplate(self, template, context=None):
         if self.model is None:
@@ -316,6 +312,7 @@ class Actor():
             if state == "DEF" and line[:7] != '    def' and (linestrip.startswith("@") or linestrip.startswith("def")):
                 # means we are at end of def to new one
                 parsedActorMethods.append(actionName)
+                self.logger.debug("adding action [{}] to [{}]".format(actionName, self))
                 self._addAction(actionName, amSource, amDecorator, amMethodArgs, amDoc)
                 amSource = ""
                 actionName = ""
