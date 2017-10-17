@@ -1,9 +1,8 @@
 import colored_traceback
 from .RunStep import RunStep
 from js9 import j
-import requests
 import json
-
+import aiohttp
 colored_traceback.add_hook(always=True)
 
 
@@ -21,6 +20,10 @@ class Run:
             step = RunStep(self, dbobj.number, dbobj=dbobj)
             steps.append(step)
         return steps
+
+    @property
+    def aysrepo(self):
+        return j.atyourservice.server.aysRepos.get(path=self.model.dbobj.repo)
 
     @property
     def state(self):
@@ -134,8 +137,19 @@ class Run:
         finally:
             self.save()
             if self.callbackUrl:
-                data = {'runid': self.key, 'runState': self.state.__str__()}
-                requests.post(self.callbackUrl, headers={'Content-type': 'application/json'}, data=json.dumps(data))
+                runInfo = {}
+                retry = self.aysrepo.run_scheduler.get_retry_level(self)
+                if retry:
+                    run_retries = list(self.aysrepo.run_scheduler.retry_config.values())
+                    if run_retries:
+                        runInfo = {
+                            'retry-number': retry,
+                            'duration': run_retries[retry - 1],
+                            'remaining-retries': run_retries[retry:]
+                        }
+                data = {'runid': self.key, 'runState': self.state.__str__(), 'retries': runInfo}
+                async with aiohttp.ClientSession() as session:
+                    await session.post(self.callbackUrl, headers={'Content-type': 'application/json'}, data=json.dumps(data))
 
     def __repr__(self):
         out = "RUN:%s\n" % (self.key)

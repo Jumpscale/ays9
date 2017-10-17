@@ -67,7 +67,6 @@ def run_view(run):
         'steps': [],
         'epoch': run.model.dbobj.lastModDate,
     }
-    retry = 0
     for step in run.steps:
         aystep = {
             'number': step.dbobj.number,
@@ -75,9 +74,6 @@ def run_view(run):
             'state': step.state
         }
         for job in step.jobs:
-            if job.service:
-                action_retry = job.service.model.actions[job.model.dbobj.actionName].errorNr
-                retry = action_retry if action_retry > retry else retry
             logs = []
             for log in job.model.dbobj.logs:
                 log_dict = {}
@@ -100,7 +96,16 @@ def run_view(run):
                 'result': job.model.dbobj.result
             })
         obj['steps'].append(aystep)
-    obj['retry'] = retry
+    retry = run.aysrepo.run_scheduler.get_retry_level(run)
+    obj['retries'] = {}
+    if retry:
+        run_retries = list(run.aysrepo.run_scheduler.retry_config.values())
+        if run_retries:
+            obj['retries'] = {
+                'retry-number': retry,
+                'duration': run_retries[retry - 1],
+                'remaining-retries': run_retries[retry:]
+            }
 
     return obj
 

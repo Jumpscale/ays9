@@ -45,7 +45,6 @@ def _execute_cb(job, future):
         exception = err
         job.logger.info("{} has been cancelled".format(job))
 
-
     if exception is not None:
         # state state of job and run to error
         # this state will be check by RunStep and Run and it will raise an exception
@@ -54,7 +53,8 @@ def _execute_cb(job, future):
         if service_action_obj:
             service_action_obj.state = 'error'
             # make sure we don't keep increasing this number forever, it could overflow.
-            if service_action_obj.errorNr < 5:
+            repo = j.atyourservice.server.aysRepos.get(path=job.model.dbobj.repoKey)
+            if service_action_obj.errorNr < len(repo.run_scheduler.retry_config) + 1:
                 service_action_obj.errorNr += 1
             job.service.model.dbobj.state = 'error'
 

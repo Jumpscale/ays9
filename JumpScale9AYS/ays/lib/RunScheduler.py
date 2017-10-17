@@ -24,6 +24,10 @@ class RunScheduler:
     """
 
     def __init__(self, repo):
+        self.retry_config = RETRY_DELAY
+        if j.atyourservice.server.dev_mode:
+            for key, _ in self.retry_config.items():
+                self.retry_config[key] = RETRY_DELAY[1]
         self.logger = j.logger.get("j.ays.RunScheduler")
         self.repo = repo
         self._git = j.clients.git.get(repo.path, check_path=False)
@@ -34,6 +38,18 @@ class RunScheduler:
         self._is_running = False
         self._current = None
 
+    def configure_retry_delay(self, retry_config):
+        """
+        sets the retry delays and number
+        @param retry_config: list containing the delay values.
+        """
+        retry_delay = {}
+        for idx, value in enumerate(retry_config):
+            if idx == 0 and value == '0':
+                break
+            retry_delay[idx + 1] = int(value)
+        self.retry_config = retry_delay
+
     @property
     def status(self):
         if self._accept and self._is_running:
@@ -41,6 +57,19 @@ class RunScheduler:
         if not self._accept and self._is_running:
             return "stopping"
         return "halted"
+
+    def get_retry_level(self, run):
+        """
+        find lowest error level
+        """
+        levels = set()
+        for step in run.steps:
+            for job in step.jobs:
+                service_action_obj = job.service.model.actions[job.model.dbobj.actionName]
+                if service_action_obj.errorNr > 0:
+                    levels.add(service_action_obj.errorNr)
+        if levels:
+            return min(levels)
 
     @property
     def current_run(self):
@@ -90,8 +119,9 @@ class RunScheduler:
                 await run.execute()
                 self._commit(run)
             except:
-                # retry the run after a delay
-                await self._retry(run)
+                # retry the run after a delay, skip if 0 retries are configured.
+                if self.retry_config:
+                    await self._retry(run)
             finally:
                 self._current = None
                 self.queue.task_done()
@@ -147,19 +177,19 @@ class RunScheduler:
     async def _retry(self, run):
         async def do_retry(run):
 
-            # find lowest error level
-            levels = set()
-            for step in run.steps:
-                for job in step.jobs:
-                    service_action_obj = job.service.model.actions[job.model.dbobj.actionName]
-                    if service_action_obj.errorNr > 0:
-                        levels.add(service_action_obj.errorNr)
+            # remove this task from the retries list
+            with await self._retries_lock:
+                current_task = asyncio.Task.current_task()
+                if current_task in self._retries:
+                    self._retries.remove(current_task)
 
-            # if we are in dev mode, always reschedule after 10 sec
-            if j.atyourservice.server.dev_mode:
-                delay = RETRY_DELAY[1]
+            retry_level = self.get_retry_level(run)
+            # if error number exceed size of config won't reschedule
+            if retry_level > len(self.retry_config):
+                self.logger.info("Reached max numbers of retries configured")
+                return
             else:
-                delay = RETRY_DELAY[min(levels)]
+                delay = self.retry_config[retry_level]
 
             self.logger.info("reschedule run %s in %ssec", run.model.key, delay)
             await asyncio.sleep(delay)
@@ -167,12 +197,6 @@ class RunScheduler:
             # sending this action to the run queue
             self.logger.debug("add run %s to %s", run.model.key, self)
             await self.repo.run_scheduler.add(run, ERROR_RUN_PRIORITY)
-
-            # remove this task from the retries list
-            with await self._retries_lock:
-                current_task = asyncio.Task.current_task()
-                if current_task in self._retries:
-                    self._retries.remove(current_task)
 
         # don't add if we are stopping the server
         if not self._accept:
