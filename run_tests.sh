@@ -27,9 +27,3 @@ sudo -HE bash -c "python -c 'import json, os;print(json.dumps({\"BACKEND_ENV\": 
 
 # Run tests
 sudo -HE bash -c "ssh -tA  root@localhost -p 2222 \"cd /opt/code/github/jumpscale/ays9; /bin/bash test.sh $TRAVIS_EVENT_TYPE\""
-
-if [ -n $TRAVIS_EVENT_TYPE ] && [ $TRAVIS_EVENT_TYPE == "cron" ]; then
-    sudo -HE bash -c "source /opt/code/github/jumpscale/bash/zlibs.sh; ZKeysLoad; ZDockerCommit -b jumpscale/ays9 -i ays9"
-else
-    sudo -HE bash -c "source /opt/code/github/jumpscale/bash/zlibs.sh; ZKeysLoad; ZDockerCommit -b jumpscale/ays9nightly -i ays9"
-fi
