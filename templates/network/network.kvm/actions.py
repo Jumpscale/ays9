@@ -7,7 +7,7 @@ def install(job):
         prefab.systemservices.openvswitch.networkCreate(data.name)
         # configure the network and the natting
         gateway = data.gateway if data.gateway else None
-        prefab.net.netconfig(data.name, data.ipAddr, data.netmask, gateway=gateway, masquerading=data.masquerading)
+        prefab.system.net.netconfig(data.name, data.ipAddr, data.netmask, gateway=gateway, masquerading=data.masquerading)
         prefab.processmanager.start('systemd-networkd')
 
     if data.dhcpEnable:

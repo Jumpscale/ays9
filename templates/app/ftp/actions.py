@@ -16,7 +16,7 @@ def install(job):
     if not prefab.core.isLinux:
         raise RuntimeError('unfortunetly support is available for linux systems only.')
     prefab.core.sudomode = True
-    prefab.package.update()
+    prefab.system.package.update()
     prefab.development.python.install()
     prefab.development.pip.ensure()
     config = {}

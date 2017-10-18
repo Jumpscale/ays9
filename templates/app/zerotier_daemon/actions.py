@@ -6,7 +6,7 @@ def install(job):
     prefab = service.parent.executor.prefab
 
     # build and install zerotier
-    prefab.package.update()
+    prefab.system.package.update()
     zerotier_client = prefab.apps.zerotier
     zerotier_client.build()
     zerotier_client.install()

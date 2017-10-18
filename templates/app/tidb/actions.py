@@ -11,5 +11,5 @@ def install(job):
     # dbpassword = service.model.data.dbpass
 
     prefab.apps.tidb.start()
-    prefab.package.mdupdate()
-    prefab.package.install('mysql-client-core-5.7')
+    prefab.system.package.mdupdate()
+    prefab.system.package.install('mysql-client-core-5.7')

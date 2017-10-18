@@ -32,7 +32,7 @@ def replicate(job):
         return
     os_base = service.producers['os'][0]
     prefab_base = os_base.executor.prefab
-    prefab_base.tools.rsync.build()
+    prefab_base.system.rsync.build()
 
     for pool in service.producers['storage_pool']:
         os_remote = pool.producers['os'][0]

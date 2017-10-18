@@ -41,8 +41,8 @@ def install(job):
 
     base = j.sal.fs.joinPaths('/var', 'dockers', service.name)
     prefab.core.dir_ensure(base)
-    prefab.package.mdupdate()
-    prefab.package.ensure('python3-pip')
+    prefab.system.package.mdupdate()
+    prefab.system.package.ensure('python3-pip')
     prefab.development.pip.install('docker-compose')
     prefab.core.file_write(
         j.sal.fs.joinPaths(base, 'docker-compose.yml'),

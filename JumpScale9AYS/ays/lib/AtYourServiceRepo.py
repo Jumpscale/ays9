@@ -692,7 +692,7 @@ class AtYourServiceRepo():
         if push and self.git.repo.remotes and "git@" in self.git.repo.remotes[0].url:
                 try:
                     local_prefab = j.tools.prefab.local
-                    key_path = local_prefab.ssh.keygen(name='ays_repos_key').split(".pub")[0]
+                    key_path = local_prefab.system.ssh.keygen(name='ays_repos_key').split(".pub")[0]
                     if not j.clients.ssh.SSHAgentCheckKeyIsLoaded(key_path):
                         j.clients.ssh.SSHKeysLoad(key_path)
                     self.git.repo.git.push('--all')

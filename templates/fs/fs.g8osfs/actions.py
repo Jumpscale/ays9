@@ -1,8 +1,8 @@
 def install(job):
     prefab = job.service.executor.prefab
 
-    prefab.package.mdupdate()
-    prefab.package.install('fuse')
+    prefab.system.package.mdupdate()
+    prefab.system.package.install('fuse')
     bin_location = '/usr/local/bin/fs'
     prefab.core.dir_ensure('/usr/local/bin')
     prefab.core.file_download('https://stor.jumpscale.org/public/fs', bin_location)
