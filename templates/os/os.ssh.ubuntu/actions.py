@@ -33,6 +33,8 @@ def install(job):
                                             allow_agent=True, look_for_keys=True, timeout=5, usecache=False,
                                             passphrase=passphrase, key_filename=key_path)
     executor.prefab.ssh.authorize("root", sshkey.model.data.keyPub)
+    # Reset prefab instance to use root for upcoming prefab executions instead of normal user
+    j.tools.prefab.resetAll()
     service.saveAll()
 
 
