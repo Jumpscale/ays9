@@ -174,6 +174,21 @@ async def getCurrentRun(request, repository):
     return json({}, 204)
 
 
+async def updateTemplates(request, repository):
+    '''
+    update templates in a repo
+    It is handler for GET /ays/repository/<repository>/template/update
+    '''
+    try:
+        repo = get_repo(repository)
+    except j.exceptions.NotFound as e:
+        return json({'error': e.message}, 404)
+    repo_params = repository_view(repo)
+    j.clients.git.pullGitRepo(url=repo_params['url'], dest=repo_params['path'])
+    template_repo_collection = j.atyourservice.server.templateRepos
+    template_repo_collection._template_repos[repo_params['path']]._load()
+    return json({'message': 'Templates Updated'}, 200)
+
 async def listTemplates(request, repository):
     '''
     list all templates
@@ -648,14 +663,17 @@ async def listServices(request, repository):
     List all services in the repository
     It is handler for GET /ays/repository/<repository>/service
     '''
+    actor = request.args.get('actor', '')
+    role = request.args.get('role', '')
+    service = request.args.get('service', '')
     try:
         repo = get_repo(repository)
     except j.exceptions.NotFound as e:
         return json({'error': e.message}, 404)
 
     services = list()
-    for s in repo.services:
-        services.append({'role': s.model.role, 'name': s.name})
+    for s in repo.servicesFind(actor=actor, role=role, name=service):
+        services.append({'actor': s.model.dbobj.actorName, 'name': s.name, 'role': s.model.role})
     services = sorted(services, key=lambda service: service['role'])
 
     return json(services, 200)
@@ -754,7 +772,7 @@ async def deleteServiceByName(request, name, role, repository):
         return json({'error': 'Service role:%s name:%s not found in the repo %s' % (role, name, repository)}, 404)
 
     try:
-        await service.asyncDelete()
+        service.delete()
     except j.exceptions.RuntimeError as e:
         error_msg = "Error during deletion of service:\n %s" % str(e)
         j.atyourservice.server.logger.exception(error_msg)

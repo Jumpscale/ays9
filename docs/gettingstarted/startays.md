@@ -44,6 +44,8 @@ Login to [ItsYou.online](http://ItsYou.online), click **+ ADD** on the **Setting
 
 ![](Images/create-ays-key1.png)
 
+Make sure to **enable client credentials grant type**
+
 Click **Create**, copy the generated secret value for later use, and then close the dialog.
 
 ![](Images/create-ays-key2.png)
@@ -70,7 +72,7 @@ As a first test use the AYS command line tool to create an AYS Repository:
 ays repo create -n "repo1" -g http://your-first-ays-repo
 ```
 
-This will create your AYS repository in a subdirectory (`repo1`) of `/optvar/cockpit_repos`.
+This will create your AYS repository in a subdirectory (`repo1`) of `/host/var/cockpit_repos`.
 
 
 Next you will probably want to join you container into your ZeroTier network, as documented in [Join Your ZeroTier Network](zt.md).

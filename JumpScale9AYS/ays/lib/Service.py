@@ -25,13 +25,12 @@ class Service:
         self = cls(aysrepo)
         try:
             await self._initFromActor(actor=actor, args=args, name=name, context=context)
-            self.aysrepo.db.services.services[self.model.key] = self
             self._ensure_recurring()
             self._ensure_longjobs()
             return self
         except Exception as e:
             # cleanup if init fails
-            await self.asyncDelete()
+            self.delete()
             raise e
 
     @classmethod
@@ -47,7 +46,6 @@ class Service:
     def init_from_fs(cls, aysrepo, path, context=None):
         self = cls(aysrepo=aysrepo)
         self._loadFromFS(path)
-        self.aysrepo.db.services.services[self.model.key] = self
         self._ensure_recurring()
         self._ensure_longjobs()
         return self
@@ -137,8 +135,8 @@ class Service:
 
         await self._initProducers(actor, args)
 
-        self.save()
         self.aysrepo.db.services.services[self.model.key] = self
+        self.save()
 
         await self.init(context=context)
 
@@ -313,6 +311,7 @@ class Service:
             if actor_action.name in self.model.actions:
                 self.model.actions[actor_action.name].actionKey = actor_action.actionKey
 
+        self.aysrepo.db.services.services[self.model.key] = self
         self.save()
 
     def saveToFS(self):
@@ -329,11 +328,11 @@ class Service:
             j.sal.fs.writeFile(path4, self.model.dbobj.dataSchema)
 
     def save(self):
-        if not self._deleted:
+        if not self._deleted and self.model.key in self.aysrepo.db.services.services:
             self.model.save()
 
     def saveAll(self):
-        if not self._deleted:
+        if not self._deleted and self.model.key in self.aysrepo.db.services.services:
             self.model.save()
             self.saveToFS()
 
@@ -341,7 +340,7 @@ class Service:
         # service are kept in memory so we never need to relad anyomre
         pass
 
-    async def checkDelete(self):
+    def checkDelete(self):
         """
         Executes a dryrun to check if deleting service is OK.
         To ensure that removal won't break minimum consumption required by a consumer for the service or any of its children.
@@ -349,7 +348,7 @@ class Service:
         """
         if self.children:
             for child in self.children:
-                oktodelete, msg = await child.checkDelete()
+                oktodelete, msg = child.checkDelete()
                 if not oktodelete:
                     return False, msg
 
@@ -367,14 +366,6 @@ class Service:
         return True, "OK"
 
     def delete(self):
-        futur = asyncio.run_coroutine_threadsafe(self.asyncDelete(), loop=self.aysrepo._loop)
-        try:
-            return futur.result()
-        except Exception as e:
-            self.logger.error("error during delete service: %s" % e)
-            raise
-
-    async def asyncDelete(self):
         """
         Deletes service and its children from database and filesystem if safe.
 
@@ -382,14 +373,14 @@ class Service:
         """
         producer_removed = "{}!{}".format(self.model.role, self.name)
 
-        oktodelete, msg = await self.checkDelete()
+        oktodelete, msg = self.checkDelete()
         if not oktodelete:
             raise j.exceptions.RuntimeError(msg)
 
         self._deleted = True
         if self.children:
             for service in self.children:
-                await service.asyncDelete()
+                service.delete()
 
         # cancel all recurring tasks
         self.stop()
@@ -444,9 +435,10 @@ class Service:
         producers = {}
         for prod in self.model.dbobj.producers:
             role = prod.actorName.split(".")[0]
-            if role not in producers:
-                producers[role] = []
-            producers[role].append(self.aysrepo.serviceGet(key=prod.key))
+            if prod.key in self.aysrepo.db.services.services:
+                if role not in producers:
+                    producers[role] = []
+                producers[role].append(self.aysrepo.serviceGet(key=prod.key))
         return producers
 
     @property
@@ -455,9 +447,10 @@ class Service:
         consumers = {}
         for cons in self.model.dbobj.consumers:
             role = cons.actorName.split(".")[0]
-            if role not in consumers:
-                consumers[role] = []
-            consumers[role].append(self.aysrepo.serviceGet(key=cons.key))
+            if cons.key in self.aysrepo.db.services.services:
+                if role not in consumers:
+                    consumers[role] = []
+                consumers[role].append(self.aysrepo.serviceGet(key=cons.key))
         return consumers
 
     def isConsumedBy(self, service):

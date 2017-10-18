@@ -32,14 +32,14 @@ def install(job):
     if master['fstype'] != 'btrfs':
         # creating the filesystem on all of the devices.
         cmd = 'mkfs.btrfs -f %s' % ' '.join(map(lambda e: '/dev/%s' % e['name'], btrfs_devices))
-        code, out, err = prefab.core.run(prefab.core.sudo_cmd(cmd))
+        code, out, err = prefab.core.sudo(cmd)
         if code != 0:
             raise RuntimeError('failed to create filesystem: %s' % err)
 
     if master['mountpoint'] is None:
         prefab.core.dir_ensure(service.model.data.mount)
         cmd = 'mount /dev/%s %s' % (master['name'], service.model.data.mount)
-        code, out, err = prefab.core.run(prefab.core.sudo_cmd(cmd))
+        code, out, err = prefab.core.sudo(cmd)
         if code != 0:
             raise RuntimeError('failed to mount device: %s' % err)
 

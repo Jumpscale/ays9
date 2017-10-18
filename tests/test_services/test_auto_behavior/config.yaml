@@ -1,23 +1,24 @@
 doc:
   property:
-  - sshkeys2: ''
+  - srvs2: ''
   - result: ''
-  - vdcfarm: ''
-  - sshkeys: ''
+  - testDummy: ''
+  - srvs: ''
 links:
   consume:
-  - argname: sshkeys2
+  - argname: srvs2
     auto: true
     max: 100
     min: 2
-    role: sshkey
-  - argname: sshkeys
+    role: srv
+  - argname: srvs
     auto: true
     max: 100
     min: 0
-    role: sshkey
+    role: srv
   parent:
+    argname: testDummy
     auto: true
     optional: false
-    role: vdcfarm
+    role: test_dummy
 recurring: []

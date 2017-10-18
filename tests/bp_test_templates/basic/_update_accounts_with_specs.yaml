@@ -1,6 +1,0 @@
-test_update_accounts_with_specs__test:
-
-actions:
-   - action: 'install'
-   - action: 'test'
-     actor: test_update_accounts_with_specs

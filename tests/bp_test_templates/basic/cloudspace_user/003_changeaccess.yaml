@@ -1,4 +1,0 @@
-vdc__cloudspace_user:
-    uservdc:
-      - name: cloudspace_user
-        accesstype: 'ACDRUX'

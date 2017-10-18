@@ -26,13 +26,10 @@ def test(job):
     model.data.result = RESULT_OK % job.service.name
     try:
         if job.service.name == "2min":
-            if 'sshkeys' not in job.service.producers:
+            if 'srv' not in job.service.producers:
                 model.data.result = RESULT_FAILED % ("Producers not created while min value is 2")
-            elif len(job.service.producers['sshkeys']) != 2:
+            elif len(job.service.producers['srv']) != 2:
                 model.data.result = RESULT_FAILED % ("Wrong number of producers is created")
     except:
         model.data.result = RESULT_ERROR % str(sys.exc_info()[:2])
     job.service.save()
-        
-
-    
