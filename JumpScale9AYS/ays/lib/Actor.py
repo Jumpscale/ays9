@@ -117,9 +117,11 @@ class Actor():
 
         services = self.aysrepo.servicesFind(actor=self.model.name)
 
+        data_schema_procchange = False
         if self.model.dbobj.serviceDataSchema != template.schemaCapnpText:
             # update schema in the actor itself
             self.model.dbobj.serviceDataSchema = template.schemaCapnpText
+            data_schema_procchange = True
 
         # update existsing service schema
         for service in services:
@@ -129,7 +131,7 @@ class Actor():
                 # no need to manually copy the data cause they are still in the service.model.dbobj.data
                 # setting _data to None force to recreate the capnp msg and fill it with content of service.model.dbobj.data
 
-        if self.model.dbobj.serviceDataSchema != template.schemaCapnpText:
+        if data_schema_procchange:
             self.processChange("dataschema", context=context)
 
         if self.model.dbobj.dataUI != template.dataUI:
