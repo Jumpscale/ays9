@@ -287,12 +287,13 @@ async def createRun(request, repository):
     callback_url = request.args.get('callback_url', None)
     retries = request.args.get('retries', None)
     try:
-        if retries:
-            retries = retries.split(",")
-            repo.run_scheduler.configure_retry_delay(retries)
         to_execute = repo.findScheduledActions()
         run = repo.runCreate(to_execute, context={"token": extract_token(request)})
         run.save()
+        if retries:
+            retries = retries.split(",")
+            run.retries = retries
+            run.save()
         if not simulate:
             await repo.run_scheduler.add(run)
         if callback_url:

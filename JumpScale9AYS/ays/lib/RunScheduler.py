@@ -4,15 +4,6 @@ from js9 import j
 NORMAL_RUN_PRIORITY = 1
 ERROR_RUN_PRIORITY = 10
 
-RETRY_DELAY = {
-    1: 10,  # 10sec
-    2: 30,  # 30sec
-    3: 60,  # 1min
-    4: 300,  # 5min
-    5: 600,  # 10min
-    6: 1800,  # 30min
-}  # total: 46min 10sec
-
 
 class RunScheduler:
     """
@@ -24,10 +15,6 @@ class RunScheduler:
     """
 
     def __init__(self, repo):
-        self.retry_config = RETRY_DELAY
-        if j.atyourservice.server.dev_mode:
-            for key, _ in self.retry_config.items():
-                self.retry_config[key] = RETRY_DELAY[1]
         self.logger = j.logger.get("j.ays.RunScheduler")
         self.repo = repo
         self._git = j.clients.git.get(repo.path, check_path=False)
@@ -38,17 +25,18 @@ class RunScheduler:
         self._is_running = False
         self._current = None
 
-    def configure_retry_delay(self, retry_config):
+    def get_run_retries(self, retries):
         """
         sets the retry delays and number
         @param retry_config: list containing the delay values.
         """
         retry_delay = {}
-        for idx, value in enumerate(retry_config):
-            if idx == 0 and value == '0':
-                break
-            retry_delay[idx + 1] = int(value)
-        self.retry_config = retry_delay
+        if retries[0] != '0':
+            for idx, value in enumerate(retries):
+                if value == '0':
+                    raise j.exceptions.Input("Retry delay value can't be 0")
+                retry_delay[idx + 1] = int(value)
+        return retry_delay
 
     @property
     def status(self):
@@ -57,19 +45,6 @@ class RunScheduler:
         if not self._accept and self._is_running:
             return "stopping"
         return "halted"
-
-    def get_retry_level(self, run):
-        """
-        find lowest error level
-        """
-        levels = set()
-        for step in run.steps:
-            for job in step.jobs:
-                service_action_obj = job.service.model.actions[job.model.dbobj.actionName]
-                if service_action_obj.errorNr > 0:
-                    levels.add(service_action_obj.errorNr)
-        if levels:
-            return min(levels)
 
     @property
     def current_run(self):
@@ -120,7 +95,7 @@ class RunScheduler:
                 self._commit(run)
             except:
                 # retry the run after a delay, skip if 0 retries are configured.
-                if self.retry_config:
+                if self.get_run_retries(run.retries):
                     await self._retry(run)
             finally:
                 self._current = None
@@ -183,13 +158,14 @@ class RunScheduler:
                 if current_task in self._retries:
                     self._retries.remove(current_task)
 
-            retry_level = self.get_retry_level(run)
+            retry_level = run.get_retry_level()
+            retry_config = self.get_run_retries(run.retries)
             # if error number exceed size of config won't reschedule
-            if retry_level > len(self.retry_config):
+            if retry_level > len(retry_config):
                 self.logger.info("Reached max numbers of retries configured")
                 return
             else:
-                delay = self.retry_config[retry_level]
+                delay = retry_config[retry_level]
 
             self.logger.info("reschedule run %s in %ssec", run.model.key, delay)
             await asyncio.sleep(delay)

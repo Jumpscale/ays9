@@ -4,6 +4,7 @@ from js9 import j
 import json
 import aiohttp
 colored_traceback.add_hook(always=True)
+RETRY_DELAY = ['10', '30', '60', '300', '600', '1800']  # time of each retry in seconds, total: 46min 10sec
 
 
 class Run:
@@ -66,6 +67,19 @@ class Run:
                     return True
         return False
 
+    def get_retry_level(self):
+        """
+        find lowest error level
+        """
+        levels = set()
+        for step in self.steps:
+            for job in step.jobs:
+                service_action_obj = job.service.model.actions[job.model.dbobj.actionName]
+                if service_action_obj.errorNr > 0:
+                    levels.add(service_action_obj.errorNr)
+        if levels:
+            return min(levels)
+
     @property
     def error(self):
         out = "%s\n" % self
@@ -87,6 +101,20 @@ class Run:
     @callbackUrl.setter
     def callbackUrl(self, callbackUrl):
         self.model.dbobj.callbackUrl = callbackUrl
+
+    @property
+    def retries(self):
+        if not self.model.dbobj.retries:
+            # if dev mode will only use the first value of default config with default number of retries
+            if j.atyourservice.server.dev_mode:
+                self.model.dbobj.retries = [RETRY_DELAY[0]] * len(RETRY_DELAY)
+            else:
+                self.model.dbobj.retries = RETRY_DELAY
+        return self.model.dbobj.retries
+
+    @retries.setter
+    def retries(self, retries):
+        self.model.dbobj.retries = retries
 
     def reverse(self):
         ordered = []
@@ -138,14 +166,14 @@ class Run:
             self.save()
             if self.callbackUrl:
                 runInfo = {}
-                retry = self.aysrepo.run_scheduler.get_retry_level(self)
+                retry = self.get_retry_level()
                 if retry:
-                    run_retries = list(self.aysrepo.run_scheduler.retry_config.values())
-                    if run_retries:
+                    if self.retries[0] != '0':
+                        remaining_retries = [x for x in self.retries]
                         runInfo = {
                             'retry-number': retry,
-                            'duration': run_retries[retry - 1],
-                            'remaining-retries': run_retries[retry:]
+                            'duration': self.retries[retry - 1],
+                            'remaining-retries': remaining_retries[retry:]
                         }
                 data = {'runid': self.key, 'runState': self.state.__str__(), 'retries': runInfo}
                 async with aiohttp.ClientSession() as session:

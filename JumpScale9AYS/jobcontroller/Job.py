@@ -53,9 +53,11 @@ def _execute_cb(job, future):
         if service_action_obj:
             service_action_obj.state = 'error'
             # make sure we don't keep increasing this number forever, it could overflow.
-            repo = j.atyourservice.server.aysRepos.get(path=job.model.dbobj.repoKey)
-            if service_action_obj.errorNr < len(repo.run_scheduler.retry_config) + 1:
-                service_action_obj.errorNr += 1
+            if job.model.dbobj.runKey:
+                run = j.core.jobcontroller.db.runs.get(job.model.dbobj.runKey)
+                run = run.objectGet()
+                if service_action_obj.errorNr < len(run.retries) + 1:
+                    service_action_obj.errorNr += 1
             job.service.model.dbobj.state = 'error'
 
         ex = exception if exception is not None else TimeoutError()

@@ -96,15 +96,15 @@ def run_view(run):
                 'result': job.model.dbobj.result
             })
         obj['steps'].append(aystep)
-    retry = run.aysrepo.run_scheduler.get_retry_level(run)
+    retry = run.get_retry_level()
     obj['retries'] = {}
     if retry:
-        run_retries = list(run.aysrepo.run_scheduler.retry_config.values())
-        if run_retries:
+        if run.retries[0] != '0':
+            remaining_retries = [x for x in run.retries]
             obj['retries'] = {
                 'retry-number': retry,
-                'duration': run_retries[retry - 1],
-                'remaining-retries': run_retries[retry:]
+                'duration': run.retries[retry - 1],
+                'remaining-retries': remaining_retries[retry:]
             }
 
     return obj

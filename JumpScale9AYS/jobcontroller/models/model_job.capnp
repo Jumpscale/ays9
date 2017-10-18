@@ -220,4 +220,5 @@ struct Run {
     #key of repo where run is created
     repo @5 :Text;
     callbackUrl @6 :Text;
+    retries @7 :List(Text);
 }
