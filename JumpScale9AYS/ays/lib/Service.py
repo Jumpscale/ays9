@@ -762,7 +762,11 @@ class Service:
             return result
 
     def getJob(self, actionName, args={}, context=None):
-        action = self.model.actions[actionName]
+        try:
+            action = self.model.actions[actionName]
+        except KeyError:
+            raise j.exceptions.Input("action %s dos not exists on %s" % (actionName, str(self)))
+
         jobobj = j.core.jobcontroller.db.jobs.new()
         jobobj.dbobj.repoKey = self.aysrepo.path
         jobobj.dbobj.actionKey = action.actionKey
