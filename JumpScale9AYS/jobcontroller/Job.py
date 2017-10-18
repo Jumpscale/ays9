@@ -79,7 +79,7 @@ def _execute_cb(job, future):
 
         job.logger.info("{} done successfuly".format(job))
 
-    if service_action_obj.period > 0:   # recurring action.
+    if service_action_obj and service_action_obj.period > 0:   # recurring action.
         job.model.save()
         job.model.delete()
         del job
@@ -308,8 +308,8 @@ class Job:
                 service_action_obj = self.service.model.actions[self.model.dbobj.actionName]
                 service_action_obj.state = str(self.model.dbobj.state)
 
-            if not service_action_obj.longjob:
-                self.service.saveAll()
+                if not service_action_obj.longjob:
+                    self.service.saveAll()
 
         if not j.sal.fs.exists(j.sal.fs.joinPaths(self.service.aysrepo.path, "services")):
             return # repo destroyed or service is deleted.

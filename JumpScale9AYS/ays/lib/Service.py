@@ -24,6 +24,7 @@ class Service:
     async def init_from_actor(cls, aysrepo, actor, args, name, context=None):
         self = cls(aysrepo)
         try:
+            self.logger.debug("initing [{}] from actor".format(name))
             await self._initFromActor(actor=actor, args=args, name=name, context=context)
             self._ensure_recurring()
             self._ensure_longjobs()
@@ -36,6 +37,7 @@ class Service:
     @classmethod
     def init_from_model(cls, aysrepo, model):
         self = cls(aysrepo=aysrepo)
+        self.logger.debug("initing [{}] from model".format(model.name))
         self.model = model
         self.aysrepo.db.services.services[self.model.key] = self
         self._ensure_recurring()
@@ -45,6 +47,7 @@ class Service:
     @classmethod
     def init_from_fs(cls, aysrepo, path, context=None):
         self = cls(aysrepo=aysrepo)
+        self.logger.debug("initing [{}] from FS".format(path))
         self._loadFromFS(path)
         self._ensure_recurring()
         self._ensure_longjobs()
@@ -290,7 +293,6 @@ class Service:
         get content from fs and load in object
         only for DR purposes, std from key value stor
         """
-        self.logger.debug("load service from FS: %s" % path)
         if self.model is None:
             self.model = self.aysrepo.db.services.new()
 
@@ -305,7 +307,6 @@ class Service:
 
         # relink actions from the actor to be sure we have good keys
         actor = self.aysrepo.actorGet(name=self.model.dbobj.actorName)
-
         for actor_action in actor.model.dbobj.actions:
             # search correct action in actor model
             if actor_action.name in self.model.actions:
