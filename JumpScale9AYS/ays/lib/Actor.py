@@ -112,6 +112,7 @@ class Actor():
 
         self._processActionsFile(j.sal.fs.joinPaths(template.path, "actions.py"), reschedule=reschedule, context=context)
         self._initRecurringActions(template)
+        self._initLongjobs(template)
         self._initTimeouts(template)
         self._initEvents(template)
 
@@ -137,6 +138,8 @@ class Actor():
         if self.model.dbobj.dataUI != template.dataUI:
             self.model.dbobj.dataUI = template.dataUI
             self.processChange("ui", context=context)
+        
+        
 
         self.saveAll()
 
@@ -150,11 +153,18 @@ class Actor():
                     act.timeout = action.timeout
 
                 if action.longjob is True:
-                    if s._longrunning_tasks[action.name].actioncode != self.model.actionsCode[action.name]:
-                        print("Restarting longjob: ", action.name)
+                    if action.name in s._longrunning_tasks and s._longrunning_tasks[action.name].actioncode != self.model.actionsCode[action.name]:
+                        self.logger.info("Restarting longjob: ", action.name)
                         s._longrunning_tasks[action.name].stop()
                         del s._longrunning_tasks[action.name]
-                        s._ensure_longjobs()
+                    
+                    # if action is updated in the config to be long running, then update the service
+                    elif action.longjob is True and action.name not in s._longrunning_tasks:
+                        self.logger.info('Updating action {} on service {} to be long running.'.format(action.name, s))
+                        act = s.model.actionGet(action.name)
+                        act.longjob = action.longjob
+
+                    s._ensure_longjobs()
 
             s.model.reSerialize()
             s.saveAll()

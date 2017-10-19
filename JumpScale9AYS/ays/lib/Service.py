@@ -585,14 +585,15 @@ class Service:
             # then set the lastrun to the value it was before update
             recurring_lastrun = {}
             event_lastrun = {}
+            
 
             for event in self.model.actionsEvent.values():
                 event_lastrun[event.action] = event.lastRun
             for recurring in self.model.actionsRecurring.values():
                 recurring_lastrun[recurring.action] = recurring.lastRun
 
-            self._initRecurringActions(actor)
-            self._initEventActions(actor)
+            # self._initRecurringActions(actor)
+            # self._initEventActions(actor)
 
             for action, lastRun in event_lastrun.items():
                 self.model.actionsEvent[action].lastRun = lastRun
@@ -812,8 +813,18 @@ class Service:
             self.logger.info("Starting long running job {} with {} ".format(action, info))
             if action not in self._longrunning_tasks:
                 task = LongRunningTask(service=self, action=action, loop=self._loop)
-                task.start()
                 self._longrunning_tasks[action] = task
+            # start task
+            self._longrunning_tasks[action].start()
+
+            # stop long running tasks that does not exist anymore
+            # duplicate code !!!!
+            needed = set(self.model.actionsLongRunning.keys())
+            actual = set(self._longrunning_tasks.keys())
+            for name in actual.difference(needed):
+                task = self._recurring_tasks[name]
+                task.stop()
+                del self._longrunning_tasks[name]
 
     def _ensure_recurring(self):
         """
