@@ -80,6 +80,19 @@ class Run:
         if levels:
             return min(levels)
 
+    def get_retry_info(self):
+        runInfo = {}
+        retry = self.get_retry_level()
+        if retry and self.retries[0] != '0' and retry <= len(self.retries):
+            # capnp list to python list
+            remaining_retries = [x for x in self.retries]
+            runInfo = {
+                'retry-number': retry,
+                'duration': self.retries[retry - 1],
+                'remaining-retries': remaining_retries[retry:]
+            }
+        return runInfo
+
     @property
     def error(self):
         out = "%s\n" % self
@@ -165,16 +178,7 @@ class Run:
         finally:
             self.save()
             if self.callbackUrl:
-                runInfo = {}
-                retry = self.get_retry_level()
-                if retry:
-                    if self.retries[0] != '0':
-                        remaining_retries = [x for x in self.retries]
-                        runInfo = {
-                            'retry-number': retry,
-                            'duration': self.retries[retry - 1],
-                            'remaining-retries': remaining_retries[retry:]
-                        }
+                runInfo = self.get_retry_info()
                 data = {'runid': self.key, 'runState': self.state.__str__(), 'retries': runInfo}
                 async with aiohttp.ClientSession() as session:
                     await session.post(self.callbackUrl, headers={'Content-type': 'application/json'}, data=json.dumps(data))

@@ -96,16 +96,7 @@ def run_view(run):
                 'result': job.model.dbobj.result
             })
         obj['steps'].append(aystep)
-    retry = run.get_retry_level()
-    obj['retries'] = {}
-    if retry:
-        if run.retries[0] != '0':
-            remaining_retries = [x for x in run.retries]
-            obj['retries'] = {
-                'retry-number': retry,
-                'duration': run.retries[retry - 1],
-                'remaining-retries': remaining_retries[retry:]
-            }
+    obj['retries'] = run.get_retry_info()
 
     return obj
 
