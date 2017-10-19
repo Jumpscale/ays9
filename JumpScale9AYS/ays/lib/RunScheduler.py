@@ -31,11 +31,11 @@ class RunScheduler:
         @param retry_config: list containing the delay values.
         """
         retry_delay = {}
-        if retries[0] != '0':
+        if retries[0] != 0:
             for idx, value in enumerate(retries):
                 if value == '0':
                     raise j.exceptions.Input("Retry delay value can't be 0")
-                retry_delay[idx + 1] = int(value)
+                retry_delay[idx + 1] = value
         return retry_delay
 
     @property

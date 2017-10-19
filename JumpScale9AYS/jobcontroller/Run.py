@@ -4,7 +4,7 @@ from js9 import j
 import json
 import aiohttp
 colored_traceback.add_hook(always=True)
-RETRY_DELAY = ['10', '30', '60', '300', '600', '1800']  # time of each retry in seconds, total: 46min 10sec
+RETRY_DELAY = [10, 30, 60, 300, 600, 1800]  # time of each retry in seconds, total: 46min 10sec
 
 
 class Run:
@@ -83,7 +83,7 @@ class Run:
     def get_retry_info(self):
         runInfo = {}
         retry = self.get_retry_level()
-        if retry and self.retries[0] != '0' and retry <= len(self.retries):
+        if retry and self.retries[0] != 0 and retry <= len(self.retries):
             # capnp list to python list
             remaining_retries = [x for x in self.retries]
             runInfo = {

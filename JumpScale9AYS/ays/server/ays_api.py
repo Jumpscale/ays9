@@ -291,7 +291,7 @@ async def createRun(request, repository):
         run = repo.runCreate(to_execute, context={"token": extract_token(request)})
         run.save()
         if retries:
-            retries = retries.split(",")
+            retries = [int(x) for x in retries.split(',')]
             run.retries = retries
             run.save()
         if not simulate:
@@ -303,6 +303,8 @@ async def createRun(request, repository):
 
     except j.exceptions.Input as e:
         return json({'error': e.msgpub}, 500)
+    except ValueError:
+        return json({'error': 'Only numbers allowed for retry config'}, 400)
 
 
 async def getRun(request, aysrun, repository):
