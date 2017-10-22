@@ -45,7 +45,6 @@ def _execute_cb(job, future):
         exception = err
         job.logger.info("{} has been cancelled".format(job))
 
-
     if exception is not None:
         # state state of job and run to error
         # this state will be check by RunStep and Run and it will raise an exception
@@ -54,8 +53,11 @@ def _execute_cb(job, future):
         if service_action_obj:
             service_action_obj.state = 'error'
             # make sure we don't keep increasing this number forever, it could overflow.
-            if service_action_obj.errorNr < 5:
-                service_action_obj.errorNr += 1
+            if job.model.dbobj.runKey:
+                run = j.core.jobcontroller.db.runs.get(job.model.dbobj.runKey)
+                run = run.objectGet()
+                if service_action_obj.errorNr < len(run.retries) + 1:
+                    service_action_obj.errorNr += 1
             job.service.model.dbobj.state = 'error'
 
         ex = exception if exception is not None else TimeoutError()

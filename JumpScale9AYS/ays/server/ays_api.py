@@ -274,21 +274,26 @@ async def createRun(request, repository):
     Create a run based on all the action scheduled. This call returns an AYSRun object describing what is going to hapen on the repository.
     This is an asyncronous call. To be notify of the status of the run when then execution is finised or when an error occurs, you need to specify a callback url.
     A post request will be send to this callback url with the status of the run and the key of the run. Using this key you can inspect in detail the result of the run
-    using the 'GET /ays/repository/{repository}/aysrun/{aysrun_key}' endpoint
+    using the 'GET /ays/repository/{repository}/aysrun/{aysrun_key}' endpoint.
+    By specifying the retries as a string of comma seperated values it is possible to configure the retry delay of the run scheduler,
+    with the number of retries being the number of specified values. For no retries send a string with only 0.
     It is handler for POST /ays/repository/<repository>/aysrun
     '''
-    import requests
     try:
         repo = get_repo(repository)
     except j.exceptions.NotFound as e:
         return json({'error': e.message}, 404)
     simulate = j.data.types.bool.fromString(request.args.get('simulate', 'False'))
     callback_url = request.args.get('callback_url', None)
-
+    retries = request.args.get('retries', None)
     try:
         to_execute = repo.findScheduledActions()
         run = repo.runCreate(to_execute, context={"token": extract_token(request)})
         run.save()
+        if retries:
+            retries = [int(x) for x in retries.split(',')]
+            run.retries = retries
+            run.save()
         if not simulate:
             await repo.run_scheduler.add(run)
         if callback_url:
@@ -298,6 +303,8 @@ async def createRun(request, repository):
 
     except j.exceptions.Input as e:
         return json({'error': e.msgpub}, 500)
+    except ValueError:
+        return json({'error': 'Only numbers allowed for retry config'}, 400)
 
 
 async def getRun(request, aysrun, repository):
