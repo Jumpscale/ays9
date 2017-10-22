@@ -647,6 +647,7 @@ class AtYourServiceRepo():
                 job.model.dbobj.profile = profile
                 job.model.dbobj.debug = profile if profile is True else debug
                 job.model.dbobj.tags = jobs_tags if jobs_tags else []
+                job.model.dbobj.runKey = run.model.key
                 if context is not None:
                     for k, v in context.items():
                         job.context[k] = v
