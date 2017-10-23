@@ -1,0 +1,5 @@
+longjobs:
+    - action: long1
+      depends: []
+    - action: long2
+      depends: []
