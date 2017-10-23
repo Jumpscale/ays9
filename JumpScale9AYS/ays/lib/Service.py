@@ -810,12 +810,12 @@ class Service:
 
     def _ensure_longjobs(self):
         for action, info in self.model.actionsLongRunning.items():
-            self.logger.info("Starting long running job {} with {} ".format(action, info))
             if action not in self._longrunning_tasks:
+                self.logger.info("Starting long running job {} with {} ".format(action, info))
                 task = LongRunningTask(service=self, action=action, loop=self._loop)
                 self._longrunning_tasks[action] = task
-            # start task
-            self._longrunning_tasks[action].start()
+                # start task
+                self._longrunning_tasks[action].start()
 
             # stop long running tasks that does not exist anymore
             # duplicate code !!!!
