@@ -822,8 +822,7 @@ class Service:
             needed = set(self.model.actionsLongRunning.keys())
             actual = set(self._longrunning_tasks.keys())
             for name in actual.difference(needed):
-                task = self._recurring_tasks[name]
-                task.stop()
+                self._longrunning_tasks[name].stop()
                 del self._longrunning_tasks[name]
 
     def _ensure_recurring(self):

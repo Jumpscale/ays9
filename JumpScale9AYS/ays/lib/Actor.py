@@ -144,6 +144,7 @@ class Actor():
         self.saveAll()
 
         for s in services:
+            call_ensure_longjobs = False
             for action in self.model.dbobj.actions:
                 if action.period > 0:
                     act = s.model.actionGet(action.name)
@@ -162,12 +163,15 @@ class Actor():
                         self.logger.info('Updating action {} on service {} to be long running.'.format(action.name, s))
                         act = s.model.actionGet(action.name)
                         act.longjob = action.longjob
-                    s._ensure_longjobs()
+                    call_ensure_longjobs = True
                 elif action.longjob is False and action.name in s._longrunning_tasks:
                     self.logger.info('Removing action {} on service {} from long running tasks'.format(action.name, s))
                     act = s.model.actionGet(action.name)
                     act.longjob = action.longjob
-                    s._ensure_longjobs()
+                    call_ensure_longjobs = True
+
+            if call_ensure_longjobs:
+                s._ensure_longjobs()
 
             s.model.reSerialize()
             s.saveAll()
@@ -236,15 +240,13 @@ class Actor():
         long_jobs_actions = [config['action'] for config in template.longjobsConfig]
         for actionname, model in self.model.actions.items():
             if actionname in long_jobs_actions:
-                model = self.model.actions[actionname]
                 self.model.actions[actionname].longjob = True
                 self.model.save()
                 ac = j.core.jobcontroller.db.actions.get(key=model.actionKey)
                 ac.timeout = 0
                 ac.longjob = True
                 ac.save()
-            elif self.model.actions[actionname].longjob is True:
-                model = self.model.actions[actionname]
+            elif model.longjob is True:
                 self.model.actions[actionname].longjob = False
                 self.model.save()
                 ac = j.core.jobcontroller.db.actions.get(key=model.actionKey)
