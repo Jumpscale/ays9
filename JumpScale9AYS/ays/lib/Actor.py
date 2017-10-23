@@ -233,8 +233,9 @@ class Actor():
                 ac.save()
 
     def _initLongjobs(self, template):
+        long_jobs_actions = [config['action'] for config in template.longjobsConfig]
         for actionname, model in self.model.actions.items():
-            if actionname in template.longjobsConfig:
+            if actionname in long_jobs_actions:
                 model = self.model.actions[actionname]
                 self.model.actions[actionname].longjob = True
                 self.model.save()
