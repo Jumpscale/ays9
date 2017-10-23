@@ -66,7 +66,8 @@ setup(
         'JumpScale9Lib>=9.1.2',
         'jsonschema>=2.6.0',
         'python-jose==1.3.2',
-        'sanic>=0.5.4'
+        'sanic>=0.5.4',
+        'aiohttp>=2.2.5'
     ],
     cmdclass={
         'install': install,

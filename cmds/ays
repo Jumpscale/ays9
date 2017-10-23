@@ -494,14 +494,15 @@ def _print_run(run, logs=False):
 @click.option('--profile', default=False, is_flag=True, help='enable profiling of the jobs')
 @click.option('--follow', '-f', is_flag=True, help='follow run execution')
 @click.option('--callback', '-c', default=None, help='callbackUrl to which run state will be sent after the run is finished')
-def create(assume_yes, force, debug, profile, follow, callback):
+@click.option('--retries', '-r', default=None, help='Configuration for run scheduler as comma separated values')
+def create(assume_yes, force, debug, profile, follow, callback, retries):
     """
     Look for all action with a state 'schedule', 'changed' or 'error' and create a run.
     A run is an collection of actions that will be run on the repository.
     """
     print("Creation of the run...")
     try:
-        resp = ayscl.api.ays.createRun(data=None, repository=_current_repo_name(), query_params={'simulate': True, 'callback_url': callback})
+        resp = ayscl.api.ays.createRun(data=None, repository=_current_repo_name(), query_params={'simulate': True, 'callback_url': callback, 'retries': retries})
     except Exception as e:
         print("Error during creation of the run: {}".format(_extract_error(e)))
         return
