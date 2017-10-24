@@ -4,7 +4,7 @@ Tests are AYS driven meaning they are going to be executed within AYS server.
 
 ## Writing a test
 
-- Create an AYS repository in the `tests` directory
+- Create an AYS repository in the `tests` directory [If required]
 - Create a test actortemplate under `tests/test_services`
 - In `bp_test_templates` create a blueprint to create an AYS service.
 
@@ -24,11 +24,7 @@ Make sure to execute the initialization blueprints of your test repository to re
 
 
 ## Running the test suite manually
-start `js9` shell in `ays9` directory
-```
-import testrunner
-testrunner.main()
-```
+AYS has its own testrunner, please visit [../../ays_testrunner/readme.md] for more information.
 
 
 ## Example

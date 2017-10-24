@@ -591,8 +591,8 @@ class BaseRunner:
                 header = 'Test {}'.format(test.name)
                 print(header)
                 print('-' * len(header))
-                if failed_test.result:
-                    print('\n'.join(failed_test.result))
+                if failed_test.errors:
+                    print('\n'.join(failed_test.errors))
                 if failed_test.exc_info:
                     print(failed_test.exc_info)
             raise RuntimeError('Failures while running ays tests')
