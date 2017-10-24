@@ -20,10 +20,20 @@ def install(job):
 
 
 def long1(job):
-    print("JOB LONG1 STARETED")
+    job.service.logger.info("JOB LONG1 STARETED")
     from asyncio import sleep, get_event_loop
     async def inner(job):
         while True:
-            print("IN LOOP")
+            job.service.logger.info("IN LOOP")
             await sleep(5)
+    return inner(job)
+
+
+def long2(job):
+    job.service.logger.info("JOB LONG2 STARETED")
+    from asyncio import sleep, get_event_loop
+    async def inner(job):
+        while True:
+            job.service.logger.info("IN LOOP 2")
+            await sleep(10)
     return inner(job)

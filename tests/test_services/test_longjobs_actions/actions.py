@@ -40,6 +40,42 @@ def test(job):
         if end - start > 5:   # took more than 2 seconds? should never happen.
             failures.append("AYS server was blocked")
 
+        path = ''
+        for repo_info in repos:
+            if repo_info['name'] == repo:
+                path = repo_info['path']
+                break
+        
+
+        # test update of the actor, after adding new long job to the config
+        # update the actor's config
+        config_path = j.sal.fs.joinPaths(path, 'actorTemplates', 'longjobsact')
+        source_config = j.sal.fs.joinPaths(config_path, 'config.yaml')
+        modified_config = j.sal.fs.joinPaths(config_path, 'config.modified.yaml')
+        job.service.executor.execute('cp {} {}.bak'.format(source_config, source_config))
+        job.service.executor.execute('cp {} {}'.format(modified_config, source_config))
+
+        # get the number of jobs for the new long job actor
+        # this assumes that the test runs on the same machine where the ays is running
+        original_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
+        # call actor update
+        cl.updateActor(data={}, actor='longjobsact', repository=repo)
+
+        # check number of jobs
+        updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
+        if updated_nr_of_jobs - original_nr_of_jobs != 1:
+            failures.append('Updating actor does not add long jobs')
+        
+        # now lets revert to the original config to remove the newly configured long running job
+        job.service.executor.execute('cp {}.bak {}'.format(source_config, source_config))
+
+        # call actor update
+        cl.updateActor(data={}, actor='longjobsact', repository=repo)
+        updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
+        if updated_nr_of_jobs != original_nr_of_jobs:
+            failures.append('Updating actor does not remove long jobs')
+
+
         if failures:
             model.data.result = RESULT_FAILED % '\n'.join(failures)
         else:

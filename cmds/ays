@@ -70,7 +70,7 @@ def create(name, git):
     create a new AYS repository
     """
     if git is None:
-        print("you have to specify an gi repository using --git")
+        print("you have to specify a git repository url using --git")
         return
 
     if name is None:
@@ -84,6 +84,12 @@ def create(name, git):
         if "git@" in git:
             print("If you want to auto push AYS Repo changes, please authorize the following ssh key to your git repository: ")
             key = j.tools.prefab.local.core.file_read("/root/.ssh/ays_repos_key.pub")
+            # Check if the host exists in known_hosts file
+            repo_args = j.clients.git.getGitRepoArgs(git)
+            host = repo_args[0]
+            port = repo_args[-1]
+            cmd = "grep -q {host} ~/.ssh/known_hosts || ssh-keyscan  -p {port} {host} >> ~/.ssh/known_hosts".format(host=host, port=port)
+            j.tools.executorLocal.execute(cmd)
             print(key)
     except Exception as e:
         print("Error during creation of the repository: {}".format(_extract_error(e)))
