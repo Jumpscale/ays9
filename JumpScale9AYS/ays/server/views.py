@@ -19,6 +19,7 @@ def service_view(s):
         'key': s.model.key,
         'name': s.name,
         'role': s.model.role,
+        'actor': s.model.dbobj.actorName,
         'repository': s.aysrepo.name,
         'data': j.data.serializer.json.loads(s.model.dataJSON),
         'state': s.model.dbobj.state.__str__(),
