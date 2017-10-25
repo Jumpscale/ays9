@@ -60,7 +60,7 @@ def install(job):
         j.data.serializer.json.dumps(config, indent=2)
     )
 
-    pm = prefab.processmanager.get('tmux')
+    pm = prefab.system.processmanager.get()
     pm.ensure(
         name='scalityS3',
         cmd='npm start',

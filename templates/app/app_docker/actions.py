@@ -16,11 +16,11 @@ def install(job):
     '''
     service = job.service
     prefab = service.executor.prefab
-    if not prefab.systemservices.docker.isInstalled():
-        prefab.systemservices.docker.install()
+    if not prefab.virtualization.docker.isInstalled():
+        prefab.virtualization.docker.install()
 
-    if not prefab.systemservices.dockercompose.isInstalled():
-        prefab.systemservices.dockercompose.install()
+    if not prefab.virtualization.dockercompose.isInstalled():
+        prefab.virtualization.dockercompose.install()
 
 
 def start(job):

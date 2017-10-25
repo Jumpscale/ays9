@@ -84,7 +84,7 @@ def install(job):
     prefab.core.file_write(config_path, j.data.serializer.toml.dumps(final_config))
 
     # create service
-    pm = prefab.processmanager.get('tmux')
+    pm = prefab.system.processmanager.get()
     bin_location = prefab.core.command_location('fs')
     cmd = '%s -config %s' % (bin_location, config_path)
     pm.ensure("fs_%s" % service.name, cmd=cmd, env={}, path='$JSCFGDIR/fs', descr='G8OS FS', autostart=True, wait=180)
@@ -114,5 +114,5 @@ def stop(job):
     service = job.service
     prefab = service.executor.prefab
 
-    pm = prefab.processmanager.get('tmux')
+    pm = prefab.system.processmanager.get()
     pm.stop('fs_%s' % service.name)
