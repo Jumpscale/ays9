@@ -19,9 +19,7 @@ import logging
 
 AYS_CORE_BP_TESTS_PATH = [j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'core')]
 
-AYS_NON_CORE_BP_TESTS_PATH = [j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'basic'),
-                              j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'advanced'),
-                              j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'extend')]
+AYS_NON_CORE_BP_TESTS_PATH = []
 
 # AYS_DEFAULT_PLACEHOLDERS = ['URL', 'LOGIN', 'ACCOUNT', 'PASSWORD', 'LOCATION']
 AYS_TESTRUNNER_REPO_NAME = 'ays_testrunner'
@@ -402,7 +400,10 @@ class AYSTest:
         self._logger.info('Replacing placeholders for test blueprint {}'.format(self._path))
         for item, value in config.items():
             cmd = sed_base_command.format(key=item, value=value, path=self._path)
-            j.tools.prefab.local.core.run(cmd)
+            try:
+                j.tools.prefab.local.core.run(cmd)
+            except:
+                self._logger.warning('Failed to replace placeholder {}'.format(item))
 
     def setup(self):
         """
