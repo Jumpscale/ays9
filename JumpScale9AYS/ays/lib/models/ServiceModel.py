@@ -250,10 +250,15 @@ class ServiceModel(ActorServiceBaseModel):
         return ddict
 
     def _pre_save(self):
-        binary = self.data.to_bytes_packed()
-        self._data = None
-        if binary != b'':
-            self.dbobj.data = binary
+        binary = ''
+        try:
+            binary = self.data.to_bytes_packed()
+        except Exception as e:
+            self.logger.warning('Failed to save service model for service {}'.format(self))
+        finally:
+            self._data = None
+            if binary != b'':
+                self.dbobj.data = binary
 
     def __repr__(self):
         return "%s!%s" % (self.role, self.dbobj.name)
