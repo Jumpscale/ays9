@@ -587,14 +587,14 @@ class BaseRunner:
         print("Number of failed/error tests: %s" % nr_of_failed)
         if self._failed_tests:
             print("Errors:\n")
-            for test, failed_test in self._failed_tests.items():
+            for test, job in self._failed_tests.items():
                 header = 'Test {}'.format(test.name)
                 print(header)
                 print('-' * len(header))
-                if failed_test.errors:
-                    print('\n'.join(failed_test.errors))
-                if failed_test.exc_info:
-                    print(failed_test.exc_info)
+                if test.errors:
+                    print('\n'.join(job.errors))
+                if hasattr(job, 'exc_info') and job.exc_info:
+                    print(job.exc_info)
             raise RuntimeError('Failures while running ays tests')
 
 
@@ -637,7 +637,10 @@ class ThreadedTestRunner(BaseRunner):
                             test.errors.append('Test {} timed out'.format(test.name))
                             self._failed_tests[test] = job
                     else:
-                        self._logger.info('Test {} completed successfully'.format(test.name))
+                        if test.errors:
+                            self._logger.error('Test {} failed'.format(test.name))    
+                        else:
+                            self._logger.info('Test {} completed successfully'.format(test.name))
                         jobs.pop(test)
                         test.endtime = time.time()
                 if jobs:
