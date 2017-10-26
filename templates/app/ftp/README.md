@@ -3,7 +3,7 @@
 ## Description:
 
 This actor template creates an ftp server running on the specified node with the specified subvolmes, users, passwords,
- and permissions.These params are specified per ftp_space a helper service for the ftp service.The server uses a 
+ and permissions.These params are specified per ftp_space a helper service for the ftp service.The server uses a
 python library pyftp server and runs on port 2121 on the specified node.
 
 ## Schema:
@@ -13,7 +13,7 @@ python library pyftp server and runs on port 2121 on the specified node.
 
 ## Example:
 
-```yaml 
+```yaml
 sshkey__key1:
 
 node.physical__nodevm1:
@@ -24,7 +24,7 @@ node.physical__nodevm1:
    ssh.port: 22
 
 os.ssh.ubuntu__osvm1:
-  ssh.port: 22
+  sshPort: 22
   sshkey: 'key1'
   node: 'nodevm1'
 
@@ -42,7 +42,7 @@ ftp_space__space1vm1:
 
 ftp__ftpvm1:
     os: 'osvm1'
-    fs: 'fsvm1'    
+    fs: 'fsvm1'
     spaces:
         - 'space1vm1'
 ```

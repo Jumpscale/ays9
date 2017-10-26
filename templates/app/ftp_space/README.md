@@ -6,8 +6,8 @@ This actor template is a helper service for the ftp service to allow creation of
 spaces.
 ## Schema:
  - path : type:string default is '/mnt/storage' of root path of the ftp server
- - authorized_users : type:list of strings of authorized users 
- - permission : type:string permission strings as explained below 
+ - authorized_users : type:list of strings of authorized users
+ - permission : type:string permission strings as explained below
 
    permissions:
 ```
@@ -25,7 +25,7 @@ spaces.
 ```
 
 ## Example:
-```yaml 
+```yaml
 sshkey__key1:
 
 node.physical__nodevm1:
@@ -36,7 +36,7 @@ node.physical__nodevm1:
    ssh.port: 22
 
 os.ssh.ubuntu__osvm1:
-  ssh.port: 22
+  sshPort: 22
   sshkey: 'key1'
   node: 'nodevm1'
 
@@ -54,7 +54,7 @@ ftp_space__space1vm1:
 
 ftp__ftpvm1:
     os: 'osvm1'
-    fs: 'fsvm1'    
+    fs: 'fsvm1'
     spaces:
         - 'space1vm1'
 ```
