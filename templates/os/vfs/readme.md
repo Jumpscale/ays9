@@ -25,14 +25,11 @@ node.physical__vfs_physical:
 
 
 os.ssh.ubuntu__vfs_os:
-  ssh.addr: 'localhost'
-  ssh.port: 22
-  sshLogin: 'root'
-  sshPassword: '<root password>'
+  sshAddr: 'localhost'
+  sshPort: 22
   sshkey: 'vfs_key'
   node: 'vfs_physical'
-  aysfs: False
-  agent: False
+
 
 vfs__main:
   os: 'vfs_os'
