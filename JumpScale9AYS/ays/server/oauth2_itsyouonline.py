@@ -56,6 +56,8 @@ class oauth2_itsyouonline:
             if type.lower() == 'bearer':
                 try:
                     headers = jwt.get_unverified_header(token)
+                    if 'oauth' not in self.cfg:
+                        raise j.exceptions.Input('No ays oauth information in JumpScale config')
                     payload = jwt.decode(
                         token,
                         self.cfg['oauth'].get('jwt_key'),
