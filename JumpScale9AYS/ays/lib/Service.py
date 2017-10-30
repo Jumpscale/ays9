@@ -585,7 +585,7 @@ class Service:
             # then set the lastrun to the value it was before update
             recurring_lastrun = {}
             event_lastrun = {}
-            
+
 
             for event in self.model.actionsEvent.values():
                 event_lastrun[event.action] = event.lastRun
@@ -810,20 +810,15 @@ class Service:
 
     def _ensure_longjobs(self):
         for action, info in self.model.actionsLongRunning.items():
+            self.logger.info("Starting long running job {} with {} ".format(action, info))
             if action not in self._longrunning_tasks:
-                self.logger.info("Starting long running job {} with {} ".format(action, info))
-                task = LongRunningTask(service=self, action=action, loop=self._loop)
-                self._longrunning_tasks[action] = task
-                # start task
-                self._longrunning_tasks[action].start()
+                self.add_longjob(action)
 
-            # stop long running tasks that does not exist anymore
-            # duplicate code !!!!
-            needed = set(self.model.actionsLongRunning.keys())
-            actual = set(self._longrunning_tasks.keys())
-            for name in actual.difference(needed):
-                self._longrunning_tasks[name].stop()
-                del self._longrunning_tasks[name]
+    def add_longjob(self, action):
+        task = LongRunningTask(service=self, action=action, loop=self.aysrepo._loop)
+        task.start()
+        self._longrunning_tasks[action] = task
+
 
     def _ensure_recurring(self):
         """
@@ -832,31 +827,51 @@ class Service:
         """
         for action, info in self.model.actionsRecurring.items():
             if action not in self._recurring_tasks:
-                # creates new tasks
-                task = RecurringTask(service=self, action=action, period=info.period, loop=self.aysrepo._loop)
-                task.start()
-                self._recurring_tasks[action] = task
-                # make sure that the loop used for recurring is the main loop.
-                # this is needed in case the service is create within another service
-                # in this case the service creation runs in a thread, thus we need to pass the correct loop
-                assert task._loop == self.aysrepo._loop
+               self.add_recurring_action(action)
 
-            else:
-                # task already exists, make sure the period is correct
-                # and the task is running
-                task = self._recurring_tasks[action]
-                if info.period != task.period:
-                    task.period = info.period
-                if not task.started:
-                    task.start()
+    def add_recurring_action(self, action_name):
+        action_info = self.model.actionsRecurring[action_name]
+        task = RecurringTask(service=self, action=action_name, period=action_info.period, loop=self.aysrepo._loop)
+        task.start()
+        self._recurring_tasks[action_name] = task
+        assert task._loop == self.aysrepo._loop
 
-        # stop recurring tasks that doesn't exists anymore
-        needed = set(self.model.actionsRecurring.keys())
-        actual = set(self._recurring_tasks.keys())
-        for name in actual.difference(needed):
-            task = self._recurring_tasks[name]
-            task.stop()
-            del self._recurring_tasks[name]
+    def update_recurring_action(self, action_name):
+        """
+        this method is used when you want to update the action like from actor.update
+        if the action is not there it will add it, if the action changed it will be updated
+        """
+        if not self._recurring_tasks.get(action_name, None):
+            self.add_recurring_action(action_name)
+        else:
+            task = self._recurring_tasks[action_name]
+            action_info = self.model.actionsRecurring[action_name]
+            if task.period != action_info.period:
+                self.logger.info("Service:{}, Action: {}, period changed".format(self, action_name))
+                task.period = action_info.period
+
+
+    def update_longjob(self, action_name):
+        if not self._longrunning_tasks.get(action_name, None):
+            self.add_longjob(action_name)
+        else:
+            task = self._longrunning_tasks[action_name]
+            self.logger.info("Service: {}, Restarting longjob: {}".format(self, action_name))
+            self._longrunning_tasks[action_name].stop()
+            del self._longrunning_tasks[action_name]
+            self.add_longjob(action_name)
+
+    def remove_action(self, action_name, recurring=False, longjobs=False):
+        if recurring:
+            if self._recurring_tasks.get(action_name, None):
+                self.logger.info("Stopping Recurring action: %s" % action_name)
+                self._recurring_tasks[action_name].stop()
+                del self._recurring_tasks[action_name]
+        elif longjobs:
+            if self._longrunning_tasks.get(action_name, None):
+                self.logger.info("Long job removed, stopping: %s" % action_name)
+                self._longrunning_tasks[action_name].stop()
+                del self._longrunning_tasks[action_name]
 
     def stop(self):
         """
