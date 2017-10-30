@@ -15,7 +15,7 @@ def init(job):
     r = job.service.aysrepo
 
     a = r.actorGet("os.ssh.ubuntu")
-    if r.serviceGet("os", job.service.name, die=False) == None:
+    if r.serviceGet("os", job.service.name, die=False)is None:
         s = a.serviceCreate(instance=job.service.name, args={
                             "node": job.service.name, "sshkey": job.service.model.data.sshkey})
 
