@@ -30,28 +30,35 @@ def test(job):
     failures = []
     # HERE create run in sample_repo_timeout and wait for 10 seconds and check if the actions timedout.
     try:
-        repo = 'sample_repo_longjobs'
         cl = j.clients.atyourservice.get().api.ays
-        # will try to execute a `longjob1` in main thread to make sure it doesn't block
-        start = time.time()
-        cl.executeBlueprint(data=None, repository=repo, blueprint='test_longjobsact.yaml')
+        repo = 'sample_repo_longjobs'
         repos = cl.listRepositories().json()
-        end = time.time()
-        if end - start > 5:   # took more than 2 seconds? should never happen.
-            failures.append("AYS server was blocked")
 
         path = ''
         for repo_info in repos:
             if repo_info['name'] == repo:
                 path = repo_info['path']
                 break
-        
+        # start without any long jobs configured
+        config_path = j.sal.fs.joinPaths(path, 'actorTemplates', 'longjobsact')
+        source_config = j.sal.fs.joinPaths(config_path, 'config.yaml')
+        modified_config = j.sal.fs.joinPaths(config_path, 'config.modified.yaml')
+        job.service.executor.execute('cp {} {}.bak'.format(source_config, source_config))
+        j.sal.fs.writeFile(source_config, "")
+        cl.executeBlueprint(data=None, repository=repo, blueprint='test_longjobsact.yaml')
+        # update config to have a long running job
+        job.service.executor.execute('cp {}.bak {}'.format(source_config, source_config))
+        # call actor update 
+        original_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long1', state='running'))
+        cl.updateActor(data={}, actor='longjobsact', repository=repo)
+        updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long1', state='running'))
+        if updated_nr_of_jobs - original_nr_of_jobs != 1:
+            failures.append("Updating actor does not add long jobs if you didn't add longjobs at first time ays blueprint executed")
 
         # test update of the actor, after adding new long job to the config
         # update the actor's config
         config_path = j.sal.fs.joinPaths(path, 'actorTemplates', 'longjobsact')
         source_config = j.sal.fs.joinPaths(config_path, 'config.yaml')
-        modified_config = j.sal.fs.joinPaths(config_path, 'config.modified.yaml')
         job.service.executor.execute('cp {} {}.bak'.format(source_config, source_config))
         job.service.executor.execute('cp {} {}'.format(modified_config, source_config))
 
