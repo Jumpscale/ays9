@@ -21,7 +21,7 @@ class oauth2_itsyouonline:
             self.audience = ''
         else:
             self.audience = ",".join(audience)
-        self.cfg = j.application.config.get('ays') or {}
+        self.cfg = j.core.config.get('ays') or {}
 
     def __call__(self, f):
         @wraps(f)

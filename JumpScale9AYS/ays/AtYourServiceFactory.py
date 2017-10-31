@@ -22,7 +22,7 @@ class AtYourServiceFactory:
         self.loop = None
         self._config = None
         self._domains = []
-        self.debug = j.application.config['system']['debug']
+        self.debug = j.core.config['system']['debug']
         self.logger = j.logger.get('j.atyourservice.server')
         self.started = False
         self.dev_mode = False
@@ -98,7 +98,7 @@ class AtYourServiceFactory:
     @property
     def config(self):
         if self._config is None:
-            cfg = j.application.config.get('ays')
+            cfg = j.core.config.get('ays')
             if not cfg:
                 cfg = {}
             if 'redis' not in cfg:
