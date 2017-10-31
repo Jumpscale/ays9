@@ -694,7 +694,7 @@ class AtYourServiceRepo():
                     local_prefab = j.tools.prefab.local
                     key_path = local_prefab.system.ssh.keygen(name='ays_repos_key').split(".pub")[0]
                     if not j.clients.ssh.ssh_agent_check_key_is_loaded(key_path):
-                        j.clients.ssh.SSHKeysLoad(key_path)
+                        j.clients.ssh.ssh_keys_load(key_path)
                     self.git.repo.git.push('--all')
                     self.logger.info("Auto Push done successfully")
                 except Exception as e:
