@@ -55,15 +55,15 @@ types:
   Blueprint:
     properties:
       name: string
-      content: object
+      content: string
       archived: boolean
       hash: string
       path: string
     example:
       name: "cockpit.yaml"
-      content:
+      content: "
         service__main:
-          description: "a service"
+          description: \"a service\""
       path: "/opt/code/cockpit/repo/blueprints/my_blueprints.ayml"
       hash: '45d4dbd44a0a3c3c8cf62acdab8e0850'
       archived: true
@@ -111,6 +111,7 @@ types:
       key: string
       name: string
       role: string
+      actor: string
       repository: string
       data: object
       state: string
@@ -127,6 +128,7 @@ types:
         key: "6b756dc89h9efe5187f2dddcf74b3e80"
         name: "main"
         role: "server"
+        actor: "server"
         repository: myrepo
         data:
           github.client: "main"
@@ -161,7 +163,6 @@ types:
             channel: webhook
             tags:
               - "type:red"
-
 
   Actor:
     properties:
@@ -228,6 +229,7 @@ types:
       service_name: string
       state: string
       logs: Log[]
+      result: object
 
   JobData:
     properties:
@@ -697,8 +699,11 @@ types:
               200:
                 body:
                   application/json:
+                    properties:
+                      message:
+                        type: string
                     example:
-                      - message: 'Templates Updated'
+                      message: 'Templates Updated'
       /aysrun:
         get:
             displayName: listRuns
@@ -856,7 +861,6 @@ types:
       description: Endpoint that receives generic events
       body:
         application/json:
-          type: object
           properties:
             command: string
             tags: string[]
