@@ -400,6 +400,12 @@ class AYSTest:
             return self._endtime - self._starttime
         else:
             return -1
+    
+    
+    @property
+    def errors(self):
+        return self._errors
+
 
 
 
@@ -549,6 +555,7 @@ class BaseRunner:
                     test.endtime = time.time()
                 except Exception as e:
                     test.errors.append('Failed to run test {}. Errors: [{}]'.format(test.name, str(e)))
+                    self._failed_tests[test] = test
             # report final results
             self._report_results()
         finally:
