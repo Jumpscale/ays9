@@ -239,13 +239,20 @@ types:
      properties:
        number: integer
        jobs: Job[]
-
+       state: string
+  
+  RunRetries:
+     properties:
+       retry-number: integer
+       duration: integer
+       remaining-retries: integer[]
+  
   AYSRun:
      properties:
        state: string
        steps: AYSStep[]
        key: string
-       retry: integer
+       retries: RunRetries
 
   AYSRunListing:
     properties:
