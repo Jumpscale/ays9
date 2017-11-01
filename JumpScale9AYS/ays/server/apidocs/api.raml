@@ -215,8 +215,8 @@ types:
   Log:
     properties:
       category: string
-      epoch: string
-      level: string
+      epoch: integer
+      level: integer
       log: string
       tags: string
 
@@ -229,7 +229,7 @@ types:
       service_name: string
       state: string
       logs: Log[]
-      result: object
+      result: string
 
   JobData:
     properties:
