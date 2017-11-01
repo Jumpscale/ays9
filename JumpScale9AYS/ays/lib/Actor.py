@@ -138,13 +138,10 @@ class Actor():
         if self.model.dbobj.dataUI != template.dataUI:
             self.model.dbobj.dataUI = template.dataUI
             self.processChange("ui", context=context)
-        
-        
 
         self.saveAll()
 
         for s in services:
-            call_ensure_longjobs = False
             for action in self.model.dbobj.actions:
                 if action.period > 0:
                     act = s.model.actionGet(action.name)
@@ -152,27 +149,14 @@ class Actor():
                     act.log = action.log
                     act.isJob = action.isJob
                     act.timeout = action.timeout
+                    s.update_recurring_action(action.name)
+                else:
+                    s.remove_action(action.name, recurring=True)
 
                 if action.longjob is True:
-                    if action.name in s._longrunning_tasks and s._longrunning_tasks[action.name].actioncode != self.model.actionsCode[action.name]:
-                        self.logger.info("Restarting longjob: %s", action.name)
-                        s._longrunning_tasks[action.name].stop()
-                        del s._longrunning_tasks[action.name]
-                    # if action is updated in the config to be long running, then update the service
-                    elif action.longjob is True and action.name not in s._longrunning_tasks:
-                        self.logger.info('Updating action {} on service {} to be long running.'.format(action.name, s))
-                        act = s.model.actionGet(action.name)
-                        act.longjob = action.longjob
-                    call_ensure_longjobs = True
-                elif action.longjob is False and action.name in s._longrunning_tasks:
-                    self.logger.info('Removing action {} on service {} from long running tasks'.format(action.name, s))
-                    act = s.model.actionGet(action.name)
-                    act.longjob = action.longjob
-                    call_ensure_longjobs = True
-
-            if call_ensure_longjobs:
-                s._ensure_longjobs()
-
+                    s.update_longjob(action.name)
+                else:
+                    s.remove_action(action.name, longjobs=True)
             s.model.reSerialize()
             s.saveAll()
 
@@ -237,23 +221,40 @@ class Actor():
                 ac.save()
 
     def _initLongjobs(self, template):
-        long_jobs_actions = [config['action'] for config in template.longjobsConfig]
-        for actionname, model in self.model.actions.items():
-            if actionname in long_jobs_actions:
-                self.model.actions[actionname].longjob = True
-                self.model.save()
-                ac = j.core.jobcontroller.db.actions.get(key=model.actionKey)
-                ac.timeout = 0
-                ac.longjob = True
-                ac.save()
-            elif model.longjob is True:
-                self.model.actions[actionname].longjob = False
-                self.model.save()
-                ac = j.core.jobcontroller.db.actions.get(key=model.actionKey)
-                ac.longjob = False
-                ac.save()
+        longjobs_names = [job_info['action'] for job_info in template.longjobsConfig]
+        for actionname in self.model.actions.keys():
+            if actionname not in longjobs_names:
+                if self.model.actions[actionname].longjob is True:
+                    self.model.actions[actionname].longjob = False
+                    self.model.save()
+                for service in self.services:
+                    if service.model.actions[actionname].longjob is True:
+                        service.model.actions[actionname].longjob = False
+
+        for jobinfo in template.longjobsConfig:
+            actionname = jobinfo['action']
+            action_model = self.model.actions[actionname]
+            self.model.actions[actionname].longjob = True
+            self.model.save()
+            ac = j.core.jobcontroller.db.actions.get(key=action_model.actionKey)
+            ac.timeout = 0
+            ac.longjob = True
+            ac.save()
+            for service in self.services:
+                service.model.actions[actionname].longjob = True
+                service.saveAll()
 
     def _initRecurringActions(self, template):
+        # remove old recurring actions in services
+        recurring_names = [rec_info['action'] for rec_info in template.recurringConfig]
+        for actionname in self.model.actions.keys():
+            if actionname not in recurring_names:
+                if self.model.actions[actionname].period:
+                    self.model.actions[actionname].period = 0
+                    self.model.save()
+                for service in self.services:
+                    if service.model.actions[actionname].period:
+                        service.model.actions[actionname].period = 0
         for reccuring_info in template.recurringConfig:
             action_model = self.model.actions[reccuring_info['action']]
             action_model.period = j.data.types.duration.convertToSeconds(reccuring_info['period'])

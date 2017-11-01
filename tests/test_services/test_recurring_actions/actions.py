@@ -37,6 +37,11 @@ def test(job):
         repo_name = 'sample_repo_recurring'
         bp_name = 'test_recurring_actions_1.yaml'
         repos.append(repo_name)
+        path = ''
+        for repo_info in ays_client.listRepositories().json():
+            if repo_info['name'] == repo_name:
+                path = repo_info['path']
+                break
         execute_bp_res = ays_client.api.ays.executeBlueprint(data={}, blueprint=bp_name, repository=repo_name)
         if execute_bp_res.status_code == 200:
             start_time = time.time()
@@ -50,6 +55,17 @@ def test(job):
 
         if failures:
             model.data.result = RESULT_FAILED % '\n'.join(failures)
+        # remove recurring actions
+        config_path = j.sal.fs.joinPaths(path, 'actorTemplates', 'test_recurring_actions_1')
+        source_config = j.sal.fs.joinPaths(config_path, 'config.yaml')
+        j.sal.fs.copyFile(source_config, "{}.bak".format(source_config))
+        j.sal.fs.writeFile(source_config, "")
+        ays_client.updateActor(data={}, actor='test_recurring_actions_1', repository=repo_name)
+        nr_of_jobs = len(j.core.jobcontroller.db.jobs.find(actor='test_recurring_actions_1', service='instance',
+        print("Number of jobs is %s" % nr_of_jobs)
+        if nr_of_jobs != 0:
+            failures.append("Failed to remove recurring actions")
+
 
     except:
         model.data.result = RESULT_ERROR % str(sys.exc_info()[:2])

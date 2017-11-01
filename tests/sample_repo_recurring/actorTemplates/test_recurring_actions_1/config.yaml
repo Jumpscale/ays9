@@ -4,6 +4,6 @@ doc:
 recurring:
 - action: execution_gt_period
   log: true
-  period: 1m
+  period: 10s
 timeouts:
 - execute_hanging_job: 30
