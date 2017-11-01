@@ -62,6 +62,7 @@ def test(job):
         j.sal.fs.writeFile(source_config, "")
         ays_client.updateActor(data={}, actor='test_recurring_actions_1', repository=repo_name)
         nr_of_jobs = len(j.core.jobcontroller.db.jobs.find(actor='test_recurring_actions_1', service='instance',
+            action='execution_gt_period', fromEpoch=start_time))
         print("Number of jobs is %s" % nr_of_jobs)
         if nr_of_jobs != 0:
             failures.append("Failed to remove recurring actions")
