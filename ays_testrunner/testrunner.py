@@ -119,6 +119,8 @@ def create_run(cli, repo_info, logger=None):
         j.tools.prefab.local.core.run(cmd, timeout=0)
     except Exception as e:
         errors.append('Failed to create run. Error: {}'.format(e))
+    finally:
+        j.sal.fs.changeDir(curdir)
 
     return errors
 
@@ -554,7 +556,7 @@ class BaseRunner:
                     test.endtime = time.time()
                 except Exception as e:
                     test.errors.append('Failed to run test {}. Errors: [{}]'.format(test.name, str(e)))
-                    
+
                 if test.errors:
                     self._failed_tests[test] = test
             # report final results
