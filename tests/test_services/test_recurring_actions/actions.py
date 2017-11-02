@@ -33,7 +33,7 @@ def test(job):
     try:
         expected_nr_of_jobs = 1
         curdir = os.getcwd()
-        ays_client = j.clients.atyourservice.get()
+        ays_client = j.clients.atyourservice.get().api.ays
         repo_name = 'sample_repo_recurring'
         bp_name = 'test_recurring_actions_1.yaml'
         repos.append(repo_name)

@@ -603,6 +603,7 @@ class BaseRunner:
                 print('-' * len(header))
                 if test.errors:
                     print('\n'.join(test.errors))
+                    print('\n')
                 if hasattr(job, 'exc_info') and job.exc_info:
                     print(job.exc_info)
             raise RuntimeError('Failures while running ays tests')

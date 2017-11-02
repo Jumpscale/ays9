@@ -15,7 +15,7 @@ links:
     auto: true
     max: 100
     min: 0
-    role: srv
+    role: srv2
   parent:
     argname: testDummy
     auto: true
