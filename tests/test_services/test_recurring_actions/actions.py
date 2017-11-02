@@ -42,7 +42,7 @@ def test(job):
             if repo_info['name'] == repo_name:
                 path = repo_info['path']
                 break
-        execute_bp_res = ays_client.api.ays.executeBlueprint(data={}, blueprint=bp_name, repository=repo_name)
+        execute_bp_res = ays_client.executeBlueprint(data={}, blueprint=bp_name, repository=repo_name)
         if execute_bp_res.status_code == 200:
             start_time = time.time()
             time.sleep(60 * 2)
@@ -75,6 +75,6 @@ def test(job):
         if repos:
             for repo in repos:
                 try:
-                    ays_client.api.ays.destroyRepository(data={}, repository=repo)
+                    ays_client.destroyRepository(data={}, repository=repo)
                 except Exception as e:
                     j.logger.logging.error('Error while destroying repo %s. Error %s' % (repo, e) )
