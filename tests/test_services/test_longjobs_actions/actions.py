@@ -51,7 +51,7 @@ def test(job):
         # call actor update
         original_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long1', state='running'))
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
-        time.sleep(10)
+        time.sleep(2)
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long1', state='running'))
         if updated_nr_of_jobs - original_nr_of_jobs != 1:
             failures.append("Updating actor did not add long jobs")
@@ -68,7 +68,7 @@ def test(job):
         original_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
         # call actor update
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
-        time.sleep(10)
+        time.sleep(2)
         # check number of jobs
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
         if updated_nr_of_jobs - original_nr_of_jobs != 1:
@@ -79,7 +79,7 @@ def test(job):
 
         # call actor update
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
-        time.sleep(10)
+        time.sleep(2)
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
         if updated_nr_of_jobs != original_nr_of_jobs:
             failures.append('Updating actor does not remove long jobs')
