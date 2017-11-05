@@ -71,7 +71,7 @@ def test(job):
         # call actor update
         original_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long1', state='running'))
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
-        time.sleep(2)
+        time.sleep(10)
 
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long1', state='running'))
         if updated_nr_of_jobs - original_nr_of_jobs != 1:
@@ -89,7 +89,7 @@ def test(job):
         original_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
         # call actor update
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
-        time.sleep(2)
+        time.sleep(10)
 
         # check number of jobs
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
@@ -101,7 +101,7 @@ def test(job):
 
         # call actor update
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
-        time.sleep(2)
+        time.sleep(10)
 
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
         if updated_nr_of_jobs != original_nr_of_jobs:
@@ -123,7 +123,7 @@ def test(job):
         original_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
         # call actor update
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
-        time.sleep(2)
+        time.sleep(10)
 
         # check number of jobs
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
@@ -135,7 +135,7 @@ def test(job):
 
         # call actor update
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
-        time.sleep(2)
+        time.sleep(10)
         
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
         if updated_nr_of_jobs != original_nr_of_jobs:
