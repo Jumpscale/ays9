@@ -119,6 +119,8 @@ def create_run(cli, repo_info, logger=None):
         j.tools.prefab.local.core.run(cmd, timeout=0)
     except Exception as e:
         errors.append('Failed to create run. Error: {}'.format(e))
+    finally:
+        j.sal.fs.changeDir(curdir)
 
     return errors
 
@@ -264,6 +266,12 @@ class AYSGroupTest:
             else:
                 result += test.duration
         return result
+    
+
+    @property
+    def errors(self):
+        return self._errors
+
 
     def setup(self):
         """
@@ -400,7 +408,6 @@ class AYSTest:
             return self._endtime - self._starttime
         else:
             return -1
-
 
 
     def replace_placehlders(self, config):
@@ -549,6 +556,9 @@ class BaseRunner:
                     test.endtime = time.time()
                 except Exception as e:
                     test.errors.append('Failed to run test {}. Errors: [{}]'.format(test.name, str(e)))
+
+                if test.errors:
+                    self._failed_tests[test] = test
             # report final results
             self._report_results()
         finally:
@@ -593,6 +603,7 @@ class BaseRunner:
                 print('-' * len(header))
                 if test.errors:
                     print('\n'.join(test.errors))
+                    print('\n')
                 if hasattr(job, 'exc_info') and job.exc_info:
                     print(job.exc_info)
             raise RuntimeError('Failures while running ays tests')

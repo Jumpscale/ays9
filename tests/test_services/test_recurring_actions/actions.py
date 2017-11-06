@@ -33,7 +33,7 @@ def test(job):
     try:
         expected_nr_of_jobs = 1
         curdir = os.getcwd()
-        ays_client = j.clients.atyourservice.get()
+        ays_client = j.clients.atyourservice.get().api.ays
         repo_name = 'sample_repo_recurring'
         bp_name = 'test_recurring_actions_1.yaml'
         repos.append(repo_name)
@@ -42,7 +42,7 @@ def test(job):
             if repo_info['name'] == repo_name:
                 path = repo_info['path']
                 break
-        execute_bp_res = ays_client.api.ays.executeBlueprint(data={}, blueprint=bp_name, repository=repo_name)
+        execute_bp_res = ays_client.executeBlueprint(data={}, blueprint=bp_name, repository=repo_name)
         if execute_bp_res.status_code == 200:
             start_time = time.time()
             time.sleep(60 * 2)
@@ -62,6 +62,7 @@ def test(job):
         j.sal.fs.writeFile(source_config, "")
         ays_client.updateActor(data={}, actor='test_recurring_actions_1', repository=repo_name)
         nr_of_jobs = len(j.core.jobcontroller.db.jobs.find(actor='test_recurring_actions_1', service='instance',
+            action='execution_gt_period', fromEpoch=start_time))
         print("Number of jobs is %s" % nr_of_jobs)
         if nr_of_jobs != 0:
             failures.append("Failed to remove recurring actions")
@@ -74,6 +75,6 @@ def test(job):
         if repos:
             for repo in repos:
                 try:
-                    ays_client.api.ays.destroyRepository(data={}, repository=repo)
+                    ays_client.destroyRepository(data={}, repository=repo)
                 except Exception as e:
                     j.logger.logging.error('Error while destroying repo %s. Error %s' % (repo, e) )

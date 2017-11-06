@@ -1,5 +1,5 @@
 def init_actions_(service, args):
-
+    
     """
 
     this needs to returns an array of actions representing the depencies between actions.
@@ -51,6 +51,7 @@ def test(job):
         # call actor update
         original_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long1', state='running'))
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
+        time.sleep(2)
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long1', state='running'))
         if updated_nr_of_jobs - original_nr_of_jobs != 1:
             failures.append("Updating actor did not add long jobs")
@@ -67,17 +68,18 @@ def test(job):
         original_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
         # call actor update
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
-
+        time.sleep(2)
         # check number of jobs
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
         if updated_nr_of_jobs - original_nr_of_jobs != 1:
             failures.append('Updating actor does not add long jobs')
 
         # now lets revert to the original config to remove the newly configured long running job
-        job.service.executor.execute('cp {}.bak {}'.format(source_config, source_config))
+        j.sal.fs.copyFile('{}.bak'.format(source_config), source_config)
 
         # call actor update
         cl.updateActor(data={}, actor='longjobsact', repository=repo)
+        time.sleep(2)
         updated_nr_of_jobs = len(j.core.jobcontroller.db.jobs.list(actor='longjobsact', action='long2', state='running'))
         if updated_nr_of_jobs != original_nr_of_jobs:
             failures.append('Updating actor does not remove long jobs')
