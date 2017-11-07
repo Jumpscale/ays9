@@ -21,7 +21,7 @@ class oauth2_itsyouonline:
             self.audience = ''
         else:
             self.audience = ",".join(audience)
-        self.cfg = j.core.config.get('ays') or {}
+        self.cfg = j.core.state.configGet('ays', {})
 
     def __call__(self, f):
         @wraps(f)
@@ -72,7 +72,7 @@ class oauth2_itsyouonline:
                     if 'scope' in payload and 'user:memberof:%s' % self.cfg[
                             'oauth'].get('organization') in payload['scope']:
                         return 200, ''
-                        
+
                     # in case jwt created from organization
                     if 'azp' in payload and payload['azp'] == self.cfg['oauth'].get('organization'):
                         return 200, ''
