@@ -168,7 +168,6 @@ struct Action {
   capnpIn @14 : Text;
   #is optional, capnp schema of result for this method
   capnpOut @15 : Text;
-  whoami @16: Text;
 
 }
 
