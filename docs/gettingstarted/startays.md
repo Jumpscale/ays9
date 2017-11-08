@@ -4,10 +4,10 @@ You will first want to review the configuation of your AYS server, as documented
 
 Most importantly, in order to run AYS in **production mode** you need to update or add following two sections in `/etc/jumpscale9.toml`:
 ```toml
-[config.ays]
+[ays]
 production = true
 
-[config.ays.oauth]
+[ays.oauth]
 jwt_key = "MHYwEAYHKoZIzj0CAQYFK4EEACIDYgAES5X8XrfKdx9gYayFITc89wad4usrk0n27MjiGYvqalizeSWTHEpnd7oea9IQ8T5oJjMVH5cc0H5tFSKilFFeh//wngxIyny66+Vq5t5B0V0Ehy01+2ceEon2Y0XDkIKv"
 organization = "organization-1"
 ```

@@ -98,7 +98,7 @@ class AtYourServiceFactory:
     @property
     def config(self):
         if self._config is None:
-            cfg = j.core.state.configGet('ays')
+            cfg = j.core.state.configGet('ays', {})
             if not cfg:
                 cfg = {}
             if 'redis' not in cfg:
