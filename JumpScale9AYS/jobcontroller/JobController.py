@@ -146,7 +146,6 @@ class JobController:
     def getActionObjFromMethodCode(self, src, path="", actorName="", actionName=""):
         # leave this our own parsing, is much faster
         action = self.db.actions.new()
-        action.dbobj.whoami = j.application.whoAmIBytestr
         action.dbobj.origin = path
         action.dbobj.name = actionName
         action.dbobj.actorName = actorName
