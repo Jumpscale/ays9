@@ -29,6 +29,26 @@ As discussed below you can also install the portal framework as part of the AYS 
 
 
 <a id="ays9"></a>
+
+## Installing AYS and Portal on different machines
+### On portal machine do the following
+
+```python
+prefab = j.tools.prefab.local
+prefab.apps.portal.install()
+prefab.apps.portal.start()
+# this for the  client to be installed
+prefab.apps.atyourservice.install()
+prefab.apps.atyourservice.load_ays_space()
+prefab.apps.atyourservice.configure_portal(host="http://172.17.0.3", port="5000")
+```
+
+### On AYS machine
+```python
+prefab.apps.atyourservice.install()
+prefab.apps.atyourservice.start("0.0.0.0", "5000")
+```
+
 ## Install AYS and the AYS Portal
 
 Both are part of the [jumpscale/ays9](https://github.com/Jumpscale/ays9) repository.
@@ -57,9 +77,7 @@ prefab.apps.atyourservice.configure_portal(host='http://172.17.0.5', port="5000"
 
 Installing the AYS Portal using JumpScale will automatically start the AYS Portal in a new TMUX window.
 
-
 ## Starting the AYS Portal
-
 In case you manually installed the [jumpscale/ays9](https://github.com/Jumpscale/ays9) repository you need to start AYS and the portal manually. This can be achieved either from the command line or by using the JumpScale interactive shell.
 
 Starting AYS from the command line:
