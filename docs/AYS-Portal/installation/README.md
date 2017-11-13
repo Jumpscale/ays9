@@ -49,6 +49,10 @@ Alternativelly you can use the `install_portal` option which will also install/r
 ```python
 prefab = j.tools.prefab.local
 prefab.apps.atyourservice.install(install_portal=True)
+# Load ays space into portal
+prefab.apps.atyourservice.load_ays_space()
+# configure portal to point to ays location
+prefab.apps.atyourservice.configure_portal(host='http://172.17.0.5', port="5000")
 ```
 
 Installing the AYS Portal using JumpScale will automatically start the AYS Portal in a new TMUX window.
