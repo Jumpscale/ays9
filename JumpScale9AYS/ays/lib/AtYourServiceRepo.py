@@ -679,6 +679,14 @@ class AtYourServiceRepo():
 # Git management
 
     def commit(self, message="", branch="master", push=True):
+        """
+        Commits the current changes in the repo
+        """
+        # If dev_mode is activated then no need to commit
+        if j.atyourservice.server.dev_mode is True:
+            self.logger.warning('DEV mode is activated. Auto-commit will be skipped.')
+            return
+
         if message == "":
             message = "log changes for repo:%s" % self.name
         if branch != "master":
