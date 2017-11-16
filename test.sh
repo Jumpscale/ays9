@@ -4,8 +4,6 @@ set -e
 RUNTYPE=$1
 
 
-js9 'j.clients.redis.get4core() or j.clients.redis.start4core()'
-
 echo "Starting AYS server"
 js9 'j.atyourservice.server.start()'
 

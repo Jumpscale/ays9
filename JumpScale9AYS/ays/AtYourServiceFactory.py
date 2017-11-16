@@ -35,25 +35,9 @@ class AtYourServiceFactory:
         """
         start an ays service on your local platform
         """
-        # TODO this needs be changed to use prefab for consistency
-        try:
-            sname = j.tools.prefab.local.tmux.getSessions()[0]
-        except:
-            sname = "main"
-        cmd = "cd {codedir}/github/jumpscale/ays9; python3 main.py --host {host} --port {port} --log {log}"
-        if dev:
-            cmd += " --dev "
-        cmd = cmd.format(codedir=j.dirs.CODEDIR, host=bind, port=port, log=log)
-        print("Starting AtYourService server in a tmux session")
-        # execute ays in tmux with wait=0 because of the check ok output with ays will never be true
-        rc, out = j.tools.prefab.local.tmux.executeInScreen(sname, "ays", cmd, reset=True, wait=0)
-        if rc > 0:
-            raise RuntimeError("Cannot start AYS service")
-
-        if log == 'debug':
-            print("debug logging enabled")
+        j.tools.prefab.local.apps.atyourservice.start(host=bind, port=port, log=log, dev=dev)
         print("AYS server running at http://{}:{}".format(bind, port))
-        return rc, out
+        
 
     def cleanup(self):
         sleep = 60
