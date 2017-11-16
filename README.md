@@ -1,6 +1,6 @@
 ![travis](https://travis-ci.org/Jumpscale/ays9.svg?branch=master)
 
-[we are working on new version, there is internal zoom call recorded GIG](https://drive.google.com/drive/folders/1rsk5dGy1z4VMENRr9qv3LeJ7W2epwTMc)
+[we are working on new version, there is zoom meeting available which explains why GIG](https://drive.google.com/drive/folders/1rsk5dGy1z4VMENRr9qv3LeJ7W2epwTMc)
 
 # AYS
 
