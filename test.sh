@@ -25,8 +25,4 @@ done
 # running testsuite
 
 echo "Running ays core tests"
-js9 "from ays_testrunner.testrunner import AYSTestRunnerFactory;AYSTestRunnerFactory.get(name='core', execution_type='threaded').run()"
-
-
-
-
+js9 "from ays_testrunner.testrunner import AYSTestRunnerFactory;AYSTestRunnerFactory.get(name='core').run()"
