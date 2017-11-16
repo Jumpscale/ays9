@@ -1,5 +1,7 @@
 ![travis](https://travis-ci.org/Jumpscale/ays9.svg?branch=master)
 
+(we are working on new version, there is internal zoom call recorded GIG)[https://drive.google.com/drive/folders/1rsk5dGy1z4VMENRr9qv3LeJ7W2epwTMc]
+
 # AYS
 
 It is an application lifecycle management system for cloud infrastructure and applications and is installed as part of a JumpScale installation.
