@@ -76,8 +76,7 @@ class ActorModel(ActorServiceBaseModel):
         """
         o = self.collection.capnp_schema.ActorPointer.new_message(actorRole=role, minServices=int(min), maxServices=int(max),
                                                         auto=bool(auto), optional=bool(optional), argname=argname)
-        self.updateSubItem('producers', keys='actorRole', data=o)
-
+        self.updateSubItem('producers', keys=['actorRole', 'argname'], data=o)
 
     @property
     def dictFiltered(self):

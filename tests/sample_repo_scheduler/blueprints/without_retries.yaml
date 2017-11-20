@@ -1,0 +1,6 @@
+actor__scheduler2:
+
+actions:
+  - action: install
+    actor: actor
+    service: scheduler2

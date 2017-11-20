@@ -24,13 +24,9 @@ node.physical__ovh4:
 
 
 os.ssh.ubuntu__ovh4:
-  ssh.addr: 'localhost'
-  ssh.port: 22
-  sshLogin: 'root'
-  sshPassword: '<root password>'
+  sshAddr: 'localhost'
+  sshPort: 22
   sshkey: 'ovh_install'
   node: 'ovh4'
-  aysfs: False
-  agent: False
 
 ```

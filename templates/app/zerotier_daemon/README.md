@@ -22,7 +22,7 @@ sshkey__key1:
    ssh.port: 22
 
 os.ssh.ubuntu__osvm1:
-  ssh.port: 22
+  sshPort: 22
   sshkey: 'key1'
   node: 'nodevm1'
 

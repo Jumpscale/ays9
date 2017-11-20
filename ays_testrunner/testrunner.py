@@ -113,6 +113,8 @@ def create_run(cli, repo_info, logger=None):
         j.tools.prefab.local.core.run(cmd, timeout=0)
     except Exception as e:
         errors.append('Failed to create run. Error: {}'.format(e))
+    finally:
+        j.sal.fs.changeDir(curdir)
 
     return errors
 
@@ -256,6 +258,12 @@ class AYSGroupTest:
             else:
                 result += test.duration
         return result
+    
+
+    @property
+    def errors(self):
+        return self._errors
+
 
     def setup(self):
         """
@@ -535,6 +543,9 @@ class BaseRunner:
                     test.endtime = time.time()
                 except Exception as e:
                     test.errors.append('Failed to run test {}. Errors: [{}]'.format(test.name, str(e)))
+
+                if test.errors:
+                    self._failed_tests[test] = test
             # report final results
             self._report_results()
         finally:
@@ -573,14 +584,15 @@ class BaseRunner:
         print("Number of failed/error tests: %s" % nr_of_failed)
         if self._failed_tests:
             print("Errors:\n")
-            for test, failed_test in self._failed_tests.items():
+            for test, job in self._failed_tests.items():
                 header = 'Test {}'.format(test.name)
                 print(header)
                 print('-' * len(header))
-                if failed_test.result:
-                    print('\n'.join(failed_test.result))
-                if failed_test.exc_info:
-                    print(failed_test.exc_info)
+                if test.errors:
+                    print('\n'.join(test.errors))
+                    print('\n')
+                if hasattr(job, 'exc_info') and job.exc_info:
+                    print(job.exc_info)
             raise RuntimeError('Failures while running ays tests')
 
 
@@ -623,7 +635,10 @@ class ThreadedTestRunner(BaseRunner):
                             test.errors.append('Test {} timed out'.format(test.name))
                             self._failed_tests[test] = job
                     else:
-                        self._logger.info('Test {} completed successfully'.format(test.name))
+                        if test.errors:
+                            self._logger.error('Test {} failed'.format(test.name))    
+                        else:
+                            self._logger.info('Test {} completed successfully'.format(test.name))
                         jobs.pop(test)
                         test.endtime = time.time()
                 if jobs:

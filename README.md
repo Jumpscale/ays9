@@ -14,9 +14,29 @@ For more information and how to use see [docs](docs/AYS-Introduction.md).
 To install and use ays9 you need a JumpScale 9 installation. To install JumpScale follow the documentation [here](https://github.com/Jumpscale/bash/blob/master/README.md).
 
 To install ays dependencies navigate to repo path and execute:
+ - in the command-line
 ```bash
 bash install.sh
 ```
+or
+ -  in the python shell of jumpscale ( js9 ):
+```python
+j.tools.prefab.local.apps.atyourservice.install()
+```
+### Installation from branch
+To install from certain branch navigate to repo path and execute:
+ - in the command-line
+```bash
+export JS9BRANCH={branch}
+bash install.sh
+```
+or
+ -  in the python shell of jumpscale ( js9 ):
+```python
+j.tools.prefab.local.apps.atyourservice.install(branch='{branch}')
+```
+
+
 To connect to a remote AYS server without installing JumpScale, it is possible to use the [AYS client](docs/gettingstarted/python.md).
 
 For information about the AYS portal and how to load it to the [portal](https://github.com/Jumpscale/portal9) see [here](docs/AYS-Portal)

@@ -19,6 +19,7 @@ def service_view(s):
         'key': s.model.key,
         'name': s.name,
         'role': s.model.role,
+        'actor': s.model.dbobj.actorName,
         'repository': s.aysrepo.name,
         'data': j.data.serializer.json.loads(s.model.dataJSON),
         'state': s.model.dbobj.state.__str__(),
@@ -67,7 +68,6 @@ def run_view(run):
         'steps': [],
         'epoch': run.model.dbobj.lastModDate,
     }
-    retry = 0
     for step in run.steps:
         aystep = {
             'number': step.dbobj.number,
@@ -75,9 +75,6 @@ def run_view(run):
             'state': step.state
         }
         for job in step.jobs:
-            if job.service:
-                action_retry = job.service.model.actions[job.model.dbobj.actionName].errorNr
-                retry = action_retry if action_retry > retry else retry
             logs = []
             for log in job.model.dbobj.logs:
                 log_dict = {}
@@ -100,7 +97,7 @@ def run_view(run):
                 'result': job.model.dbobj.result
             })
         obj['steps'].append(aystep)
-    obj['retry'] = retry
+    obj['retries'] = run.get_retry_info()
 
     return obj
 

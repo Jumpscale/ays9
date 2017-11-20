@@ -45,7 +45,6 @@ def _execute_cb(job, future):
         exception = err
         job.logger.info("{} has been cancelled".format(job))
 
-
     if exception is not None:
         # state state of job and run to error
         # this state will be check by RunStep and Run and it will raise an exception
@@ -54,8 +53,11 @@ def _execute_cb(job, future):
         if service_action_obj:
             service_action_obj.state = 'error'
             # make sure we don't keep increasing this number forever, it could overflow.
-            if service_action_obj.errorNr < 5:
-                service_action_obj.errorNr += 1
+            if job.model.dbobj.runKey:
+                run = j.core.jobcontroller.db.runs.get(job.model.dbobj.runKey)
+                run = run.objectGet()
+                if service_action_obj.errorNr < len(run.retries) + 1:
+                    service_action_obj.errorNr += 1
             job.service.model.dbobj.state = 'error'
 
         ex = exception if exception is not None else TimeoutError()
@@ -79,7 +81,7 @@ def _execute_cb(job, future):
 
         job.logger.info("{} done successfuly".format(job))
 
-    if service_action_obj.period > 0:   # recurring action.
+    if service_action_obj and service_action_obj.period > 0:   # recurring action.
         job.model.save()
         job.model.delete()
         del job
@@ -308,8 +310,8 @@ class Job:
                 service_action_obj = self.service.model.actions[self.model.dbobj.actionName]
                 service_action_obj.state = str(self.model.dbobj.state)
 
-            if not service_action_obj.longjob:
-                self.service.saveAll()
+                if not service_action_obj.longjob:
+                    self.service.saveAll()
 
         if not j.sal.fs.exists(j.sal.fs.joinPaths(self.service.aysrepo.path, "services")):
             return # repo destroyed or service is deleted.

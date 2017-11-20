@@ -1,4 +1,4 @@
-@0xb6d407bcbd7a90e0;
+@0xf16088fb1cfdee20;
 
 
 struct Command {
@@ -219,4 +219,5 @@ struct Run {
     #key of repo where run is created
     repo @5 :Text;
     callbackUrl @6 :Text;
+    retries @7 :List(UInt32);
 }

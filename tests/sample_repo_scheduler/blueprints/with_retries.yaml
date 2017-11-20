@@ -1,0 +1,4 @@
+actor__scheduler1:
+
+actions:
+  - action: install

@@ -74,6 +74,7 @@ class ActorServiceBaseModel(ModelBaseWithData):
 
             self.changed = True
             self.addSubItem('actions', action_obj)
+            self.reSerialize()
 
         if key != "":
             action_obj.actionKey = key

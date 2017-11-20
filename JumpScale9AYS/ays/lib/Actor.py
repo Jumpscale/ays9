@@ -112,20 +112,27 @@ class Actor():
 
         self._processActionsFile(j.sal.fs.joinPaths(template.path, "actions.py"), reschedule=reschedule, context=context)
         self._initRecurringActions(template)
+        self._initLongjobs(template)
         self._initTimeouts(template)
         self._initEvents(template)
 
         services = self.aysrepo.servicesFind(actor=self.model.name)
 
+        data_schema_procchange = False
         if self.model.dbobj.serviceDataSchema != template.schemaCapnpText:
             # update schema in the actor itself
             self.model.dbobj.serviceDataSchema = template.schemaCapnpText
-            # update existsing service schema
-            for service in services:
+            data_schema_procchange = True
+
+        # update existsing service schema
+        for service in services:
+            if service.model.dbobj.dataSchema != self.model.dbobj.serviceDataSchema:
                 service.model.dbobj.dataSchema = self.model.dbobj.serviceDataSchema
                 service.model._data = None  # force recreation of the capnp data object.
                 # no need to manually copy the data cause they are still in the service.model.dbobj.data
                 # setting _data to None force to recreate the capnp msg and fill it with content of service.model.dbobj.data
+
+        if data_schema_procchange:
             self.processChange("dataschema", context=context)
 
         if self.model.dbobj.dataUI != template.dataUI:
@@ -135,31 +142,23 @@ class Actor():
         self.saveAll()
 
         for s in services:
-            dirtyservice = False
-            ensure_longjobs = False
             for action in self.model.dbobj.actions:
                 if action.period > 0:
-                    dirtyservice = True
                     act = s.model.actionGet(action.name)
                     act.period = action.period
                     act.log = action.log
                     act.isJob = action.isJob
                     act.timeout = action.timeout
+                    s.update_recurring_action(action.name)
+                else:
+                    s.remove_action(action.name, recurring=True)
 
                 if action.longjob is True:
-                    if s._longrunning_tasks[action.name].actioncode != self.model.actionsCode[action.name]:
-                        print("Restarting longjob: ", action.name)
-                        s._longrunning_tasks[action.name].stop()
-                        del s._longrunning_tasks[action.name]
-                        ensure_longjobs = True
-
-
-            if ensure_longjobs:
-                s._ensure_longjobs()
-
-            if dirtyservice:
-                s.model.reSerialize()
-                s.saveAll()
+                    s.update_longjob(action.name)
+                else:
+                    s.remove_action(action.name, longjobs=True)
+            s.model.reSerialize()
+            s.saveAll()
 
     def _initFromTemplate(self, template, context=None):
         if self.model is None:
@@ -222,6 +221,16 @@ class Actor():
                 ac.save()
 
     def _initLongjobs(self, template):
+        longjobs_names = [job_info['action'] for job_info in template.longjobsConfig]
+        for actionname in self.model.actions.keys():
+            if actionname not in longjobs_names:
+                if self.model.actions[actionname].longjob is True:
+                    self.model.actions[actionname].longjob = False
+                    self.model.save()
+                for service in self.services:
+                    if service.model.actions[actionname].longjob is True:
+                        service.model.actions[actionname].longjob = False
+
         for jobinfo in template.longjobsConfig:
             actionname = jobinfo['action']
             action_model = self.model.actions[actionname]
@@ -231,8 +240,21 @@ class Actor():
             ac.timeout = 0
             ac.longjob = True
             ac.save()
+            for service in self.services:
+                service.model.actions[actionname].longjob = True
+                service.saveAll()
 
     def _initRecurringActions(self, template):
+        # remove old recurring actions in services
+        recurring_names = [rec_info['action'] for rec_info in template.recurringConfig]
+        for actionname in self.model.actions.keys():
+            if actionname not in recurring_names:
+                if self.model.actions[actionname].period:
+                    self.model.actions[actionname].period = 0
+                    self.model.save()
+                for service in self.services:
+                    if service.model.actions[actionname].period:
+                        service.model.actions[actionname].period = 0
         for reccuring_info in template.recurringConfig:
             action_model = self.model.actions[reccuring_info['action']]
             action_model.period = j.data.types.duration.convertToSeconds(reccuring_info['period'])
@@ -316,6 +338,7 @@ class Actor():
             if state == "DEF" and line[:7] != '    def' and (linestrip.startswith("@") or linestrip.startswith("def")):
                 # means we are at end of def to new one
                 parsedActorMethods.append(actionName)
+                self.logger.debug("adding action [{}] to [{}]".format(actionName, self))
                 self._addAction(actionName, amSource, amDecorator, amMethodArgs, amDoc)
                 amSource = ""
                 actionName = ""
