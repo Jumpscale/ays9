@@ -35,7 +35,7 @@ class AtYourServiceFactory:
         """
         start an ays service on your local platform
         """
-        j.tools.prefab.local.apps.atyourservice.start(host=bind, port=port, log=log, dev=dev)
+        j.tools.prefab.local.js9.atyourservice.start(host=bind, port=port, log=log, dev=dev)
         print("AYS server running at http://{}:{}".format(bind, port))
         
 
