@@ -85,6 +85,7 @@ class AtYourServiceRepoCollection:
 
         j.sal.fs.createDir(path)
         j.tools.executorLocal.execute('cd {};git init'.format(path))
+        j.sal.fs.createDir(j.sal.fs.joinPaths(path, '.gitignore'))
         j.sal.fs.createEmptyFile(j.sal.fs.joinPaths(path, '.ays'))
         j.sal.fs.createDir(j.sal.fs.joinPaths(path, 'actorTemplates'))
         j.sal.fs.createDir(j.sal.fs.joinPaths(path, 'blueprints'))

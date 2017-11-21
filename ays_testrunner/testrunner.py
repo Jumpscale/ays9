@@ -467,7 +467,7 @@ class AYSTest:
                     # report run
                     self._errors.extend(report_run(self._cli, self._repo_info, logger=self._logger))
         except Exception as err:
-            self._errors.append('Test {} failed withe error: {}'.format(self._name, err))
+            self._errors.append('Test {} failed with error: {}'.format(self._name, err))
 
         # only teardown if there is no errors, otherwise leave repo test for inspection 
         if not self._errors:
