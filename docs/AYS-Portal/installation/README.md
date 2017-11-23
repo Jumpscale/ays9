@@ -22,13 +22,33 @@ git clone git@github.com:Jumpscale/portal9.git
 Or using the interactive shell:
 ```python
 prefab = j.tools.prefab.local
-prefab.apps.portal.install()
+prefab.web.portal.install()
 ```
 
 As discussed below you can also install the portal framework as part of the AYS installation, through one single command, using the `install_portal` when using the JumpScale.
 
 
 <a id="ays9"></a>
+
+## Installing AYS and Portal on different machines
+### On portal machine do the following
+
+```python
+prefab = j.tools.prefab.local
+prefab.apps.portal.install()
+prefab.apps.portal.start()
+# this for the  client to be installed
+prefab.apps.atyourservice.install()
+prefab.apps.atyourservice.load_ays_space()
+prefab.apps.atyourservice.configure_portal(host="http://172.17.0.3", port="5000")
+```
+
+### On AYS machine
+```python
+prefab.apps.atyourservice.install()
+prefab.apps.atyourservice.start("0.0.0.0", "5000")
+```
+
 ## Install AYS and the AYS Portal
 
 Both are part of the [jumpscale/ays9](https://github.com/Jumpscale/ays9) repository.
@@ -42,13 +62,17 @@ git clone git@github.com:Jumpscale/ays9.git
 Or using the interactive shell:
 ```
 prefab = j.tools.prefab.local
-prefab.apps.atyourservice.install()
+prefab.js9.atyourservice.install()
 ```
 
 Alternativelly you can use the `install_portal` option which will also install/reinstall the portal framework:
 ```python
 prefab = j.tools.prefab.local
 prefab.apps.atyourservice.install(install_portal=True)
+# Load ays space into portal
+prefab.js9.atyourservice.load_ays_space()
+# configure portal to point to ays location
+prefab.js9.atyourservice.configure_portal(host='http://172.17.0.5', port="5000")
 ```
 
 Installing the AYS Portal using JumpScale will automatically start the AYS Portal in a new TMUX window.

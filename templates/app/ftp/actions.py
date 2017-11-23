@@ -16,9 +16,9 @@ def install(job):
     if not prefab.core.isLinux:
         raise RuntimeError('unfortunetly support is available for linux systems only.')
     prefab.core.sudomode = True
-    prefab.package.update()
-    prefab.development.python.install()
-    prefab.development.pip.ensure()
+    prefab.system.package.update()
+    prefab.runtimes.python.install()
+    prefab.runtimes.pip.ensure()
     config = {}
     for space in service.producers['ftp_space']:
         if space.model.data.path.startswith('/mnt/storage/'):
@@ -31,8 +31,8 @@ def install(job):
             username, passwd = user.split(":")
             config[path][username] = [passwd, space.model.data.permission]
     config_yaml = j.data.serializer.yaml.dumps(config)
-    prefab.apps.pyftpserver.install(root=ftp_path, config=config_yaml)
-    prefab.apps.pyftpserver.start()
+    prefab.storage.pyftpserver.install(root=ftp_path, config=config_yaml)
+    prefab.storage.pyftpserver.start()
 
 def start(job):
     """
@@ -40,7 +40,7 @@ def start(job):
     """
     service = job.service
     prefab = service.executor.prefab
-    prefab.apps.pyftpserver.start()
+    prefab.storage.pyftpserver.start()
 
 def stop(job):
     """
@@ -48,4 +48,4 @@ def stop(job):
     """
     service = job.service
     prefab = service.executor.prefab
-    prefab.apps.pyftpserver.stop()
+    prefab.storage.pyftpserver.stop()

@@ -17,7 +17,6 @@ class RunScheduler:
     def __init__(self, repo):
         self.logger = j.logger.get("j.ays.RunScheduler")
         self.repo = repo
-        self._git = j.clients.git.get(repo.path, check_path=False)
         self.queue = asyncio.PriorityQueue(maxsize=0, loop=self.repo._loop)
         self._retries = []
         self._retries_lock = asyncio.Lock(loop=self.repo._loop)
@@ -63,10 +62,9 @@ class RunScheduler:
         """
         create a commit on the ays repo
         """
-        self.logger.debug("create commit on repo %s for un %s", self.repo.path, run.model.key)
+        self.logger.debug("Create commit on repo %s for un %s", self.repo.path, run.model.key)
         msg = "Run {}\n\n{}".format(run.model.key, str(run))
-        if not j.atyourservice.server.dev_mode:
-            self._git.commit(message=msg)
+        self.repo.commit(message=msg)
 
     async def start(self):
         """

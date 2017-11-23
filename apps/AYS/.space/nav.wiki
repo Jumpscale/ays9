@@ -3,4 +3,4 @@ Actor Templates:/AYS/ActorTemplates
 JWT:/AYS/jwt
 Version: /AYS/version
 
-AYS API:http://localhost:5000/apidocs/index.html?raml=api.raml
+AYS API:{ays_uri}/apidocs/index.html?raml=api.raml
