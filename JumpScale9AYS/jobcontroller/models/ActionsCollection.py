@@ -2,8 +2,8 @@ from js9 import j
 import capnp
 from JumpScale9AYS.jobcontroller.models.ActionModel import ActionModel
 from JumpScale9AYS.jobcontroller.models import model_job_capnp as ModelCapnp
-from JumpScale9Lib.data.capnp.ModelBase import ModelBaseCollection
 
+ModelBaseCollection=j.data.capnp_tarantool.getModelBaseClassCollection
 
 class ActionsCollection(ModelBaseCollection):
     """
@@ -13,13 +13,11 @@ class ActionsCollection(ModelBaseCollection):
 
     def __init__(self):
         self.logger = j.logger.get('j.core.jobcontroller.action-collection')
-        self.__imports__ = "capnp"
         # connection to the key-value store index repository namespace
         self.namespace_prefix = 'jobs'
         category = "Action"
         namespace = "%s:%s" % (self.namespace_prefix, category.lower())
-        db = j.data.kvs.getRedisStore(namespace, namespace, **j.atyourservice.server.config['redis'])
-        super().__init__(ModelCapnp.Action, category=category, namespace=namespace, modelBaseClass=ActionModel, db=db, indexDb=db)
+        super().__init__(ModelCapnp.Action, category=category, namespace=namespace, modelBaseClass=ActionModel)
 
     def new(self):
         model = ActionModel(
