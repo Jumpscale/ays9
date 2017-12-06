@@ -29,10 +29,22 @@ def searchActorTemplates(path, is_global=False):
     actortemplatessearch = ""
     if not is_global:
         actortemplatessearch = " -or -wholename '*/actorTemplates/*actions.py' -or -wholename '*/actorTemplates/*schema.capnp' -or -wholename '*/actorTemplates/*config.yaml'"
-    cmd = """find %s \( -wholename '*/templates/*actions.py' -or -wholename '*/templates/*schema.capnp' -or -wholename '*/templates/*config.yaml' -or -wholename '*/tests/*actions.py' -or -wholename '*/tests/*schema.capnp' -or -wholename '*/tests/*config.yaml' %s \) -exec readlink -f {} \;""" % (path, actortemplatessearch)
+    cmd = """find %s \( -wholename '*/templates/*actions.py' -or -wholename '*/templates/*schema.capnp' -or -wholename '*/templates/*config.yaml' -or -wholename '*/tests/*actions.py' -or -wholename '*/tests/*schema.capnp' -or -wholename '*/tests/*config.yaml' %s \)""" % (path, actortemplatessearch)
     rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
-    if rc == 0:
-        return out.splitlines()
+    
+    prefab_instance = j.tools.prefab.get()
+    os_name = prefab_instance.platformtype.osname
+      
+    if "darwin" in os_name:
+        cmd = "stat -f '%%Y' %s"
+    else:
+        cmd = "readlink -f %s"
+
+    for templateName in out.splitlines():
+        if j.sal.fs.isLink(templateName):
+            rc, out, err = j.sal.process.execute(cmd%templateName, die=False, showout=False)
+            templateName = out
+        res.add(templateName)
     return res
 
 
