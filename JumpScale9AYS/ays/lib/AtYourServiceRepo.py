@@ -61,17 +61,27 @@ class AtYourServiceRepoCollection:
         path = j.sal.fs.pathNormalize(path)
 
         res = []
-
-        cmd = """find %s \( -wholename '*.ays' \) -exec readlink -f {} \;""" % (path)
+        
+        cmd = "find %s \( -wholename '*.ays' \) " % (path)
         rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
+
         for reponame in out.splitlines():
+            if j.sal.fs.isLink(reponame):
+                prefabInstance = j.tools.prefab.get()
+                osName = prefabInstance.platformtype.osname
+                if "darwin" in osName:
+                    cmd = "stat -f '%%Y' %s" % (reponame)
+                else:
+                    cmd = "readlink -f %s" % (reponame)
+                rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
+                reponame = out
             reponame = reponame.split(".ays")[0]
             if reponame.startswith(".") or reponame.startswith("_"):
                 continue
             res.append(reponame)
 
         return res
-
+    
     def list(self):
         # TODO protect by lock and auto update
         return list(self._repos.values())
