@@ -59,28 +59,32 @@ class AtYourServiceRepoCollection:
         return path to AYS repository found
         """
         path = j.sal.fs.pathNormalize(path)
-
         res = []
-        
-        cmd = "find %s \( -wholename '*.ays' \) " % (path)
-        rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
+        os_name = j.tools.prefab.local.platformtype.osname
 
-        for reponame in out.splitlines():
-            if j.sal.fs.isLink(reponame):
-                prefabInstance = j.tools.prefab.get()
-                osName = prefabInstance.platformtype.osname
-                if "darwin" in osName:
+        if "darwin" in os_name:
+            cmd = "find %s \( -wholename '*.ays' \) " % (path)
+            rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
+            for reponame in out.splitlines():
+                if j.sal.fs.isLink(reponame):
                     cmd = "stat -f '%%Y' %s" % (reponame)
-                else:
-                    cmd = "readlink -f %s" % (reponame)
-                rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
-                reponame = out
-            reponame = reponame.split(".ays")[0]
-            if reponame.startswith(".") or reponame.startswith("_"):
-                continue
-            res.append(reponame)
+                    rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
+                    reponame = out
+                reponame = reponame.split(".ays")[0]
+                if reponame.startswith(".") or reponame.startswith("_"):
+                    continue
+                res.append(reponame)
+            return res
+        else:
+            cmd = """find %s \( -wholename '*.ays' \) -exec readlink -f {} \;""" % (path)
+            rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
+            for reponame in out.splitlines():
+                reponame = reponame.split(".ays")[0]
+                if reponame.startswith(".") or reponame.startswith("_"):
+                    continue
+                res.append(reponame)
+            return res  
 
-        return res
     
     def list(self):
         # TODO protect by lock and auto update
