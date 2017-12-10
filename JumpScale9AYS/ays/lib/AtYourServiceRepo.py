@@ -9,6 +9,7 @@ from JumpScale9AYS.ays.lib.AtYourServiceDependencies import create_graphs
 from JumpScale9AYS.ays.lib.AtYourServiceDependencies import get_task_batches
 from JumpScale9AYS.ays.lib.AtYourServiceDependencies import create_job
 from JumpScale9AYS.ays.lib.RunScheduler import RunScheduler
+from .utils import searchLocationsOnMac, searchLocationsOnLinux
 
 import asyncio
 from collections import namedtuple
@@ -63,29 +64,14 @@ class AtYourServiceRepoCollection:
         os_name = j.tools.prefab.local.platformtype.osname
 
         if "darwin" in os_name:
-            cmd = "find %s \( -wholename '*.ays' \) " % (path)
-            rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
-            for reponame in out.splitlines():
-                if j.sal.fs.isLink(reponame):
-                    cmd = "stat -f '%%Y' %s" % (reponame)
-                    rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
-                    reponame = out
-                reponame = reponame.split(".ays")[0]
-                if reponame.startswith(".") or reponame.startswith("_"):
-                    continue
-                res.append(reponame)
-            return res
+            find_cmd = "find %s \( -wholename '*.ays' \) " % (path)
+            link_cmd = "stat -f '%%Y' %s"
+            res = searchLocationsOnMac(path, find_cmd, link_cmd, True)
         else:
             cmd = """find %s \( -wholename '*.ays' \) -exec readlink -f {} \;""" % (path)
-            rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
-            for reponame in out.splitlines():
-                reponame = reponame.split(".ays")[0]
-                if reponame.startswith(".") or reponame.startswith("_"):
-                    continue
-                res.append(reponame)
-            return res  
+            res = searchLocationsOnLinux(path, cmd, True)
+        return res
 
-    
     def list(self):
         # TODO protect by lock and auto update
         return list(self._repos.values())

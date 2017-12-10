@@ -1,7 +1,7 @@
 from js9 import j
 from JumpScale9AYS.ays.lib.ActorTemplate import ActorTemplate
 import asyncio
-
+from .utils import searchLocationsOnMac, searchLocationsOnLinux
 
 def get_root_template_repo_if_relevant(path):
     template_repo = None
@@ -32,22 +32,15 @@ def searchActorTemplates(path, is_global=False):
 
     os_name = j.tools.prefab.local.platformtype.osname
     if "darwin" in os_name:
-        cmd = """find %s \( -wholename '*/templates/*actions.py' -or -wholename '*/templates/*schema.capnp' -or -wholename '*/templates/*config.yaml' -or -wholename '*/tests/*actions.py' -or -wholename '*/tests/*schema.capnp' -or -wholename '*/tests/*config.yaml' %s \)""" % (path, actortemplatessearch)
-        rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
-        #the command is running on each template as it will print nothing if the template is not a link
-        cmd = "stat -f '%%Y' %s"
-        for templateName in out.splitlines():
-            if j.sal.fs.isLink(templateName):
-                rc, out, err = j.sal.process.execute(cmd%templateName, die=False, showout=False)
-                templateName = out
-            res.add(templateName)
-        return res
+        find_cmd = """find %s \( -wholename '*/templates/*actions.py' -or -wholename '*/templates/*schema.capnp' -or -wholename '*/templates/*config.yaml' -or -wholename '*/tests/*actions.py' -or -wholename '*/tests/*schema.capnp' -or -wholename '*/tests/*config.yaml' %s \)""" % (path, actortemplatessearch)
+        link_cmd = "stat -f '%%Y' %s"
+        locations = searchLocationsOnMac(path, find_cmd, link_cmd, False)
+        res = set(locations)
     else:
         cmd = """find %s \( -wholename '*/templates/*actions.py' -or -wholename '*/templates/*schema.capnp' -or -wholename '*/templates/*config.yaml' -or -wholename '*/tests/*actions.py' -or -wholename '*/tests/*schema.capnp' -or -wholename '*/tests/*config.yaml' %s \) -exec readlink -f {} \;""" % (path, actortemplatessearch)
-        rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
-        if rc == 0:
-            return out.splitlines()
-        return res
+        locations = searchLocationsOnLinux(path, cmd, False)
+        res = set(locations)
+    return res
 
 class TemplateRepoCollection:
     """
