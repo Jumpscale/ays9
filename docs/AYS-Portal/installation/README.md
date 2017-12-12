@@ -40,7 +40,7 @@ prefab.apps.portal.start()
 # this for the  client to be installed
 prefab.apps.atyourservice.install()
 prefab.apps.atyourservice.load_ays_space()
-prefab.apps.atyourservice.configure_portal(host="http://172.17.0.3", port="5000")
+prefab.apps.atyourservice.configure_portal(ays_url="http://172.17.0.3:5000", ays_console_url='http://172.17.0.4:4000')
 ```
 
 ### On AYS machine
@@ -72,7 +72,7 @@ prefab.apps.atyourservice.install(install_portal=True)
 # Load ays space into portal
 prefab.js9.atyourservice.load_ays_space()
 # configure portal to point to ays location
-prefab.js9.atyourservice.configure_portal(host='http://172.17.0.5', port="5000")
+prefab.js9.atyourservice.configure_portal(ays_url='http://172.17.0.5:5000', ays_console_url='http://172.17.0.3:4000')
 ```
 
 Installing the AYS Portal using JumpScale will automatically start the AYS Portal in a new TMUX window.
