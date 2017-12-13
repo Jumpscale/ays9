@@ -82,32 +82,29 @@ def validate_bp_format(path, models, aysrepo, logger=None):
 
     return True, 'Blueprint format is valid'
 
-def searchLocationsOnMac(path, find_cmd, link_cmd, target_repos=True):
+
+def search_ays_repos(path, find_cmd, link_cmd, search_for_actors=True):
+    """
+    Search for AYS repos in the path using the provided commnads
+    """
     res = []
-    rc, out, err = j.sal.process.execute(find_cmd, die=False, showout=False)
-    for location in out.splitlines():
-        if j.sal.fs.isLink(location):
-            rc, out, err = j.sal.process.execute(link_cmd%location, die=False, showout=False)
-            location = out
-        if target_repos:
-            location = location.split(".ays")[0]
-            if location.startswith(".") or location.startswith("_"):
-                continue
-        res.append(location)
+    _, out, _ = j.sal.process.execute(find_cmd, die=True, showout=False)
+    on_mac = 'darwin' in j.tools.prefab.local.platformtype.osname
+
+    if not on_mac and search_for_actors is True:
+        res = out.splitlines()
+    else:
+        for location in out.splitlines():
+            if on_mac and j.sal.fs.isLink(location):
+                _, out, _ = j.sal.process.execute(link_cmd%location, die=True, showout=False)
+                location = out
+            if search_for_actors is False:
+                location = location.split(".ays")[0]
+                if location.startswith(".") or location.startswith("_"):
+                    continue
+            res.append(location)
     return res
 
-def searchLocationsOnLinux(path, cmd, target_repos=True):
-    res = []
-    rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
-    if target_repos:
-        for location in out.splitlines():
-            location = lcation.split(".ays")[0]
-            if location.startswith(".") or location.startswith("_"):
-                continue
-            res.append(location)
-    else:
-        res = out.splitlines()
-    return res
 
 class Lock:
     def __init__(self, path):

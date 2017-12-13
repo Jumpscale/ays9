@@ -9,7 +9,7 @@ from JumpScale9AYS.ays.lib.AtYourServiceDependencies import create_graphs
 from JumpScale9AYS.ays.lib.AtYourServiceDependencies import get_task_batches
 from JumpScale9AYS.ays.lib.AtYourServiceDependencies import create_job
 from JumpScale9AYS.ays.lib.RunScheduler import RunScheduler
-from .utils import searchLocationsOnMac, searchLocationsOnLinux
+from .utils import search_ays_repos
 
 import asyncio
 from collections import namedtuple
@@ -66,10 +66,10 @@ class AtYourServiceRepoCollection:
         if "darwin" in os_name:
             find_cmd = "find %s \( -wholename '*.ays' \) " % (path)
             link_cmd = "stat -f '%%Y' %s"
-            res = searchLocationsOnMac(path, find_cmd, link_cmd, True)
+            res = search_ays_repos(path, find_cmd, link_cmd, False)
         else:
             cmd = """find %s \( -wholename '*.ays' \) -exec readlink -f {} \;""" % (path)
-            res = searchLocationsOnLinux(path, cmd, True)
+            res = search_ays_repos(path, cmd, False)
         return res
 
     def list(self):
