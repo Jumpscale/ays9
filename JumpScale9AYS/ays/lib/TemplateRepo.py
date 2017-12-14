@@ -1,7 +1,7 @@
 from js9 import j
 from JumpScale9AYS.ays.lib.ActorTemplate import ActorTemplate
 import asyncio
-from .utils import search_ays_repos
+from .utils import search_ays
 
 def get_root_template_repo_if_relevant(path):
     template_repo = None
@@ -34,11 +34,11 @@ def searchActorTemplates(path, is_global=False):
     if "darwin" in os_name:
         find_cmd = """find %s \( -wholename '*/templates/*actions.py' -or -wholename '*/templates/*schema.capnp' -or -wholename '*/templates/*config.yaml' -or -wholename '*/tests/*actions.py' -or -wholename '*/tests/*schema.capnp' -or -wholename '*/tests/*config.yaml' %s \)""" % (path, actortemplatessearch)
         link_cmd = "stat -f '%%Y' %s"
-        locations = search_ays_repos(path, find_cmd, link_cmd, True)
+        locations = search_ays(find_cmd=find_cmd, link_cmd=link_cmd, search_for_templates=True)
         res = set(locations)
     else:
         cmd = """find %s \( -wholename '*/templates/*actions.py' -or -wholename '*/templates/*schema.capnp' -or -wholename '*/templates/*config.yaml' -or -wholename '*/tests/*actions.py' -or -wholename '*/tests/*schema.capnp' -or -wholename '*/tests/*config.yaml' %s \) -exec readlink -f {} \;""" % (path, actortemplatessearch)
-        locations = search_ays_repos(path, cmd, True)
+        locations = search_ays(cmd=cmd, search_for_templates=True)
         res = set(locations)
     return res
 
