@@ -17,7 +17,7 @@ class ays_tools(j.tools.code.classGetBase()):
         ays_uri = cfg.get("ays_uri", "http://localhost:5000")
         production = False
         try:
-            cl = j.clients.atyourservice.get(base_uri=ays_uri).api
+            cl = j.clients.ays.get(base_uri=ays_uri)
         except:
             raise exceptions.ServiceUnavailable("AYS server isn't available.")
 
@@ -32,9 +32,9 @@ class ays_tools(j.tools.code.classGetBase()):
             access_token = oauth_ctx.get('access_token', None)
             if access_token is None:
                 raise exceptions.BadRequest("No access_token in session")
-            cl.set_auth_header('bearer ' + access_token)
+            cl._set_auth_header('bearer ' + access_token)
 
-        return cl.ays
+        return cl._ayscl
 
     @exceptions.catcherrors()
     def getRun(self, repository=None, runid=None, **kwargs):
