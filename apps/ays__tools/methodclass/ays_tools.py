@@ -17,7 +17,7 @@ class ays_tools(j.tools.code.classGetBase()):
         ays_uri = cfg.get("ays_uri", "http://localhost:5000")
         production = False
         try:
-            cl = j.clients.ays.get(base_uri=ays_uri)
+            cl = j.clients.ays.get(ays_uri)
         except:
             raise exceptions.ServiceUnavailable("AYS server isn't available.")
 
