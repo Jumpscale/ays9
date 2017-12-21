@@ -728,13 +728,6 @@ class Service:
         if action[-1] == "_":
             return self._executeActionService(action)
         else:
-<<<<<<< HEAD
-            futur = asyncio.run_coroutine_threadsafe(self.executeActionJob(action, args, context=context), loop=self.aysrepo._loop)
-            return futur.result()
-
-    def ayncExecuteAction(self, action, args={}, context=None):
-        return self.executeActionJob(action, args, context=context)
-=======
             futur = asyncio.run_coroutine_threadsafe(self._executeActionJob(action, args, context=context), loop=self.aysrepo._loop)
             try:
                 return futur.result()
@@ -744,7 +737,6 @@ class Service:
 
     async def asyncExecuteAction(self, action, args={}, context=None):
         return await self._executeActionJob(action, args, context=context)
->>>>>>> 6ca7a2eecdfaa65a9eab6e5d52e621a7b39fb70f
 
     def _executeActionService(self, action, args={}):
         # execute an action in process without creating a job
