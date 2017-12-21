@@ -31,7 +31,7 @@ class Service:
             return self
         except Exception as e:
             # cleanup if init fails
-            self.delete()
+            await self.asyncDelete()
             raise e
 
     @classmethod
@@ -367,6 +367,10 @@ class Service:
         return True, "OK"
 
     def delete(self):
+        futur = asyncio.run_coroutine_threadsafe(self.asyncDelete(), loop=self.aysrepo._loop)
+        return futur.result()
+
+    async def asyncDelete(self):
         """
         Deletes service and its children from database and filesystem if safe.
 
@@ -381,7 +385,7 @@ class Service:
         self._deleted = True
         if self.children:
             for service in self.children:
-                service.delete()
+                await service.asyncDelete()
 
         # cancel all recurring tasks
         self.stop()
