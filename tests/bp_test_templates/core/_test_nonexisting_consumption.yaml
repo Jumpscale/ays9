@@ -1,0 +1,6 @@
+# 'QA SERVICE' (THE TEMPLATE SHOULD HAS THIS LINE)
+test_nonexisting_consumption__instance:
+
+actions:
+  - action: 'test'
+    actor: 'test_nonexisting_consumption'

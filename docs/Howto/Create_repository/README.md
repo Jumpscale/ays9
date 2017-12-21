@@ -18,9 +18,9 @@ GIT_URL="https://github.com/<user>/<repository-name>"
 ays repo create -n $REPO_NAME -g $GIT_URL
 ```
 
-As a result a new repository will be created under `/optvar/cockpit_repos`:
+As a result a new repository will be created under `/host/var/cockpit_repos`:
 ```
-cd /optvar/cockpit_repos/$REPO_NAME
+cd /host/var/cockpit_repos/$REPO_NAME
 ```
 
 It contains two empty directories:

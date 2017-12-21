@@ -14,8 +14,10 @@ def _post_install(libname, libpath):
 
     print("****:%s:%s" % (libname, libpath))
 
-    j.tools.jsloader.generateJumpscalePlugins()
-    j.tools.jsloader.copyPyLibs()
+    j.tools.jsloader.generate()
+
+    # not needed to do
+    # j.tools.jsloader.copyPyLibs()
 
 
 class install(_install):
@@ -23,8 +25,10 @@ class install(_install):
     def run(self):
         _install.run(self)
         libname = self.config_vars['dist_name']
-        libpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), libname)
-        self.execute(_post_install, (libname, libpath), msg="Running post install task")
+        libpath = os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), libname)
+        self.execute(_post_install, (libname, libpath),
+                     msg="Running post install task")
 
 
 class develop(_develop):
@@ -32,8 +36,10 @@ class develop(_develop):
     def run(self):
         _develop.run(self)
         libname = self.config_vars['dist_name']
-        libpath = os.path.join(os.path.dirname(os.path.abspath(__file__)), libname)
-        self.execute(_post_install, (libname, libpath), msg="Running post install task")
+        libpath = os.path.join(os.path.dirname(
+            os.path.abspath(__file__)), libname)
+        self.execute(_post_install, (libname, libpath),
+                     msg="Running post install task")
 
 
 long_description = ""
@@ -46,7 +52,7 @@ except ImportError:
 
 setup(
     name='JumpScale9AYS',
-    version='9.1.1',
+    version='9.2.0',
     description='Automation framework for cloud workloads ays lib',
     long_description=long_description,
     url='https://github.com/Jumpscale/ays9',
@@ -56,11 +62,12 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'JumpScale9>=9.1.1',
-        'JumpScale9Lib>=9.1.1',
+        'JumpScale9>=9.2.0',
+        'JumpScale9Lib>=9.2.0',
         'jsonschema>=2.6.0',
-        'python-jose>=1.3.2',
-        'sanic>=0.5.4'
+        'python-jose==1.3.2',
+        'sanic>=0.5.4',
+        'aiohttp>=2.2.5'
     ],
     cmdclass={
         'install': install,

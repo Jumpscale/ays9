@@ -158,7 +158,7 @@ class Blueprint:
         for idx, action_info in enumerate(self.actions):
             if action_info['action_name'] == "delete":
                 for service in self.aysrepo.servicesFind(name=action_info['service'], actor=action_info['actor']):
-                    ok, oktodeletemsg = await service.checkDelete()
+                    ok, oktodeletemsg = service.checkDelete()
                     if not ok:
                         msg += "\n- Skipped delete action for service {}: {}".format(service.name, oktodeletemsg)
                         self.logger.warning(msg)

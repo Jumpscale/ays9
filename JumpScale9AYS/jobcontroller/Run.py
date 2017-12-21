@@ -1,8 +1,10 @@
 import colored_traceback
 from .RunStep import RunStep
 from js9 import j
-
+import json
+import aiohttp
 colored_traceback.add_hook(always=True)
+RETRY_DELAY = [10, 30, 60, 300, 600, 1800]  # time of each retry in seconds, total: 46min 10sec
 
 
 class Run:
@@ -19,6 +21,10 @@ class Run:
             step = RunStep(self, dbobj.number, dbobj=dbobj)
             steps.append(step)
         return steps
+
+    @property
+    def aysrepo(self):
+        return j.atyourservice.server.aysRepos.get(path=self.model.dbobj.repo)
 
     @property
     def state(self):
@@ -61,6 +67,32 @@ class Run:
                     return True
         return False
 
+    def get_retry_level(self):
+        """
+        find lowest error level
+        """
+        levels = set()
+        for step in self.steps:
+            for job in step.jobs:
+                service_action_obj = job.service.model.actions[job.model.dbobj.actionName]
+                if service_action_obj.errorNr > 0:
+                    levels.add(service_action_obj.errorNr)
+        if levels:
+            return min(levels)
+
+    def get_retry_info(self):
+        runInfo = {}
+        retry = self.get_retry_level()
+        if retry and self.retries[0] != 0 and retry <= len(self.retries):
+            # capnp list to python list
+            remaining_retries = [x for x in self.retries]
+            runInfo = {
+                'retry-number': retry,
+                'duration': self.retries[retry - 1],
+                'remaining-retries': remaining_retries[retry:]
+            }
+        return runInfo
+
     @property
     def error(self):
         out = "%s\n" % self
@@ -74,6 +106,28 @@ class Run:
                                                   action.model["source"]).decode()
                         out += str(action.result or '')
         return out
+
+    @property
+    def callbackUrl(self):
+        return self.model.dbobj.callbackUrl
+
+    @callbackUrl.setter
+    def callbackUrl(self, callbackUrl):
+        self.model.dbobj.callbackUrl = callbackUrl
+
+    @property
+    def retries(self):
+        if not self.model.dbobj.retries:
+            # if dev mode will only use the first value of default config with default number of retries
+            if j.atyourservice.server.dev_mode:
+                self.model.dbobj.retries = [RETRY_DELAY[0]] * len(RETRY_DELAY)
+            else:
+                self.model.dbobj.retries = RETRY_DELAY
+        return self.model.dbobj.retries
+
+    @retries.setter
+    def retries(self, retries):
+        self.model.dbobj.retries = retries
 
     def reverse(self):
         ordered = []
@@ -123,6 +177,11 @@ class Run:
             raise
         finally:
             self.save()
+            if self.callbackUrl:
+                runInfo = self.get_retry_info()
+                data = {'runid': self.key, 'runState': self.state.__str__(), 'retries': runInfo}
+                async with aiohttp.ClientSession() as session:
+                    await session.post(self.callbackUrl, headers={'Content-type': 'application/json'}, data=json.dumps(data))
 
     def __repr__(self):
         out = "RUN:%s\n" % (self.key)

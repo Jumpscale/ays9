@@ -1,29 +1,36 @@
 # AYS Repositories
 
-AYS repositories (repos) are Git repositories containing services and actor templates.
+AYS repositories ("repos") are Git repositories containing [Blueprints](Blueprints.md), [AYS services](Services.md), [actors](Actors.md) and (optionally) local [actor templates](ActorTemplates.md).
 
-These are the two types of repositories used by AYS:
+On an AYS server the AYS repositories are always located in the `/opt/cockpit_repos` directory.
 
-- **AYS Template Repos** are Git repositories containing all actor templates from which an actual AYS instance can be deployed. We can see it as a library of services form which you pick some templates to represent what you're trying to model.
-
-  - See [AYS template repo](../FileDetails/AYS-template-repo.md) for more details
-
-- **AYS Repos** are Git repositories containing actually deployed instances
-
-  - See [AYS repo](../FileDetails/AYS-repo.md) for more details
-
-
-  ```toml
-  !!!
-  title = "AYS Repo"
-  tags= ["ays","def"]
-  date = "2017-03-02"
-  categories= ["ays_def"]
-  ```
-
+For each repository there will be a subdirectory:
 ```
-!!!
-title = "Repositories"
-date = "2017-04-08"
-tags = []
+/opt/cockpit_repos/repo1
+/opt/cockpit_repos/repo2
+...
 ```
+
+And each AYS repository has the following 4 subdirectories:
+
+- `/opt/cockpit_repos/<repository-name>/blueprints`
+
+  - Contains the blueprints (YAML files) defining what needs to be done, see [Blueprints](Blueprints.md) for more details
+
+- `/opt/cockpit_repos/<repository-name>/actorTemplates`
+
+  - Local set of AYS actor templates, see [Actor Templates](ActorTemplates.md) for more details
+  - AYS will always first look here for an AYS actor template, and if not found, will check the global actor templates, available from `/opt/code/github/jumpscale/ays9/templates`
+
+- `/opt/cockpit_repos/<repository-name>/actors`
+
+  - Here all the local copies of the AYS actor templates are stored, see [Actors](Actors.md) for more details
+  - From the AYS actors one or more AYS service instances get created, all using the same version of the actor template
+  - Has no further meaning than being a local copy, this is done to be able to see changes in the template on local (Git) repository level
+
+- `/opt/cockpit_repos/<repository-name>/services`
+
+  - Here the actual AYS services are residing, see [AYS Services](Services.md) for more details
+  - `service.json`: which has checksums of all actions defined to track updated as well states and results of the executing actions and some metadata
+  - `data.json`: has all the info as required to make a deployment reality (install)
+  - `schema.capnp`: contains the service schema

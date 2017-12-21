@@ -1,0 +1,68 @@
+@usedefaults
+
+{{aysactortemplate reponame:$$reponame aysname:$$aysname}}
+
+
+{{breadcrumb:
+    {% if reponame %}
+    - Repositories : /AYS/repos
+    - "Repository: $$reponame": /AYS/Repo?reponame=$$reponame
+    - Actor Templates: /AYS/Actortemplates?reponame=$$reponame
+    - Actor Template $$aysname: /AYS/actortemplate?reponame=$$reponame&aysname=$$aysname
+    {% else %}
+    - Actor Templates: /AYS/Actortemplates
+    - Actor Template $$aysname: /AYS/actortemplate?&aysname=$$aysname
+    {% endif %}
+}}
+
+
+{% if aysrepo %}
+{{actions:
+
+- display: Update Templates
+  action: /restmachine/ays/tools/templatesUpdate
+  hide: false
+  showresponse: true
+  input:
+    - name: repo
+      value: ${reponame}
+      type: hidden
+    - name: template_name
+      label: Template
+      type: hidden
+      value: $$aysname
+}}
+{% endif %}
+
+
+
+@@title $$aysname
+
+h3. Actor Template Info:
+
+{% if error is defined %}
+    Error: ${error}
+{% else %}
+    h4. Name: $$aysname
+    {% for key, value in data.items() -%}
+        |${key}|${value}|
+    {% endfor %}
+
+    {% for key, value in code_bloks.items() -%}
+    {% if value %}
+    h5. ${key} :
+    {{code:
+${value} }}
+    {% endif %}
+    {% endfor %}
+
+    h3. Services of this template:
+    || Service ||
+    {% for service in services -%}
+        {% set role = service.role -%}
+        {% set role = role.split('.')[0] -%}
+        | [${service.name}|Service?aysrole=${service.role}&aysname=${service.name}&reponame=$$reponame]|
+    {% else %}
+    No services for this template
+    {% endfor %}
+{% endif %}

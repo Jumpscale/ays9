@@ -1,0 +1,19 @@
+dummy__k1:
+dummy__k2:
+dummy__k3:
+
+
+dummy__knotconsumed:
+
+dummy__kp:
+
+
+chi__kid:
+   parent: kp
+
+cons__cons1:
+   consumedlist : [k1, k2, k3]
+   consumedkid: kid
+
+actions:
+    - action: install

@@ -37,7 +37,8 @@ class JobsCollection(ModelBaseCollection):
     def exists(self, key):
         return self._db.exists(key)
 
-    def list(self, actor="", service="", action="", state="", serviceKey="", fromEpoch=0, toEpoch=9999999999999, returnIndex=False):
+    def list(self, actor="", service="", action="", state="", serviceKey="", fromEpoch=0, toEpoch=9999999999999,
+             tags=[], returnIndex=False):
         if actor == "":
             actor = ".*"
         if service == "":
@@ -49,11 +50,18 @@ class JobsCollection(ModelBaseCollection):
         if serviceKey == "":
             serviceKey = ".*"
         epoch = ".*"
-        regex = "%s:%s:%s:%s:%s:%s" % (actor, service, action, state, serviceKey, epoch)
+        regex = "%s:%s:%s:%s:%s:%s:*" % (actor, service, action, state, serviceKey, epoch)
         res0 = self._index.list(regex, returnIndex=True)
         res1 = []
         for index, key in res0:
-            epoch = int(index.split(":")[-1])
+            epoch = int(index.split(":")[-2])
+            indexTags = index.split(":")[-1]
+            tagsOK = True
+            for tag in tags:
+                if tagsOK and tag not in indexTags:
+                    tagsOK = False
+            if not tagsOK:
+                continue
             if fromEpoch <= epoch and epoch < toEpoch:
                 if returnIndex:
                     res1.append((index, key))
@@ -61,21 +69,25 @@ class JobsCollection(ModelBaseCollection):
                     res1.append(key)
         return res1
 
-    def find(self, actor="", service="", action="", state="", serviceKey="", fromEpoch=0, toEpoch=9999999999999):
+    def find(self, actor="", service="", action="", state="", serviceKey="", fromEpoch=0, toEpoch=9999999999999, tags=[]):
         res = []
-        for key in self.list(actor, service, action, state, serviceKey, fromEpoch, toEpoch):
-            res.append(self.get(key))
+        for key in self.list(actor, service, action, state, serviceKey, fromEpoch, toEpoch, tags):
+            if self.get(key):
+                res.append(self.get(key))
         return res
 
 
     def getIndexFromKey(self, key):
         job = self.get(key)
         if job:
-            ind = "%s:%s:%s:%s:%s:%s" % (job.dbobj.actorName, job.dbobj.serviceName,
-                                     job.dbobj.actionName, job.dbobj.state, job.dbobj.serviceKey, job.dbobj.lastModDate)
+            tags = sorted(self.dbobj.tags, key=str.lower)
+            ind = "%s:%s:%s:%s:%s:%s:%s" % (job.dbobj.actorName, job.dbobj.serviceName,
+                                            job.dbobj.actionName, job.dbobj.state,
+                                            job.dbobj.serviceKey, job.dbobj.lastModDate,
+                                            ''.join(tags))
             return ind
 
-    def delete(self, actor="", service="", action="", state="", serviceKey="", fromEpoch=0, toEpoch=9999999999999):
+    def delete(self, actor="", service="", action="", state="", serviceKey="", fromEpoch=0, toEpoch=9999999999999, tags=[]):
         '''
         Delete a job
         :param actor: actor name
@@ -85,8 +97,9 @@ class JobsCollection(ModelBaseCollection):
         :param serviceKey: key identifying the service
         :param fromEpoch: runs in this period will be deleted
         :param toEpoch: runs in this period will be deleted
+        :param tags: jobs with these tags will be deleted
         '''
-        for index, key in self.list(actor, service, action, state, serviceKey, fromEpoch, toEpoch, True):
+        for index, key in self.list(actor, service, action, state, serviceKey, fromEpoch, toEpoch, tags, True):
             self._index.index_remove(keys=index)
             self._db.delete(key=key)
 

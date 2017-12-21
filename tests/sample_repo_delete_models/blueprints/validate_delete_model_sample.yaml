@@ -1,14 +1,12 @@
-g8client__uk:
-    url: 'gig.demo.greenitglobe.com'
-    login: 'husseina'
-    password: 'AZxdf34wsASA'
+srv__sv1:
+    field1: '1'
+    field2: '2'
 
-g8client__uk2:
-    url: 'gig.demo.greenitglobe.com'
-    login: 'husseina'
-    password: 'AZxdf34wsASA'
+srv__sv2:
+    field1: '1'
+    field2: '2'
 
-sshkey__main:
+test_dummy__main:
 
 actions:
    - action: 'install'

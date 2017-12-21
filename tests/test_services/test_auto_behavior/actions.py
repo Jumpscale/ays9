@@ -31,7 +31,7 @@ def test(job):
             if not job.service.parent.name.startswith('auto_'):
                 model.data.result = RESULT_FAILED % ("Parent service did not automatically created")
         if job.service.name == "0min":
-            if 'sshkeys' in job.service.producers:
+            if 'srv2' in job.service.producers:
                 model.data.result = RESULT_FAILED % ("Producer created while min value is zero")
     except:
         model.data.result = RESULT_ERROR % str(sys.exc_info()[:2])

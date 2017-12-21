@@ -1,0 +1,15 @@
+## How to
+
+* [Get an OAuth authorization code](Get_oauth_authorization_code/Get_oauth_authorization_code.md)
+* [Get an OAuth access token](Get_oauth_access_token/Get_oauth_access_token.md)
+* [Create a repository](Create_repository/Create_repository.md)
+* [List all repositories](List_repositories/List_repositories.md)
+* [Create a blueprint](Create_blueprint/Create_blueprint.md)
+* [Delete a blueprint](Delete_blueprint/Delete_blueprint.md)
+* [Execute a blueprint](Execute_blueprint/Execute_blueprint.md)
+* [List all service instances](List_instances/List_instances.md)
+* [List available actions of a service](List_actions/List_actions.md)
+* [Install a service instance](Install_service/Install_service.md)
+* [Uninstall a service instance](Uninstall_service/Uninstall_service.md)
+* [Delete a service](Delete_service/Delete_service.md)
+* [How to create a VDC using curl](Create_VDC_using_curl/Create_VDC_using_curl.md)

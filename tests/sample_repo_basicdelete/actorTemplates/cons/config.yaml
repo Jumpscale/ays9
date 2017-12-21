@@ -1,0 +1,12 @@
+links:
+  consume:
+    - argname: consumedlist
+      auto: false
+      max: 4
+      min: 2
+      role: dummy 
+    - argname: consumedkid
+      auto: false
+      min: 1
+      role: chi
+    

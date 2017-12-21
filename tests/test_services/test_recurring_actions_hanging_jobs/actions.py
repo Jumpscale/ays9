@@ -40,16 +40,13 @@ def test(job):
         bp_name = 'test_recurring_actions_hanging_jobs.yaml'
         execute_bp_res = ays_client.api.ays.executeBlueprint(data={}, blueprint=bp_name, repository=repo_name)
         if execute_bp_res.status_code == 200:
-            # find the service and retrieve the timeout value
-            data = json.loads(ays_client.api.ays.getServiceByName('hanging', 'test_recurring_actions_1', repo_name).text)
-            timeout = data['data']['timeout']
             # create run
             data = json.loads(ays_client.api.ays.createRun(data={}, repository=repo_name).text)
             runid = data['key']
             # execute run
             start_time = time.time()
             data = json.loads(ays_client.api.ays.executeRun(data={}, runid=runid, repository=repo_name).text)
-            time.sleep((timeout * 60) + 60) # add one minute to the configured timeout
+            time.sleep(35) # 30 seconds configured job timeout + 5 seconds
             end_time = time.time()
             nr_of_jobs = len(j.core.jobcontroller.db.jobs.find(actor='test_recurring_actions_1', service='hanging',
                     action='execute_hanging_job', fromEpoch=start_time,

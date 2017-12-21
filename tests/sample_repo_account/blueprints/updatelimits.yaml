@@ -1,5 +1,0 @@
-account__acc:
-    maxMemoryCapacity: 50
-    maxCPUCapacity: 10
-    maxDiskCapacity: 50
-    maxNumPublicIP: 10

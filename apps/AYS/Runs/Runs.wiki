@@ -1,0 +1,98 @@
+@usedefaults
+{{timestamp}}
+
+# this makes sure bootstrap datatables functionality is used
+{{datatables_use}}
+
+h3. AYS Repo Runs
+
+{{aysruns repo:$$repo reponame:$$reponame}}
+
+{{breadcrumb:
+    - AYS : /
+    - Repositories: /AYS/repos
+    - "Repository: $$reponame": /AYS/Repo?reponame=${reponame}
+    - Runs: /AYS/Runs?reponame=$$repo
+}}
+
+h4. Actions
+{{actions:
+- display: Remove all runs in DB
+  action: /restmachine/ays/tools/deleteRuns
+  input:
+    - name: repository
+      value: $$reponame
+      type: hidden
+  reload: True
+}}
+
+
+{{jscript:
+$(document).ready(function (){
+
+  function updateRunsStates(){
+    var runids = $('.runkey');
+
+    var donestates = ['ok', 'error'];
+    runids.each(function(idx, el){
+
+      var runid = $(el).text();
+      var stateval = $('#td-run-'+runid+'-state').text();
+      if (! donestates.includes(stateval)){
+          $.ajax
+          ({
+            type: "POST",
+            url: "/restmachine/ays/tools/getRun",
+            data: 'repository='+'$$reponame'+'&runid='+runid,
+            dataType: 'json',
+            async: false,
+            success: function (data){
+                runstate = data['state'];
+                $('#td-run-'+runid+'-state').text(data['state'].toLowerCase());
+              }
+            });
+          }
+      });
+
+      var runids = $('.runkey');
+      var shouldreschedule = false;
+      runids.each(function(idx, el){
+
+        var runid = $(el).text();
+        var stateval = $('#td-run-'+runid+'-state').text();
+        if (! donestates.includes(stateval)){
+          // need to reschedule it again.
+          shouldreschedule = true;
+          return false;
+        }
+      });
+      if (shouldreschedule === true){
+        setTimeout(updateRunsStates, 5000);
+      }
+
+  }
+  setTimeout(updateRunsStates, 3000);
+});
+
+}}
+{% if error is defined %}
+    Error : ${error}
+{% else %}
+    {{html:
+        <table class="table table-striped table-bordered display JSdataTable dataTable">
+        <thead>
+          <td>Run ID</td><td>Run AT</td><td>State</td>
+        </thead>
+        {% for run in runs -%}
+        <tr>
+          <td><a data-dummy="${run.key}" href="AYS/RunModel?reponame=$$reponame&runid=${run.key}"><span class="runkey">${run.key}</span></a></td>
+          <td><span class="jstimestamp" data-ts="${run.epoch}"></span></td>
+          <td id="td-run-${run.key}-state">${run.state}</td>
+        </tr>
+
+        {% else %}
+        No run for this repository yet.
+        {% endfor %}
+        </table>
+    }}
+{% endif %}

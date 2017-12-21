@@ -1,5 +1,4 @@
 test_recurring_actions_1__hanging:
-    timeout: 2
 
 actions:
     - action: 'install'

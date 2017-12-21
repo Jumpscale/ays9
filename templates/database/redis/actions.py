@@ -2,8 +2,8 @@ def install(job):
     service = job.service
     prefab = service.executor.prefab
 
-    prefab.apps.redis.install()
-    prefab.apps.redis.start(
+    prefab.db.redis.install()
+    prefab.db.redis.start(
         name=service.name,
         ip=service.model.data.host if service.model.data.host != '' else None,
         port=service.model.data.port,
@@ -16,8 +16,8 @@ def start(job):
     service = job.service
     prefab = service.executor.prefab
 
-    prefab.apps.redis.install()
-    prefab.apps.redis.start(
+    prefab.db.redis.install()
+    prefab.db.redis.start(
         name=service.name,
         ip=service.model.data.host if service.model.data.host != '' else None,
         port=service.model.data.port,
@@ -29,4 +29,4 @@ def start(job):
 def stop(job):
     service = job.service
     prefab = service.executor.prefab
-    prefab.apps.redis.stop(job.service.name)
+    prefab.db.redis.stop(job.service.name)

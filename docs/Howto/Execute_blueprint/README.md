@@ -1,6 +1,6 @@
 # How to Execute a Blueprint
 
-Executing a blueprint means that you will initialize all service instances as described in the blueprint.
+Executing a blueprint means that you will instantiate all service instances as described in the blueprint.
 
 You can execute a blueprint in three ways:
 

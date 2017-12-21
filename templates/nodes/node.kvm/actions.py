@@ -8,7 +8,7 @@ def install(job):
 
     nics = data.nics
 
-    vm = prefab.systemservices.kvm.machines.create(
+    vm = prefab.virtualization.kvm.machines.create(
         name=name,
         os=image_name,
         disks=list(data.disks),
@@ -34,7 +34,7 @@ def start(job):
     data = job.service.model.data
     name = job.service.name
 
-    vm = prefab.systemservices.kvm.machines.get_by_name(name)
+    vm = prefab.virtualization.kvm.machines.get_by_name(name)
     vm.start()
 
     ip = vm.ip
@@ -53,7 +53,7 @@ def stop(job):
     data = job.service.model.data
     name = job.service.name
 
-    vm = prefab.systemservices.kvm.machines.get_by_name(name)
+    vm = prefab.virtualization.kvm.machines.get_by_name(name)
     vm.stop()
 
     data.ipPrivate = ''
@@ -67,7 +67,7 @@ def uninstall(job):
     prefab = job.service.executor.prefab
     name = job.service.name
 
-    vm = prefab.systemservices.kvm.machines.get_by_name(name)
+    vm = prefab.virtualization.kvm.machines.get_by_name(name)
     if vm.is_started:
         vm.stop()
     vm.delete()

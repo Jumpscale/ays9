@@ -56,11 +56,12 @@ class RunsCollection(ModelBaseCollection):
         res = []
         for key in self._list_keys(state, fromEpoch, toEpoch):
             if self.exists(key):
-                if repo:
-                    model = self.get(key)
-                    if model.dbobj.repo != repo:
-                        continue
-                res.append(self.get(key))
+                if self.get(key):
+                    if repo:
+                        model = self.get(key)
+                        if model.dbobj.repo != repo:
+                            continue
+                    res.append(self.get(key))
         return res
 
     def delete(self, state="", repo="", fromEpoch=0, toEpoch=9999999999999):

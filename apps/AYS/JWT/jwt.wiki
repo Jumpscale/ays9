@@ -1,0 +1,15 @@
+{{timestamp}}
+
+@usedefaults
+
+To be able to use the REST API of the cockpit, you need to pass a valid JWT token to the API client.
+Use the button down below to generate a JWT.
+{{action id:'action-GenerateJWTtoken' class:'glyphicon glyphicon-asterisk margin-bottom-medium margin-left-medium' label:'Generate JWT token'}}
+
+{{actions:
+- display: Generate JWT token
+  hide: true
+  action: /restmachine/system/oauthtoken/generateJwtToken
+  showresponse: true
+  reload: false
+}}

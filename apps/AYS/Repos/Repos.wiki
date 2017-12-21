@@ -1,0 +1,73 @@
+@usedefaults
+
+{{breadcrumb:
+    - Repositories :
+}}
+
+{{timestamp}}
+
+h2. Repositories
+
+{{datatables_use}}
+{{action id:'action-Createrepository' class:'glyphicon glyphicon-plus margin-bottom-medium margin-left-medium' label:'Create Repository'}}
+# {{action id:'action-Commitrepositories' class:'glyphicon glyphicon-save margin-bottom-medium margin-left-medium' label:'Commit Repositories'}}
+# {{action id:'action-ReloadAYS' class:'glyphicon glyphicon-refresh margin-bottom-medium margin-left-medium' label:'Reload AYS'}}
+
+{{actions:
+- display: Create repository
+  action: /restmachine/ays/tools/createRepo
+  hide: true
+  input:
+    - name: name
+      label: Name
+      type: text
+      default: ''
+    - name: git_url
+      label: Git url
+      type: text
+      required: true
+
+# - display: Commit repositories
+#   action: /restmachine/ays/tools/commit
+#   showresponse: True
+#   hide: true
+#   input:
+#     - name: branch
+#       label: Branch
+#       type: text
+#       default: 'master'
+#     - name: push
+#       label: push
+#       type: dropdown
+#       values:
+#          - label: True
+#            value: True
+#          - label: False
+#            value: False
+#     - name: message
+#       label: Commit message
+#       type: text
+
+- display: Destroy this repository
+  hide: true
+  reload: false
+  action: /restmachine/ays/tools/deleteRepo
+
+# - display: Reload AYS
+#   hide: true
+#   action: /restmachine/ays/tools/reload
+#   showresponse: True
+}}
+
+{% if error is defined %}
+Error : ${error}
+{% endif %}
+
+{{aysrepos}}
+||Name||Actions||
+{% for repo in repos -%}
+  |[${repo.name}|/AYS/Repo?reponame=${repo.name}]| {{action label:'Delete' deleterow:true id:'action-Destroythisrepository' data-repository:'${repo.name}' class:'glyphicon glyphicon-trash'}} |
+{% else %}
+  The is no AYS repository yet.
+  Create one by clicking 'Create Repository'
+{% endfor %}

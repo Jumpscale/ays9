@@ -1,4 +1,4 @@
-@0xb6d407bcbd7a90e0;
+@0xf16088fb1cfdee20;
 
 
 struct Command {
@@ -118,6 +118,8 @@ struct Job {
   }
   # This list can contains different context infromation relative to the request that created the job
   context @19 :List(KV);
+
+  tags @20: List(Text);
 }
 
 #is one specific piece of code which can be executed
@@ -166,7 +168,6 @@ struct Action {
   capnpIn @14 : Text;
   #is optional, capnp schema of result for this method
   capnpOut @15 : Text;
-  whoami @16: Text;
 
 }
 
@@ -217,4 +218,6 @@ struct Run {
 
     #key of repo where run is created
     repo @5 :Text;
+    callbackUrl @6 :Text;
+    retries @7 :List(UInt32);
 }

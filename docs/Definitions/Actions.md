@@ -1,95 +1,95 @@
-# AYS Actions
+# Actions
 
-- Manages the life cycle of your AYS
-- you need to implement one or more function (actions) in the actions.py file of the actor of the service
+[AYS services](Services.md) are controlled through their actions, which are implemented as Python functions in the `actions.py` files of their [actor](Actors.md). Each function corresponds to an action.
 
-An action file is a python file that contains multiple function.
-Each function name correspond to an action. In the example below the actor implement two action, _install_ and _uninstall_.
+See [Actor Template Files](../ActorTemplateFiles/Actions.md) for an example of two actions: `install(job)` and `uninstall(job)`.
 
-The function need to accept a single argument called job.
+Actions are executed after they have been scheduled for execution.
 
-The job object let you access multiple other usefull object:
-- **job.service** : the service object on which the action is execute on.
-- **job.model.args** : the arguments passed to this action
-- **job.service.model.data** : the schema value of the service
+Actions can get scheduled for execution in three ways:
+- [As a result of executing a blueprint that includes an `actions:` section](#blueprint)
+- [Because the action was scheduled for recurring execution as specified in the `config.yaml` of the actor template](#recurring)
+- [Triggered by an AYS event for which the action was registered as an event handler](#events)
 
-## Example:
+Each of them is discussed with an example here below.
 
-**actions.py**:
+<a id="blueprint"></a>
+## Scheduling an execution with a blueprint
 
-```python
-def install(job):
-    service = job.service
-    vdc = service.parent
-
-    if 'g8client' not in vdc.producers:
-        raise j.exceptions.AYSNotFound("no producer g8client found. cannot continue init of %s" % service)
-
-    g8client = vdc.producers["g8client"][0]
-    cl = j.clients.openvcloud.getFromService(g8client)
-    acc = cl.account_get(vdc.model.data.account)
-    space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
-
-    if service.name in space.machines:
-        # machine already exists
-        machine = space.machines[service.name]
-    else:
-        image_names = [i['name'] for i in space.images]
-        if service.model.data.osImage not in image_names:
-            raise j.exceptions.NotFound('Image %s not available for vdc %s' % (service.model.data.osImage, vdc.name))
-
-        datadisks = list(service.model.data.datadisks)
-        machine = space.machine_create(name=service.name,
-                                       image=service.model.data.osImage,
-                                       memsize=service.model.data.osSize,
-                                       disksize=service.model.data.bootdiskSize,
-                                       datadisks=datadisks)
-
-    service.model.data.machineId = machine.id
-    service.model.data.ipPublic = machine.space.model['publicipaddress']
-    ip, vm_info = machine.get_machine_ip()
-    service.model.data.ipPrivate = ip
-    service.model.data.sshLogin = vm_info['accounts'][0]['login']
-    service.model.data.sshPassword = vm_info['accounts'][0]['password']
-
-    for i, port in enumerate(service.model.data.ports):
-        ss = port.split(':')
-        if len(ss) == 2:
-            public_port, local_port = ss
-        else:
-            local_port = port
-            public_port = None
-
-        public, local = machine.create_portforwarding(publicport=public_port, localport=local_port, protocol='tcp')
-        service.model.data.ports[i] = "%s:%s" % (public, local)
-
-    service.saveAll()
-
-def uninstall(job):
-    service = job.service
-    vdc = service.parent
-
-    if 'g8client' not in vdc.producers:
-        raise j.exceptions.RuntimeError("no producer g8client found. cannot continue init of %s" % service)
-
-    g8client = vdc.producers["g8client"][0]
-    cl = j.clients.openvcloud.getFromService(g8client)
-    acc = cl.account_get(vdc.model.data.account)
-    space = acc.space_get(vdc.model.dbobj.name, vdc.model.data.location)
-
-    if service.name not in space.machines:
-        return
-    machine = space.machines[service.name]
-    machine.delete()
+Executing the following blueprint will schedule to `install` action of the `myvdc` AYS service that was instantiated from a `vdc` actor:
+```yaml
+actions:
+  - action: install
+    actor: vdc
+    service: myvdc
 ```
 
-## Default behavior 
-   - action delete: will call service.delete()
+See [Blueprints](Blueprints.md) for more details.
 
-```toml
-!!!
-title = "AYS Actions"
-date = "2017-03-02"
-tags= ["ays","def"]
-categories= ["ays_def"]
+
+<a id="recurring"></a>
+## Recuring actions
+
+Recurring actions are scheduled at the level of the actor template, meaning that all AYS services created from a specific version of an AYS actor will have them same recurring action configuration.
+
+They are executed asynchronously with no [runs](Runs.md).
+
+Here's an example of a `recurring` section in a `config.yaml`:
+```yaml
+recurring:
+  - action: monitor
+    period: 30s
+    log: True
+
+  - action: dosomethingelse
+    period: 1m
+    log: True
 ```
+
+This configuration will result in AYS service with the `monitor()` action that is scheduled to be executed every 30 seconds, and a `dosomethingelse()` action scheduled for execution every minute.
+
+See [Actor Configuration](../ActorTemplateFiles/Config.md) for more details about the `recurring` section.
+
+
+<a id="events"></a>
+## Actions handling events
+
+Just as in the case of recurring actions, registering an action as an event handler for an AYS event is done through configuration at the level of the actor template, using an `events` section in the `config.yaml` of the template.
+
+Here's an example of an `events` section in a `config.yaml`:
+
+```yaml
+events:
+  - channel: telegram
+    command: install_mynode
+    actions:
+      - install
+      - actionX
+    log: True
+```
+
+See [Actor Configuration](../ActorTemplateFiles/Config.md) for more details about the `events` section.
+
+This configuration will schedule the actions `install()` and `actionX()` for execution every time the event `install_mynode` happens in the events channel `telegram`.
+
+Note that actions can also be registered as event handlers at run time, using code. This and more details about events is covered in [Events](Events.md).
+
+
+## Action states
+
+States of an action:
+- **new**: the action was never scheduled
+- **scheduled**: the action is scheduled for execution
+- **ok**: the action was executed successfully
+- **error**: there was an error during execution
+
+
+Checking the state of all actions of a specific AYS service is eays using the AYS command line tool:
+```bash
+cd /optvar/cockpit_repos/<repository-name>
+ays service state -r <role of the AYS service> -n <name of the AYS service>
+```
+
+## Debug actions
+
+See: [How to debug actor templates](../Howto/Debug_actor_templates/README.md).

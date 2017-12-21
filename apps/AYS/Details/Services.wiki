@@ -1,0 +1,49 @@
+@usedefaults
+h3. Services
+
+{{datatables_use}}
+{{aysservices reponame:$$reponame}}
+{{breadcrumb:
+    {% if reponame or error %}
+    - Repositories: /AYS/repos
+    - "Repository: $$reponame": /AYS/Repo?&reponame=$$reponame
+    {% endif %}
+    - Services: /AYS/services
+}}
+
+{{css:/jslib/bootstrap/css/bootstrap-treeview.min.css}}
+{{html:<script src="/jslib/bootstrap/js/bootstrap-treeview.min.js"></script>}}
+
+{% if error is defined %}
+Error : ${error}
+
+{% else %}
+
+{{actions:
+- display: Delete Service
+  action: /restmachine/ays/tools/deleteService
+  showresponse: True
+  hide: True
+}}
+{{html:
+  <div id="servicestree"></div>
+}}
+
+{{jscript:
+
+$(document).ready(function (){
+
+  var tree = ${servicestree};
+  $('#servicestree').treeview({data: tree, enableLinks:true,  });
+});
+
+}}
+
+# || Actor Name || Name || Actions ||
+#     {% for service in services -%}
+#       | ${service.role} | [${service.name}|Service?aysrole=${service.role}&aysname=${service.name}&reponame=${reponame}] | {{action label:'Delete' deleterow:true id:'action-DeleteService' class:'glyphicon glyphicon-trash' data-repository:'$$reponame' data-role:'${service.role}' data-instance:'${service.name}'}} |
+#     {% else %}
+#     This repository doesn't contain any service instance yet.
+#     {% endfor %}
+
+{%endif%}

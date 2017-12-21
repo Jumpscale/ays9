@@ -15,7 +15,7 @@ def init(job):
     r = job.service.aysrepo
 
     a = r.actorGet("os.ssh.ubuntu")
-    if r.serviceGet("os", job.service.name, die=False) == None:
+    if r.serviceGet("os", job.service.name, die=False)is None:
         s = a.serviceCreate(instance=job.service.name, args={
                             "node": job.service.name, "sshkey": job.service.model.data.sshkey})
 
@@ -41,9 +41,9 @@ def install(job):
 
     base = j.sal.fs.joinPaths('/var', 'dockers', service.name)
     prefab.core.dir_ensure(base)
-    prefab.package.mdupdate()
-    prefab.package.ensure('python3-pip')
-    prefab.development.pip.install('docker-compose')
+    prefab.system.package.mdupdate()
+    prefab.system.package.ensure('python3-pip')
+    prefab.runtimes.pip.install('docker-compose')
     prefab.core.file_write(
         j.sal.fs.joinPaths(base, 'docker-compose.yml'),
         j.data.serializer.yaml.dumps(compose)

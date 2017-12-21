@@ -56,6 +56,8 @@ class Client:
             # as requests will set this itself with correct boundary
             headers.pop('Content-Type')
             res = method(uri, files=data, headers=headers, params=params)
+        elif data is None:
+            res = method(uri, headers=headers, params=params)
         elif type(data) is str:
             res = method(uri, data=data, headers=headers, params=params)
         else:

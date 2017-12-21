@@ -29,7 +29,12 @@ ays generatetoken --clientid '<client-id>' --clientsecret' <client-secret>' --or
 ```bash
 CLIENTID="..."
 SECRET="..."
-curl -d "grant_type=client_credentials&client_id=${CLIENTID}&client_secret=${SECRET}&response_type=id_token" https://itsyou.online/v1/oauth/access_token
+curl -o JWT -d 'grant_type=client_credentials&client_id='"$CLIENTID"'&client_secret='"$SECRET"'&response_type=id_token' https://itsyou.online/v1/oauth/access_token
+```
+
+Or in order to copy the JWT into an environment variable:
+```bash
+JWT=$(curl -d 'grant_type=client_credentials&client_id='"$CLIENTID"'&client_secret='"$SECRET"'&response_type=id_token' https://itsyou.online/v1/oauth/access_token)
 ```
 
 > Excluding `&response_type=id_token` will only yield an access token, not a JWT.

@@ -55,15 +55,15 @@ types:
   Blueprint:
     properties:
       name: string
-      content: object
+      content: string
       archived: boolean
       hash: string
       path: string
     example:
       name: "cockpit.yaml"
-      content:
+      content: "
         service__main:
-          description: "a service"
+          description: \"a service\""
       path: "/opt/code/cockpit/repo/blueprints/my_blueprints.ayml"
       hash: '45d4dbd44a0a3c3c8cf62acdab8e0850'
       archived: true
@@ -111,6 +111,7 @@ types:
       key: string
       name: string
       role: string
+      actor: string
       repository: string
       data: object
       state: string
@@ -127,6 +128,7 @@ types:
         key: "6b756dc89h9efe5187f2dddcf74b3e80"
         name: "main"
         role: "server"
+        actor: "server"
         repository: myrepo
         data:
           github.client: "main"
@@ -161,7 +163,6 @@ types:
             channel: webhook
             tags:
               - "type:red"
-
 
   Actor:
     properties:
@@ -214,8 +215,8 @@ types:
   Log:
     properties:
       category: string
-      epoch: string
-      level: string
+      epoch: integer
+      level: integer
       log: string
       tags: string
 
@@ -228,17 +229,32 @@ types:
       service_name: string
       state: string
       logs: Log[]
+      result: string
+
+  JobData:
+    properties:
+      jobid: string
+      state: string
+      data: object
 
   AYSStep:
      properties:
        number: integer
        jobs: Job[]
-
+       state: string
+  
+  RunRetries:
+     properties:
+       retry-number: integer
+       duration: integer
+       remaining-retries: integer[]
+  
   AYSRun:
      properties:
        state: string
        steps: AYSStep[]
        key: string
+       retries: RunRetries
 
   AYSRunListing:
     properties:
@@ -522,6 +538,16 @@ types:
         get:
           displayName: listServices
           description: List all services in the repository
+          queryParameters:
+            actor:
+              description: Name of the actor to filter services by.
+              type: string
+            role:
+              description: Specifies role to filter the services list with.
+              type: string
+            service:
+              description: Name of service to filter the services list with.
+              type: string
           responses:
             200:
               body:
@@ -529,8 +555,10 @@ types:
                   type: ServicePointer[]
                   example:
                     - role: node
+                      actor: node.ovc
                       name: storage1
                     - role: node
+                      actor: node.ovc
                       name: storage2
         /{role}:
           uriParameters:
@@ -663,6 +691,19 @@ types:
                     body:
                       application/json:
                         type: Error
+        /update:
+          get:
+            displayName: updateTemplates
+            description: update all templates in a repository
+            responses:
+              200:
+                body:
+                  application/json:
+                    properties:
+                      message:
+                        type: string
+                    example:
+                      message: 'Templates Updated'
       /aysrun:
         get:
             displayName: listRuns
@@ -692,6 +733,9 @@ types:
                 type: boolean
               callback_url:
                 description: URL where to send the result of the run once executed
+                type: string
+              retries:
+                description: Configures the run scheduler to change number of retries and delay values
                 type: string
             responses:
               200:
@@ -739,22 +783,68 @@ types:
                         type: Error
 
       /job:
-        /{jobid}:
-          uriParameters:
-            jobid:
-              type: string
           get:
-            displayName: getJob
-            description: Get a jobid
+            displayName: listJobs
+            description: List all jobs of the repository that match the filters
+            queryParameters:
+              actor:
+                description: Only list jobs of this actor
+                type:        string
+                required:    false
+              service:
+                description: Only list jobs of this service
+                type:        string
+                required:    false
+              action:
+                description: Only list jobs of this action
+                type:        string
+                required:    false
+              state:
+                description: Only list jobs with this state
+                type:        string
+                required:    false
+              serviceKey:
+                description: Only list jobs of this serviceKey
+                type:        string
+                required:    false
+              fromEpoch:
+                description: Only list jobs from this epoch
+                type:        integer
+                required:    false
+              toEpoch:
+                description: Only list jobs till this epoch
+                type:        integer
+                required:    false
+              tags:
+                description: comma-seperated list of tags to be included
+                type:        string
+                required:    false
+              fields:
+                description: comma-seperated list of fields to be included in the response
+                type:        string
+                required:    false
+
             responses:
               200:
                 body:
                   application/json:
-                    type: Job
-              404:
-                body:
-                  application/json:
-                    type: Error
+                    type: JobData[]
+          /{jobid}:
+            uriParameters:
+              jobid:
+                type: string
+            get:
+              displayName: getJob
+              description: Get a jobid
+              responses:
+                200:
+                  body:
+                    application/json:
+                      type: Job
+                404:
+                  body:
+                    application/json:
+                      type: Error
 
 
 /webhooks:
@@ -771,7 +861,6 @@ types:
       description: Endpoint that receives generic events
       body:
         application/json:
-          type: object
           properties:
             command: string
             tags: string[]

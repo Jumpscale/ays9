@@ -1,2 +1,2 @@
 #for development mode
-pip3 install -e .
+js9 'j.tools.prefab.local.js9.atyourservice.install()'

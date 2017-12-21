@@ -35,11 +35,11 @@ class ActorServiceBaseModel(ModelBaseWithData):
         """
         msg = self._capnp_schema.ActorPointer.new_message(actorRole=role, minServices=int(min), maxServices=int(max),
                                                           auto=bool(auto), optional=bool(optional), argname=argname)
-        self.addSubItem("producers", msg)
+        self.updateSubItem("producers", ['actorRole'], msg)
 
     def timeoutAdd(self, actionname, timeout):
         o = self.collection.capnp_schema.Timeout.new_message(actionName=actionname, timeout=timeout)
-        self.addSubItem('timeouts', o)
+        self.updateSubItem('timeouts', ['actionName'], o)
 
     def actionAdd(self, name, key="", period=0, log=True, isJob=True, timeout=0, longjob=False):
         """
@@ -74,6 +74,7 @@ class ActorServiceBaseModel(ModelBaseWithData):
 
             self.changed = True
             self.addSubItem('actions', action_obj)
+            self.reSerialize()
 
         if key != "":
             action_obj.actionKey = key

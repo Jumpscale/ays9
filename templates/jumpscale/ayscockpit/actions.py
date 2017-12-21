@@ -68,8 +68,8 @@ def install(job):
     prefab.core.file_write('$JSCFGDIR/cockpit_api/config.toml', j.data.serializer.toml.dumps(api_cfg))
 
     # installed required package
-    prefab.package.mdupdate()
-    prefab.package.install('git')
+    prefab.system.package.mdupdate()
+    prefab.system.package.install('git')
 
     # start daemon
     cmd = 'ays start'

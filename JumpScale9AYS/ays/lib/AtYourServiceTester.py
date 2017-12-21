@@ -19,7 +19,7 @@ class AtYourServiceTester:
         # test behaviour & easy to check outcome
         if not j.sal.fs.exists(self.path):
             url = "git@github.com:Jumpscale/jumpscale_ays8_testenv.git"
-            j.do.pullGitRepo(url)
+            j.clients.git.pullGitRepo(url)
 
         self._git = None
 

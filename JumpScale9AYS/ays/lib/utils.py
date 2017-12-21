@@ -4,6 +4,8 @@ Utilites modules for ays libs
 from js9 import j
 
 import yaml
+import os
+import fcntl
 import re
 
 DEFAULT_LOGGER = j.logger.get('j.atyourservice.server.utils')
@@ -79,3 +81,16 @@ def validate_bp_format(path, models, aysrepo, logger=None):
                 return validate_service_name(name=instance)
 
     return True, 'Blueprint format is valid'
+
+
+class Lock:
+    def __init__(self, path):
+        self._path = path
+
+    def __enter__(self):
+        self._fd = os.open(self._path, os.O_CREAT | os.O_WRONLY)
+        fcntl.lockf(self._fd, fcntl.LOCK_EX)
+
+    def __exit__(self, *exc_info):
+        fcntl.lockf(self._fd, fcntl.LOCK_UN)
+        os.close(self._fd)

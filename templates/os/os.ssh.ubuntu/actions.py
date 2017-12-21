@@ -3,7 +3,6 @@ def install(job):
     if 'sshkey' not in service.producers:
         raise j.exceptions.AYSNotFound("No sshkey service consumed. please consume an sshkey service")
 
-    sshkey = service.producers['sshkey'][0]
     service.logger.info("authorize ssh key to machine")
     node = service.parent
 
@@ -30,10 +29,10 @@ def install(job):
 
     # used the login/password information from the node to first connect to the node and then authorize the sshkey for root
     executor = j.tools.executor.getSSHBased(addr=node.model.data.ipPublic, port=service.model.data.sshPort,
-                                            login=node.model.data.sshLogin, passwd=password,
-                                            allow_agent=True, look_for_keys=True, timeout=5, usecache=False,
-                                            passphrase=passphrase, key_filename=key_path)
-    executor.prefab.ssh.authorize("root", sshkey.model.data.keyPub)
+                                            timeout=5, usecache=False,)
+    executor.prefab.system.ssh.authorize("root", sshkey.model.data.keyPub)
+    # Reset prefab instance to use root for upcoming prefab executions instead of normal user
+    j.tools.prefab.resetAll()
     service.saveAll()
 
 
@@ -62,5 +61,4 @@ def getExecutor(job):
                                             login='root', passwd=None,
                                             allow_agent=True, look_for_keys=True, timeout=5, usecache=False,
                                             passphrase=passphrase, key_filename=key_path)
-    j.tools.prefab.resetAll()
     return executor

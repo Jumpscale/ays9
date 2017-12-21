@@ -19,6 +19,7 @@ def service_view(s):
         'key': s.model.key,
         'name': s.name,
         'role': s.model.role,
+        'actor': s.model.dbobj.actorName,
         'repository': s.aysrepo.name,
         'data': j.data.serializer.json.loads(s.model.dataJSON),
         'state': s.model.dbobj.state.__str__(),
@@ -92,9 +93,11 @@ def run_view(run):
                 'service_key': job.model.dbobj.serviceKey,
                 'service_name': job.model.dbobj.serviceName,
                 'state': str(job.model.dbobj.state),
-                'logs': logs
+                'logs': logs,
+                'result': job.model.dbobj.result
             })
         obj['steps'].append(aystep)
+    obj['retries'] = run.get_retry_info()
 
     return obj
 
@@ -107,7 +110,8 @@ def job_view(job):
         'service_key': job.dbobj.serviceKey,
         'service_name': job.dbobj.serviceName,
         'state': job.state,
-        'logs': []
+        'logs': [],
+        'result': job.dbobj.result
     }
     for log in job.dbobj.logs:
         view['logs'].append(log.to_dict())

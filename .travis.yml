@@ -3,18 +3,18 @@ sudo: enabled
 dist: trusty
 group: edge
 
-# whitelist master branch only
-branches:
-  only:
+# whitelist master branch only		
+branches:		
+  only:		
     - master
 
 before_install:
   - sudo apt-get update
-  - curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-  - sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-  - sudo apt-get update
-  - sudo apt-get install docker-ce
 
 install: ./.travis_ci/prepare.sh
 
 script: ./run_tests.sh
+
+after_success: /bin/bash upload_image.sh
+
+after_failure: /bin/bash upload_image.sh

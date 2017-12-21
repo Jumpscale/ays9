@@ -27,7 +27,7 @@ def test(job):
     model_properties = ('role', 'parent', 'dictFiltered', 'name',
         'actionsSortedList', 'actionsCode', 'actionsSourceCode', 'actions', 'actionsRecurring', 'eventFilters',
         'actionsState')
-    model_data_properties = ('vdcfarm', 'strAttr', 'listAttr')
+    model_data_properties = ('testDummy', 'strAttr', 'listAttr')
     failed = False
     for prop in model_properties:
         if not hasattr(model, prop):

@@ -85,6 +85,7 @@ class AtYourServiceRepoCollection:
 
         j.sal.fs.createDir(path)
         j.tools.executorLocal.execute('cd {};git init'.format(path))
+        j.sal.fs.createDir(j.sal.fs.joinPaths(path, '.gitignore'))
         j.sal.fs.createEmptyFile(j.sal.fs.joinPaths(path, '.ays'))
         j.sal.fs.createDir(j.sal.fs.joinPaths(path, 'actorTemplates'))
         j.sal.fs.createDir(j.sal.fs.joinPaths(path, 'blueprints'))
@@ -137,7 +138,7 @@ class AtYourServiceRepo():
         self._loop = loop or asyncio.get_event_loop()
 
         self.run_scheduler = RunScheduler(self)
-        self._run_scheduler_task = self._loop.create_task(self.run_scheduler.start())
+        self._run_scheduler_task = asyncio.ensure_future(self.run_scheduler.start(), loop=self._loop)
 
         j.atyourservice.server._loadActionBase()
 
@@ -440,7 +441,7 @@ class AtYourServiceRepo():
         items = []
         if j.sal.fs.exists(path=bpdir):
             items = j.sal.fs.listFilesInDir(bpdir)
-            return items
+        return items
 
     def _load_blueprints(self):
         bps = {}
@@ -620,7 +621,7 @@ class AtYourServiceRepo():
 
         return result
 
-    def runCreate(self, to_execute, debug=False, profile=False, context=None):
+    def runCreate(self, to_execute, debug=False, profile=False, context=None, jobs_tags=None):
         """
         Create a run from all the scheduled actions in the repository.
         """
@@ -646,6 +647,8 @@ class AtYourServiceRepo():
 
                 job.model.dbobj.profile = profile
                 job.model.dbobj.debug = profile if profile is True else debug
+                job.model.dbobj.tags = jobs_tags if jobs_tags else []
+                job.model.dbobj.runKey = run.model.key
                 if context is not None:
                     for k, v in context.items():
                         job.context[k] = v
@@ -677,6 +680,14 @@ class AtYourServiceRepo():
 # Git management
 
     def commit(self, message="", branch="master", push=True):
+        """
+        Commits the current changes in the repo
+        """
+        # If dev_mode is activated then no need to commit
+        if j.atyourservice.server.dev_mode is True:
+            self.logger.warning('DEV mode is activated. Auto-commit will be skipped.')
+            return
+
         if message == "":
             message = "log changes for repo:%s" % self.name
         if branch != "master":
@@ -691,9 +702,9 @@ class AtYourServiceRepo():
         if push and self.git.repo.remotes and "git@" in self.git.repo.remotes[0].url:
                 try:
                     local_prefab = j.tools.prefab.local
-                    key_path = local_prefab.ssh.keygen(name='ays_repos_key').split(".pub")[0]
-                    if not j.do.SSHAgentCheckKeyIsLoaded(key_path):
-                        j.do.SSHKeysLoad(key_path)
+                    key_path = local_prefab.system.ssh.keygen(name='ays_repos_key').split(".pub")[0]
+                    if not j.clients.ssh.ssh_agent_check_key_is_loaded(key_path):
+                        j.clients.ssh.ssh_keys_load(key_path)
                     self.git.repo.git.push('--all')
                     self.logger.info("Auto Push done successfully")
                 except Exception as e:

@@ -10,6 +10,6 @@ def install(job):
     # dbuser = service.model.data.dbuser
     # dbpassword = service.model.data.dbpass
 
-    prefab.apps.tidb.start()
-    prefab.package.mdupdate()
-    prefab.package.install('mysql-client-core-5.7')
+    prefab.db.tidb.start()
+    prefab.system.package.mdupdate()
+    prefab.system.package.install('mysql-client-core-5.7')

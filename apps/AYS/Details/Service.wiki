@@ -1,0 +1,148 @@
+@usedefaults
+
+{{aysservice: aysrole:$$aysrole aysname:$$aysname reponame:$$reponame}}
+{{breadcrumb:
+    - Repositories : /AYS/repos
+    - "Repository: $$reponame": /AYS/Repo?reponame=$$reponame
+    - Services: /AYS/Services?reponame=$$reponame
+    - Service $$aysrole!$$aysname: /AYS/Service?aysrole=$$aysrole&aysname=$$aysname
+}}
+
+{% if error is defined %}
+Error : ${error}
+{% else %}
+{{cssstyle
+    .CodeMirror {
+        position: relative;
+        left: 7%;
+    }
+    .table-condensed > thead > tr > th {
+        min-width: 170px;
+    }
+}}
+
+{% if error is defined -%}
+    Error: ${error}
+{% else %}
+    @@title $$aysrole!$$aysname
+
+
+#    h4. Actions:
+#    {{actions:
+#    - display: Uninstall
+#      action: /restmachine/AYS/atyourservice/executeAction
+#      showresponse: True
+#      navigateback: False
+#      input:
+#        - name: repository
+#          type: hidden
+#          value: $$ayspath
+#        - name: action
+#          type: hidden
+#          value: 'uninstall'
+#        - name: force
+#          label: Force
+#          type: dropdown
+#          values:
+#          - label: False
+#            value: False
+#          - label: True
+#            value: True
+#        - name: async
+#          type: hidden
+#          value: False
+#        - name: role
+#          value: ${role}
+#          type: hidden
+#        - name: instance
+#          value: ${instance}
+#          type: hidden
+#    - display: Delete service
+#      action: /restmachine/AYS/atyourservice/deleteService
+#      showresponse: False
+#      navigateback: True
+#      input:
+#        - name: repository
+#          type: hidden
+#          value: $$ayspath
+#        - name: role
+#          type: hidden
+#          label: Role
+#          required: True
+#          value: '${role}'
+#        - name: instance
+#          type: hidden
+#          label: Instance
+#          required: True
+#          value: '${instance}'
+#        - name: force
+#          type: hidden
+#          value: True
+#        - name: uninstall
+#          type: hidden
+#          value: False
+#    }}
+#
+    h3. Service: $$aysrole!$$aysname
+    h4. Service values
+    || Parameter || Value||
+    |Actor Template| ${type}|
+    |Repository| ${reponame}|
+    {% for k, v in data.items() -%}
+        |${k}|${v}|
+    {% endfor %}
+
+    {% if data.parent %}
+    h4. Parent:
+    || Name || Role ||
+    | [${data.parent.name}|Service?aysrole=${data.parent.role}&aysname=${data.parent.name}&reponame=$$reponame] | ${data.parent['role']} |
+
+    {% endif %}
+
+    {% if extra_data.producers|length > 0 %}
+    h4. Producers:
+    || Name || Role ||
+    {% for producer in extra_data.producers -%}
+         |[${producer.name}|Service?aysrole=${producer.role}&aysname=${producer.name}&reponame=$$reponame]|${producer.role}|
+    {% endfor %}
+    {% endif %}
+
+    {% if extra_data.consumers|length > 0 %}
+    h4. Consumers:
+    || Name || Role ||
+    {% for consumer in extra_data.consumers -%}
+         | [${consumer.name}|Service?aysrole=${consumer.role}&aysname=${consumer.name}&reponame=$$reponame] |${consumer.role}|
+    {% endfor %}
+    {% endif %}
+
+    {% if extra_data.children|length > 0 %}
+    h4. Children:
+    || Name || Role ||
+    {% for children in extra_data.children -%}
+         |[${children.name}|Service?aysrole=${children.role}&aysname=${children.name}&reponame=$$reponame]|${children.role}|
+    {% endfor %}
+    {% endif %}
+
+    {{html:
+          <script  src='/jslib/codemirror/autorefresh.js' type='text/javascript'></script>
+          <h4>Service Actions <button type="button" class="btn btn-info" data-toggle="collapse" data-target="#actions">+</button></h4>
+          <div id="actions" class="collapse">
+     }}
+
+     {% for action in extra_data['actions'] -%}
+         * *${action.name}*:
+             ** state: ${action.state}
+             ** code:
+ {{code:
+${action['code']}
+ }}
+           {% endfor %}
+
+    {{html:
+      </div>
+    </div>
+    }}
+
+
+{% endif %}
+{% endif %}

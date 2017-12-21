@@ -1,12 +1,13 @@
 doc:
   property:
-  - vdcfarm: ''
+  - testDummy: ''
   - listAttr: ''
   - strAttr: ''
   - result: ''
 links:
   parent:
+    argname: testdummy
     auto: true
     optional: false
-    role: vdcfarm
+    role: test_dummy
 recurring: []

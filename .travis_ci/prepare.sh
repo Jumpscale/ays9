@@ -1,14 +1,20 @@
 #!/bin/bash
+set -e
 
-# generate ssh keys
-ssh-keygen -t rsa -N "" -f ~/.ssh/main
-export SSHKEYNAME=main
+sudo ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
+export SSHKEYNAME=id_rsa
 
-export GIGSAFE=1
-export GIGDEVELOPERBRANCH=master
+export ZUTILSBRANCH=${ZUTILSBRANCH:-master}
 
-curl https://raw.githubusercontent.com/Jumpscale/developer/$GIGDEVELOPERBRANCH/jsinit.sh?$RANDOM > /tmp/jsinit.sh; bash /tmp/jsinit.sh
+curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo -E bash /tmp/install.sh
 
-# build image
-source ~/.jsenv.sh
-js9_build -l
+# During nightly build, build the full docker image
+if [ -n $TRAVIS_EVENT_TYPE ] && [ $TRAVIS_EVENT_TYPE == "cron" ]; then
+    # Install ays9 in a docker contianer using bash installers
+    sudo -HE bash -c "source /opt/code/github/jumpscale/bash/zlibs.sh; ZKeysLoad; ZInstall_ays9 -f"
+else
+    sudo -HE bash -c "source /opt/code/github/jumpscale/bash/zlibs.sh; ZKeysLoad; ZCodeGetJS"
+    sudo -HE bash -c "source /opt/code/github/jumpscale/bash/zlibs.sh; ZKeysLoad; ZDockerInstallLocal"
+    sudo docker pull jumpscale/ays9nightly
+fi
+

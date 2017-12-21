@@ -4,15 +4,6 @@ from js9 import j
 NORMAL_RUN_PRIORITY = 1
 ERROR_RUN_PRIORITY = 10
 
-RETRY_DELAY = {
-    1: 10,  # 10sec
-    2: 30,  # 30sec
-    3: 60,  # 1min
-    4: 300,  # 5min
-    5: 600,  # 10min
-    6: 1800,  # 30min
-}  # total: 46min 10sec
-
 
 class RunScheduler:
     """
@@ -26,13 +17,25 @@ class RunScheduler:
     def __init__(self, repo):
         self.logger = j.logger.get("j.ays.RunScheduler")
         self.repo = repo
-        self._git = j.clients.git.get(repo.path, check_path=False)
         self.queue = asyncio.PriorityQueue(maxsize=0, loop=self.repo._loop)
         self._retries = []
         self._retries_lock = asyncio.Lock(loop=self.repo._loop)
         self._accept = False
         self._is_running = False
         self._current = None
+
+    def get_run_retries(self, retries):
+        """
+        sets the retry delays and number
+        @param retry_config: list containing the delay values.
+        """
+        retry_delay = {}
+        if retries[0] != 0:
+            for idx, value in enumerate(retries):
+                if value == '0':
+                    raise j.exceptions.Input("Retry delay value can't be 0")
+                retry_delay[idx + 1] = value
+        return retry_delay
 
     @property
     def status(self):
@@ -59,9 +62,9 @@ class RunScheduler:
         """
         create a commit on the ays repo
         """
-        self.logger.debug("create commit on repo %s for un %s", self.repo.path, run.model.key)
+        self.logger.debug("Create commit on repo %s for un %s", self.repo.path, run.model.key)
         msg = "Run {}\n\n{}".format(run.model.key, str(run))
-        self._git.commit(message=msg)
+        self.repo.commit(message=msg)
 
     async def start(self):
         """
@@ -89,8 +92,9 @@ class RunScheduler:
                 await run.execute()
                 self._commit(run)
             except:
-                # retry the run after a delay
-                await self._retry(run)
+                # retry the run after a delay, skip if 0 retries are configured.
+                if self.get_run_retries(run.retries):
+                    await self._retry(run)
             finally:
                 self._current = None
                 self.queue.task_done()
@@ -118,8 +122,11 @@ class RunScheduler:
 
         except asyncio.TimeoutError:
             self.logger.warning("stop timeout reach for {}. possible run interrupted".format(self))
-
-        self._retries = []
+        except Exception as e:
+            self.logger.error("unknown exception during stopping of {}: {}".format(self, e))
+            raise
+        finally:
+            self._retries = []
 
     async def add(self, run, priority=NORMAL_RUN_PRIORITY):
         """
@@ -143,19 +150,20 @@ class RunScheduler:
     async def _retry(self, run):
         async def do_retry(run):
 
-            # find lowest error level
-            levels = set()
-            for step in run.steps:
-                for job in step.jobs:
-                    service_action_obj = job.service.model.actions[job.model.dbobj.actionName]
-                    if service_action_obj.errorNr > 0:
-                        levels.add(service_action_obj.errorNr)
+            # remove this task from the retries list
+            with await self._retries_lock:
+                current_task = asyncio.Task.current_task()
+                if current_task in self._retries:
+                    self._retries.remove(current_task)
 
-            # if we are in dev mode, always reschedule after 10 sec
-            if j.atyourservice.server.dev_mode:
-                delay = RETRY_DELAY[1]
+            retry_level = run.get_retry_level()
+            retry_config = self.get_run_retries(run.retries)
+            # if error number exceed size of config won't reschedule
+            if retry_level > len(retry_config):
+                self.logger.info("Reached max numbers of retries configured")
+                return
             else:
-                delay = RETRY_DELAY[min(levels)]
+                delay = retry_config[retry_level]
 
             self.logger.info("reschedule run %s in %ssec", run.model.key, delay)
             await asyncio.sleep(delay)
@@ -163,12 +171,6 @@ class RunScheduler:
             # sending this action to the run queue
             self.logger.debug("add run %s to %s", run.model.key, self)
             await self.repo.run_scheduler.add(run, ERROR_RUN_PRIORITY)
-
-            # remove this task from the retries list
-            with await self._retries_lock:
-                current_task = asyncio.Task.current_task()
-                if current_task in self._retries:
-                    self._retries.remove(current_task)
 
         # don't add if we are stopping the server
         if not self._accept:

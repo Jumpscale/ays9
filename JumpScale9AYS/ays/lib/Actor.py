@@ -1,9 +1,9 @@
 from js9 import j
 from .Service import Service
-from .utils import validate_service_name
+from .utils import validate_service_name, Lock
 import capnp
 from JumpScale9AYS.ays.lib import model_capnp as ModelCapnp
-
+import asyncio
 
 class Actor():
 
@@ -81,24 +81,23 @@ class Actor():
                 flist.path = flist_path
             flists.finish()
 
-        self.saveAll()
 
     def saveToFS(self):
         j.sal.fs.createDir(self.path)
+        with Lock(j.sal.fs.joinPaths(self.path, ".lock")):
+            path = j.sal.fs.joinPaths(self.path, "actor.json")
+            j.sal.fs.writeFile(filename=path, contents=str(self.model.dictJson), append=False)
 
-        path = j.sal.fs.joinPaths(self.path, "actor.json")
-        j.sal.fs.writeFile(filename=path, contents=str(self.model.dictJson), append=False)
+            actionspath = j.sal.fs.joinPaths(self.path, "actions.py")
+            j.sal.fs.writeFile(actionspath, self.model.actionsSourceCode)
 
-        actionspath = j.sal.fs.joinPaths(self.path, "actions.py")
-        j.sal.fs.writeFile(actionspath, self.model.actionsSourceCode)
+            # path3 = j.sal.fs.joinPaths(self.path, "config.json")
+            # if self.model.data != {}:
+            #     j.sal.fs.writeFile(path3, self.model.dataJSON)
 
-        # path3 = j.sal.fs.joinPaths(self.path, "config.json")
-        # if self.model.data != {}:
-        #     j.sal.fs.writeFile(path3, self.model.dataJSON)
-
-        path4 = j.sal.fs.joinPaths(self.path, "schema.capnp")
-        if self.model.dbobj.serviceDataSchema.strip() != "":
-            j.sal.fs.writeFile(path4, self.model.dbobj.serviceDataSchema)
+            path4 = j.sal.fs.joinPaths(self.path, "schema.capnp")
+            if self.model.dbobj.serviceDataSchema.strip() != "":
+                j.sal.fs.writeFile(path4, self.model.dbobj.serviceDataSchema)
 
     def saveAll(self):
         self.model.save()
@@ -113,55 +112,53 @@ class Actor():
 
         self._processActionsFile(j.sal.fs.joinPaths(template.path, "actions.py"), reschedule=reschedule, context=context)
         self._initRecurringActions(template)
+        self._initLongjobs(template)
         self._initTimeouts(template)
         self._initEvents(template)
 
         services = self.aysrepo.servicesFind(actor=self.model.name)
 
+        data_schema_procchange = False
         if self.model.dbobj.serviceDataSchema != template.schemaCapnpText:
             # update schema in the actor itself
             self.model.dbobj.serviceDataSchema = template.schemaCapnpText
-            # update existsing service schema
-            for service in services:
+            data_schema_procchange = True
+
+        # update existsing service schema
+        for service in services:
+            if service.model.dbobj.dataSchema != self.model.dbobj.serviceDataSchema:
                 service.model.dbobj.dataSchema = self.model.dbobj.serviceDataSchema
                 service.model._data = None  # force recreation of the capnp data object.
                 # no need to manually copy the data cause they are still in the service.model.dbobj.data
                 # setting _data to None force to recreate the capnp msg and fill it with content of service.model.dbobj.data
+
+        if data_schema_procchange:
             self.processChange("dataschema", context=context)
 
         if self.model.dbobj.dataUI != template.dataUI:
             self.model.dbobj.dataUI = template.dataUI
             self.processChange("ui", context=context)
 
-        self.saveToFS()
-        self.model.save()
+        self.saveAll()
 
         for s in services:
-            dirtyservice = False
-            ensure_longjobs = False
             for action in self.model.dbobj.actions:
                 if action.period > 0:
-                    dirtyservice = True
                     act = s.model.actionGet(action.name)
                     act.period = action.period
                     act.log = action.log
                     act.isJob = action.isJob
                     act.timeout = action.timeout
+                    s.update_recurring_action(action.name)
+                else:
+                    s.remove_action(action.name, recurring=True)
 
                 if action.longjob is True:
-                    if s._longrunning_tasks[action.name].actioncode != self.model.actionsCode[action.name]:
-                        print("Restarting longjob: ", action.name)
-                        s._longrunning_tasks[action.name].stop()
-                        del s._longrunning_tasks[action.name]
-                        ensure_longjobs = True
-
-
-            if ensure_longjobs:
-                s._ensure_longjobs()
-
-            if dirtyservice:
-                s.model.reSerialize()
-                s.saveAll()
+                    s.update_longjob(action.name)
+                else:
+                    s.remove_action(action.name, longjobs=True)
+            s.model.reSerialize()
+            s.saveAll()
 
     def _initFromTemplate(self, template, context=None):
         if self.model is None:
@@ -192,8 +189,7 @@ class Actor():
         self.model.dbobj.serviceDataSchema = template.schemaCapnpText
         self.model.dbobj.dataUI = template.dataUI
 
-        self.saveToFS()
-        self.model.save()
+        self.saveAll()
 
     def _initParent(self, template):
         parent = template.parentConfig
@@ -225,6 +221,16 @@ class Actor():
                 ac.save()
 
     def _initLongjobs(self, template):
+        longjobs_names = [job_info['action'] for job_info in template.longjobsConfig]
+        for actionname in self.model.actions.keys():
+            if actionname not in longjobs_names:
+                if self.model.actions[actionname].longjob is True:
+                    self.model.actions[actionname].longjob = False
+                    self.model.save()
+                for service in self.services:
+                    if service.model.actions[actionname].longjob is True:
+                        service.model.actions[actionname].longjob = False
+
         for jobinfo in template.longjobsConfig:
             actionname = jobinfo['action']
             action_model = self.model.actions[actionname]
@@ -234,8 +240,21 @@ class Actor():
             ac.timeout = 0
             ac.longjob = True
             ac.save()
+            for service in self.services:
+                service.model.actions[actionname].longjob = True
+                service.saveAll()
 
     def _initRecurringActions(self, template):
+        # remove old recurring actions in services
+        recurring_names = [rec_info['action'] for rec_info in template.recurringConfig]
+        for actionname in self.model.actions.keys():
+            if actionname not in recurring_names:
+                if self.model.actions[actionname].period:
+                    self.model.actions[actionname].period = 0
+                    self.model.save()
+                for service in self.services:
+                    if service.model.actions[actionname].period:
+                        service.model.actions[actionname].period = 0
         for reccuring_info in template.recurringConfig:
             action_model = self.model.actions[reccuring_info['action']]
             action_model.period = j.data.types.duration.convertToSeconds(reccuring_info['period'])
@@ -319,6 +338,7 @@ class Actor():
             if state == "DEF" and line[:7] != '    def' and (linestrip.startswith("@") or linestrip.startswith("def")):
                 # means we are at end of def to new one
                 parsedActorMethods.append(actionName)
+                self.logger.debug("adding action [{}] to [{}]".format(actionName, self))
                 self._addAction(actionName, amSource, amDecorator, amMethodArgs, amDoc)
                 amSource = ""
                 actionName = ""
@@ -468,9 +488,7 @@ class Actor():
         """
         # self.logger.debug('process change for %s (%s)' % (self, changeCategory))
         if changeCategory == 'dataschema':
-            # TODO
             pass
-
         elif changeCategory == 'ui':
             # TODO
             pass
@@ -488,9 +506,6 @@ class Actor():
         elif changeCategory.find('action_del') != -1:
             action_name = changeCategory.split('action_del_')[1]
             self.model.actionDelete(action_name)
-
-        self.saveAll()
-
         for service in self.aysrepo.servicesFind(actor=self.model.name):
             service.processChange(actor=self, changeCategory=changeCategory, reschedule=reschedule, context=context)
 
@@ -523,7 +538,12 @@ class Actor():
         """
         same call as asyncServiceCreate but synchronous. we expose this so user can use this method in service actions.
         """
-        return j.tools.async.wrappers.sync(self.asyncServiceCreate(instance=instance, args=args, context=context))
+        futur = asyncio.run_coroutine_threadsafe(self.asyncServiceCreate(instance=instance, args=args, context=context), loop=self.aysrepo._loop)
+        try:
+            return futur.result()
+        except Exception as e:
+            self.logger.error("error creating service: %s" % e)
+            raise e
 
     @property
     def services(self):

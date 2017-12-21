@@ -1,0 +1,8 @@
+
+h2. AYS Portal
+
+Welcome to your AYS portal!
+
+ - Documentation about AtYourService can be found [here|https://gig.gitbooks.io/jumpscale-core8/content/AYS/AYS-Introduction.html]
+ - Go to your [Repos|/AYS/Repos]
+ - Overview of your [Actor Templates|/AYS/ActorTemplates]

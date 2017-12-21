@@ -47,9 +47,9 @@ def test(job):
         #
         # repo1_info = ays_client.getRepository(repo1).json()
         # j.sal.fs.changeDir(repo1_info['path'])
-        # j.tools.prefab.get().core.run(bp_cmd)
+        # j.tools.prefab.local.core.run(bp_cmd)
         #
-        # j.tools.prefab.get().core.run(run_cmd)
+        # j.tools.prefab.local.core.run(run_cmd)
         # runs = ays_client.listRuns(repository=repo1_info['name']).json()
         # run = runs[0]
         # run_info = ays_client.getRun(run['key'], repo1_info['name']).json()
@@ -73,8 +73,8 @@ def test(job):
 
         repo2_info = ays_client.getRepository(repo2).json()
         j.sal.fs.changeDir(repo2_info['path'])
-        j.tools.prefab.get().core.run(bp_cmd)
-        j.tools.prefab.get().core.run(run_cmd)
+        j.tools.prefab.local.core.run(bp_cmd)
+        j.tools.prefab.local.core.run(run_cmd)
 
         runs = ays_client.listRuns(repository=repo2_info['name']).json()
         run = runs[0]

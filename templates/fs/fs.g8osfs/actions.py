@@ -1,8 +1,8 @@
 def install(job):
     prefab = job.service.executor.prefab
 
-    prefab.package.mdupdate()
-    prefab.package.install('fuse')
+    prefab.system.package.mdupdate()
+    prefab.system.package.install('fuse')
     bin_location = '/usr/local/bin/fs'
     prefab.core.dir_ensure('/usr/local/bin')
     prefab.core.file_download('https://stor.jumpscale.org/public/fs', bin_location)
@@ -84,10 +84,10 @@ def install(job):
     prefab.core.file_write(config_path, j.data.serializer.toml.dumps(final_config))
 
     # create service
-    pm = prefab.processmanager.get('tmux')
+    pm = prefab.system.processmanager.get()
     bin_location = prefab.core.command_location('fs')
     cmd = '%s -config %s' % (bin_location, config_path)
-    pm.ensure("fs_%s" % service.name, cmd=cmd, env={}, path='$JSCFGDIR/fs', descr='G8OS FS', autostart=True, wait="3m")
+    pm.ensure("fs_%s" % service.name, cmd=cmd, env={}, path='$JSCFGDIR/fs', descr='G8OS FS', autostart=True, wait=180)
 
     # wait until all targets are actually mounted
     # We wait max 1 min per target
@@ -114,5 +114,5 @@ def stop(job):
     service = job.service
     prefab = service.executor.prefab
 
-    pm = prefab.processmanager.get('tmux')
+    pm = prefab.system.processmanager.get()
     pm.stop('fs_%s' % service.name)

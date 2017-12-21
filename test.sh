@@ -1,14 +1,17 @@
 #!bin/bash
+set -e
+
+RUNTYPE=$1
+
 
 echo "Starting AYS server"
-js9 'j.atyourservice.server.start(dev=True)'
+js9 'j.atyourservice.server.start()'
 
 # sleep for 30 seconds
 sleep 30
 
 # check if the server started
 js9 'cli=j.clients.atyourservice.get();cli.api.ays.listRepositories()'
-
 
 # validate all the schemas
 echo "Validating Schemas"
@@ -18,5 +21,5 @@ for schema in $(find -name schema.capnp); do
 done
 
 # running testsuite
-echo "Running ays tests"
-js9 "import testrunner; testrunner.main()"
+echo "Running ays core tests"
+js9 "from ays_testrunner.testrunner import AYSTestRunnerFactory;AYSTestRunnerFactory.get(name='core').run()"

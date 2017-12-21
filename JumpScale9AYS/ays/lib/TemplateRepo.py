@@ -28,8 +28,8 @@ def searchActorTemplates(path, is_global=False):
     res = set()
     actortemplatessearch = ""
     if not is_global:
-        actortemplatessearch = " -or -wholename '*actorTemplates/*actions.py' -or -wholename '*actorTemplates/*schema.capnp' -or -wholename '*actorTemplates/*config.yaml'"
-    cmd = """find %s \( -wholename '*templates/*actions.py' -or -wholename '*templates/*schema.capnp' -or -wholename '*templates/*config.yaml' -or -wholename '*tests/*actions.py' -or -wholename '*tests/*schema.capnp' -or -wholename '*tests/*config.yaml' %s \) -exec readlink -f {} \;""" % (path, actortemplatessearch)
+        actortemplatessearch = " -or -wholename '*/actorTemplates/*actions.py' -or -wholename '*/actorTemplates/*schema.capnp' -or -wholename '*/actorTemplates/*config.yaml'"
+    cmd = """find %s \( -wholename '*/templates/*actions.py' -or -wholename '*/templates/*schema.capnp' -or -wholename '*/templates/*config.yaml' -or -wholename '*/tests/*actions.py' -or -wholename '*/tests/*schema.capnp' -or -wholename '*/tests/*config.yaml' %s \) -exec readlink -f {} \;""" % (path, actortemplatessearch)
     rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
     if rc == 0:
         return out.splitlines()
@@ -54,13 +54,13 @@ class TemplateRepoCollection:
 
     def __load(self, path):
         for path in searchActorTemplates(path, is_global=True):
-            template_repo = None
-            if 'templates' in path:
-                template_repo = path.split("templates")[0]
-            elif 'tests' in path:
-                template_repo = path.split("tests")[0]
-            elif 'actorTemplates' in path:
-                template_repo = path.split("actorTemplates")[0]
+            template_repo = path
+            if '/templates/' in path:
+                template_repo = path.split("/templates/")[0]
+            elif '/tests/' in path:
+                template_repo = path.split("/tests/")[0]
+            elif '/actorTemplates/' in path:
+                template_repo = path.split("/actorTemplates/")[0]
 
             template_repo_name = j.sal.fs.getBaseName(template_repo)
             if template_repo_name.startswith("_") or template_repo_name.startswith("."):

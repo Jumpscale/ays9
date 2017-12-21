@@ -1,0 +1,38 @@
+@usedefaults
+
+{{timestamp}}
+{{datatables_use}}
+{{aysactors: reponame:$$reponame}}
+{% if error is defined %}
+Error : ${error}
+
+{% else %}
+{{breadcrumb:
+    - Repositories : /AYS/repos
+    - "Repository: $$reponame": /AYS/Repo?reponame=${reponame}
+    - Actors: /AYS/actors?reponame=$$reponame
+}}
+
+{{cssstyle
+    .table {
+        position: relative;
+        left: 7%;
+    }
+}}
+
+h3. Actors $$reponame:
+
+*Repo*: [${reponame}|/AYS/Repo?reponame=${reponame}]
+
+{{html:
+      <script  src='/jslib/codemirror/codemirror.js' type='text/javascript'></script>
+      <script  src='/jslib/codemirror/autorefresh.js' type='text/javascript'></script>
+}}
+
+
+h4. Actors:
+||id||Actor||
+  {% for actor in actors -%}
+|${loop.index}|[${actor.name}|/AYS/actor?reponame=${reponame}&actorname=${actor.name}]|
+  {% endfor -%}
+{% endif %}
