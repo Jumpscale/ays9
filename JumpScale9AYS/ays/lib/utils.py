@@ -107,7 +107,7 @@ def search_ays(cmd=None, find_cmd=None, link_cmd=None, search_for_repos=False, s
                     rc, out, err = j.sal.process.execute(link_cmd % location, die=False, showout=False)
                     location = out
             if search_for_repos:
-                location = lcation.split(".ays")[0]
+                location = location.split(".ays")[0]
                 if location.startswith(".") or location.startswith("_"):
                     continue
             res.append(location)
