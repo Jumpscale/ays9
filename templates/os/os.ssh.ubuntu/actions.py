@@ -29,13 +29,12 @@ def install(job):
 
     # used the login/password information from the node to first connect to the node and then authorize the sshkey for root
     key_path = j.sal.fs.joinPaths(sshkey.path, sshkey.name)
-    j.clients.ssh.load_ssh_key(key_path, True)
 
     service.logger.debug("registering sshkey")
     sshclient = j.clients.ssh.get(
         addr=node.model.data.ipPublic, port=node.model.data.sshPort, login=node.model.data.sshLogin, passwd=node.model.data.sshPassword
         , look_for_keys=False, timeout=300)
-    sshclient.SSHAuthorizeKey(sshkey.name)
+    sshclient.SSHAuthorizeKey(sshkey_name=sshkey.name, sshkey_path=key_path)
     # Reset prefab instance to use root for upcoming prefab executions instead of normal user
     j.tools.prefab.resetAll()
     service.saveAll()
