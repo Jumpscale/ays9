@@ -40,7 +40,7 @@ def input(job):
         j.sal.fs.createDir(job.service.path)
         j.sal.fs.remove(args['key.path'])
         cmd = "ssh-keygen -q -t rsa -f %s -N ''" % (args['key.path'])
-        rc, out, err = j.sal.process.execute(cmd, die=True, outputStderr=False)
+        j.sal.process.execute(cmd, die=True)
         args["key.priv"] = j.sal.fs.fileGetContents(args['key.path'])
         args["key.pub"] = j.sal.fs.fileGetContents(args['key.path'] + '.pub')
 
