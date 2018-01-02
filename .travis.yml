@@ -3,10 +3,11 @@ sudo: enabled
 dist: trusty
 group: edge
 
-# whitelist master branch only		
+# whitelist master/development branch only		
 branches:		
   only:		
     - master
+    - development
 
 before_install:
   - sudo apt-get update
