@@ -1,12 +1,8 @@
 #!/usr/bin/env python
 
-# Click library has some problems with python3 when it comes to unicode: http://click.pocoo.org/5/python3/#python3-surrogates
-# to fix this we need to set the environ variables to export the locales
-import os
-os.environ['LC_ALL'] = 'C.UTF-8'
-os.environ['LANG'] = 'C.UTF-8'
-
 from js9 import j
+j.tools.prefab.local.bash.locale_check()
+
 import io
 import time
 import click

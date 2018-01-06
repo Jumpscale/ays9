@@ -2,13 +2,13 @@
 
 # Click library has some problems with python3 when it comes to unicode: http://click.pocoo.org/5/python3/#python3-surrogates
 # to fix this we need to set the environ variables to export the locales
-import os
-os.environ['LC_ALL'] = 'C.UTF-8'
-os.environ['LANG'] = 'C.UTF-8'
+
+from js9 import j
+j.tools.prefab.local.bash.locale_check()
 
 import click
 import logging
-from js9 import j
+
 from JumpScale9AYS.ays.server.app import app as sanic_app
 
 sanic_app.config['REQUEST_TIMEOUT'] = 3600
