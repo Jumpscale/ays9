@@ -92,6 +92,8 @@ class AtYourServiceRepoCollection:
         if git_url:
             j.tools.executorLocal.execute(
                 'cd {path};git remote add origin {url}'.format(path=path, url=git_url))
+        else:
+            self.logger.warning("No git url provided, Can't add remote to this repo")
         j.sal.nettools.download(
             'https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore', j.sal.fs.joinPaths(path, '.gitignore'))
 
