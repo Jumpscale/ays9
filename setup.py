@@ -52,7 +52,7 @@ except ImportError:
 
 setup(
     name='JumpScale9AYS',
-    version='9.2.0',
+    version='9.2.1',
     description='Automation framework for cloud workloads ays lib',
     long_description=long_description,
     url='https://github.com/Jumpscale/ays9',
@@ -62,8 +62,8 @@ setup(
     packages=find_packages(),
     include_package_data=True,
     install_requires=[
-        'JumpScale9>=9.2.0',
-        'JumpScale9Lib>=9.2.0',
+        'JumpScale9>=9.2.1',
+        'JumpScale9Lib>=9.2.1',
         'jsonschema>=2.6.0',
         'python-jose==1.3.2',
         'sanic>=0.5.4',
