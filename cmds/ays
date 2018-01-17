@@ -3,6 +3,8 @@
 from js9 import j
 j.tools.prefab.local.bash.locale_check()
 
+
+import os
 import io
 import time
 import click
