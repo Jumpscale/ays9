@@ -60,8 +60,5 @@ def getExecutor(job):
                 ssh_port = src
                 break
 
-    executor = j.tools.executor.getSSHBased(addr=node.model.data.ipPublic, port=ssh_port,
-                                            login='root', passwd=None,
-                                            allow_agent=True, look_for_keys=True, timeout=5, usecache=False,
-                                            passphrase=passphrase, key_filename=key_path)
+    executor = j.tools.executor.getSSHBased(addr=node.model.data.ipPublic, port=ssh_port)
     return executor
