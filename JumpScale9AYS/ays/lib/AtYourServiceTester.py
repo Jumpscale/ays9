@@ -71,8 +71,8 @@ class AtYourServiceTester:
                 for key, _ in model.items():
                     aysrole, aysinstance = key.split('__')
                     aysrole = aysrole.split('.')[0]
-                    assert len(j.sal.fs.walk(j.sal.fs.joinPaths(self.path, 'services'), recurse=1, pattern='%s!%s' % (aysrole, aysinstance),
-                                             return_folders=1, return_files=0)) == 1, '%s!%s not init-ed' % (aysrole, aysinstance)
+                    assert len(j.sal.fswalker.walk(j.sal.fs.joinPaths(self.path, 'services'), recurse=1, pattern='%s!%s' % (aysrole, aysinstance),
+                                                   return_folders=1, return_files=0)) == 1, '%s!%s not init-ed' % (aysrole, aysinstance)
         self.logger.info('Blueprint services all accounted for')
 
         # Make sure all children are subdirectories of parents
