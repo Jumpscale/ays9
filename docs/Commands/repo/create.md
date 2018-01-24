@@ -15,7 +15,7 @@ Example usage :
 
 ```shell
 $ ays repo create -n test -g http://github.com/user/ays_repo
-AYS repository created at /optvar/cockpit_repos/test
+AYS repository created at /host/var/ays_repos/test
 ```
 
 If you added a git url that uses ssh, you will be able to auto push any changes at this repo by authorizing the key printed after creation of the repo
@@ -23,7 +23,7 @@ If you added a git url that uses ssh, you will be able to auto push any changes 
 ```bash
 $ ays repo create -n test -g "git@github.com:user/ays_repo.git"
 [Tue11 12:27] - SystemProcess.py    :661 :j.sal.process                  - INFO     - Checking whether at least 1 processes redis-server are running
-AYS repository created at /optvar/cockpit_repos/gsdjsh
+AYS repository created at /host/var/ays_repos/gsdjsh
 If you want to auto push AYS Repo changes, please authorize the following ssh key to your git repository: 
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDCxr...... root@js9
 

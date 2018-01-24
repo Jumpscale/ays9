@@ -79,9 +79,9 @@ def install(job):
     cmd = 'jspython api_server'
     pm.ensure(cmd=cmd, name='cockpit_api_%s' % service.name, path=prefab.core.replace('$JSAPPSDIR/ays_api'), autostart=True)
     # upload the aysrepo used in installing to the cockpit
-    prefab.core.dir_ensure('$VARDIR/cockpit_repos')
-    prefab.core.upload(service.aysrepo.path, '$VARDIR/cockpit_repos/cockpit')
-    prefab.core.run('cd $VARDIR/cockpit_repos/cockpit; ays restore', profile=True)
+    prefab.core.dir_ensure('$VARDIR/ays_repos')
+    prefab.core.upload(service.aysrepo.path, '$VARDIR/ays_repos/cockpit')
+    prefab.core.run('cd $VARDIR/ays_repos/cockpit; ays restore', profile=True)
 
     # write the init script that will be used in case of machine shutdown
     rc_local = prefab.core.file_read('/etc/rc.local').split('\n')

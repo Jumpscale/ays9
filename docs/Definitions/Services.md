@@ -122,7 +122,7 @@ In order to update an AYS service to a newer version you start by updating its A
 
 This is done by eigther updating the **global** actor templates or the **local** actor templates:
 - Updating the **global** actor templates is usually achieved by performing a `git pull` in the AYS9 system repository (`/opt/code/github/jumpscale/ays9`)
-- Updating the **local** actor templates is usually achieved by performing a `git pull` in the the local repository (`/optvar/cockpit_repos/<name-of-your-ays-repository>`)
+- Updating the **local** actor templates is usually achieved by performing a `git pull` in the the local repository (`/host/var/ays_repos/<name-of-your-ays-repository>`)
 
 > Note that the above updates **all** global or local actor templates.
 
