@@ -6,6 +6,7 @@ j.tools.prefab.local.bash.locale_check()
 
 import os
 import io
+import os
 import time
 import click
 from requests.exceptions import HTTPError

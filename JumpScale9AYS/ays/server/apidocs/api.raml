@@ -781,6 +781,39 @@ types:
                     body:
                       application/json:
                         type: Error
+      /configure-jslocation:
+        post:
+          displayName: configure-jslocation
+          description: Configure jslocation using config manager
+          body:
+            application/json:
+              properties:
+                jslocation:
+                  type: string
+                  required: true
+                  description: |
+                   the client jslocation you need to configure.
+                  example: j.clients.openvcloud
+                instance:
+                  type: string
+                  required: true
+                  description: Configuration instance name that will be appended to the repo name.
+                data:
+                  type: object
+                  description: JSON object contains all data needed to configure the client.
+          responses:
+            201:
+              description: Instance configured
+            404:
+              description: Repository not found
+              body:
+                application/json:
+                  type: Error
+            400:
+              description: Bad Request for sending invalid body data
+              body:
+                application/json:
+                  type: Error
 
       /job:
           get:

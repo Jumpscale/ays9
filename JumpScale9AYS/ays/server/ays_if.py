@@ -181,7 +181,7 @@ class ays_repository_byrepository_templateUpdate(HTTPMethodView):
         return await auth(request=request, funcname='updateTemplates', repository=repository)
 
 
-ays_if.add_route(ays_repository_byrepository_templateView.as_view(), '/ays/repository/<repository>/template/update')
+ays_if.add_route(ays_repository_byrepository_templateUpdate.as_view(), '/ays/repository/<repository>/template/update')
 
 
 class ays_repository_byrepository_template_bynameView(HTTPMethodView):
@@ -226,3 +226,11 @@ class ays_repository_byrepository_scheduler_runs_runningView(HTTPMethodView):
         return await auth(request=request, funcname='getCurrentRun', repository=repository)
 
 ays_if.add_route(ays_repository_byrepository_scheduler_runs_runningView.as_view(), '/ays/repository/<repository>/scheduler/running')
+
+
+class ays_configure_jslocation(HTTPMethodView):
+    async def post(self, request, repository):
+        return await auth(request=request, funcname='configure_jslocation', repository=repository)
+
+
+ays_if.add_route(ays_configure_jslocation.as_view(), '/ays/repository/<repository>/configure-jslocation')

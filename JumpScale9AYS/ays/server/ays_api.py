@@ -865,3 +865,28 @@ def extract_token(request):
         if len(ss) == 2:
             return ss[1]
     return ""
+
+
+async def configure_jslocation(request, repository):
+    try:
+        repo = get_repo(repository)
+    except j.exceptions.NotFound as e:
+        return json({'error': e.message}, 404)
+    inputs = request.json
+
+    instance = "{repo_name}_{instance_name}".format(repo_name=repo.name, instance_name=inputs["instance"])
+    location = inputs["jslocation"]
+    if not location.startswith("j."):
+        return json({'error': "Invalid location"}, 400)
+    try:
+        j.tools.configmanager.path_configrepo
+    except RuntimeError as e:
+        if "Cannot find path" in str(e):
+            print("Creating Js9config repo...")
+            js9config_dir = "{}/github/jumpscale/js9config".format(j.dirs.CODEDIR)
+            j.sal.fs.createDir(js9config_dir)
+            j.sal.fs.createEmptyFile("{}/.jsconfig".format(js9config_dir))
+    finally:
+        js9_obj = j.tools.configmanager.js9_obj_get(location=location, instance=instance, data=inputs["data"])
+        js9_obj.config.save()
+        return json({'message': 'Instance configured'}, 201)
