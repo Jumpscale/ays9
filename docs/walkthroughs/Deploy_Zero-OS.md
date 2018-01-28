@@ -28,7 +28,7 @@ ays repo create -n myrepo -g ssh://git@docs.greenitglobe.com:10022/despiegk/cock
 
 Get an exinsting blueprint:
 ```bash
-cd /optvar/cockpit_repos/myrepo/blueprints
+cd /host/var/ays_repos/myrepo/blueprints
 rm -f 1_server.yaml
 wget https://raw.githubusercontent.com/g8os/ays_template_g8os/master/examples/ays_g8os_packetnet/blueprints/1_server.yaml
 ```
@@ -62,7 +62,7 @@ ays service show --role node
 This will make sure that active AYS services use the most recent actor version
 
 ```bash
-cd /optvar/cockpit_repos/myrepo
+cd /host/var/ays_repos/myrepo
 ays actor update
 ```
 

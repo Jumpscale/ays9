@@ -82,6 +82,37 @@ def validate_bp_format(path, models, aysrepo, logger=None):
 
     return True, 'Blueprint format is valid'
 
+def search_ays(cmd=None, find_cmd=None, link_cmd=None, search_for_repos=False, search_for_templates=False):
+    """
+
+    :param cmd: command used while searching on linux to find and check if the file is link
+    :param find_cmd: find command on mac
+    :param link_cmd: command to check if file is a link on mac
+    :param search_for_repos: set to True if you search for repos
+    :param search_for_templates: set to True if you search for templates
+    :return:
+    """
+    on_mac = 'darwin' in j.tools.prefab.local.platformtype.osname
+    res = []
+    if on_mac:
+        cmd = find_cmd
+    rc, out, err = j.sal.process.execute(cmd, die=False, showout=False)
+
+    if not on_mac and search_for_templates:
+        res = out.splitlines()
+    else:
+        for location in out.splitlines():
+            if on_mac:
+                if j.sal.fs.isLink(location):
+                    rc, out, err = j.sal.process.execute(link_cmd % location, die=False, showout=False)
+                    location = out
+            if search_for_repos:
+                location = location.split(".ays")[0]
+                if location.startswith(".") or location.startswith("_"):
+                    continue
+            res.append(location)
+    return res
+
 
 class Lock:
     def __init__(self, path):

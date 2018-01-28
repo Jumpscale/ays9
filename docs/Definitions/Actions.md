@@ -86,7 +86,7 @@ States of an action:
 
 Checking the state of all actions of a specific AYS service is eays using the AYS command line tool:
 ```bash
-cd /optvar/cockpit_repos/<repository-name>
+cd /host/var/ays_repos/<repository-name>
 ays service state -r <role of the AYS service> -n <name of the AYS service>
 ```
 
