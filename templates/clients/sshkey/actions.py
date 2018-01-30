@@ -48,3 +48,6 @@ def input(job):
     j.sal.fs.chmod(args['key.path']+ '.pub', 0o600)
 
     return args
+
+def delete(job):
+    j.clients.ssh.ssh_key_unload(job.model.args.get('key.name'))
