@@ -887,6 +887,8 @@ async def configure_jslocation(request, repository):
             j.sal.fs.createDir(js9config_dir)
             j.sal.fs.createEmptyFile("{}/.jsconfig".format(js9config_dir))
     finally:
-        js9_obj = j.tools.configmanager.js9_obj_get(location=location, instance=instance, data=inputs["data"])
+        sshkey_path = "/root/.ssh/ays_repos_key"
+        js9_obj = j.tools.configmanager.js9_obj_get(location=location, instance=instance, data=inputs["data"],
+                                                    sshkey_path=sshkey_path)
         js9_obj.config.save()
         return json({'message': 'Instance configured'}, 201)
