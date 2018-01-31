@@ -9,9 +9,7 @@ See [How to create a S3 server](https://gig.gitbooks.io/cockpit/content/usage/Ho
 
 ```
 g8client__{environment}:
-  url: '{url}'
-  login: '{login}'
-  password: '{password}'
+  instance: '{ovc_config_instance(i.e. main)}'
   account: '{account}'
 
 vdc__{vdc-name}:
