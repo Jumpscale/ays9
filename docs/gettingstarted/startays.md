@@ -72,7 +72,7 @@ As a first test use the AYS command line tool to create an AYS Repository:
 ays repo create -n "repo1" -g http://your-first-ays-repo
 ```
 
-This will create your AYS repository in a subdirectory (`repo1`) of `/host/var/cockpit_repos`.
+This will create your AYS repository in a subdirectory (`repo1`) of `/host/var/ays_repos`.
 
 
 Next you will probably want to join you container into your ZeroTier network, as documented in [Join Your ZeroTier Network](zt.md).

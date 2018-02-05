@@ -23,9 +23,7 @@ It creates
 ```yaml
 
 g8client__env1:
-    url: 'gig.demo.greenitglobe.com'
-    login: 'login'
-    password: 'password'
+    instance: '{ovc_config_instance(i.e. main)}'
     account: 'account'
 
 vdc__myspaceb15:

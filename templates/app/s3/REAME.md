@@ -23,10 +23,7 @@ to access this machine u need either to modify the DNS yourself, or add the `dom
 sshkey__demo:
 
 g8client__env1:
-    # url: 'du-conv-3.demo.greenitglobe.com'
-    url: 'gig.demo.greenitglobe.com'
-    login: 'login'
-    password: 'password'
+    instance: '{ovc_config_instance(i.e. main)}'
     account: 'Acoount'
 
 vdcfarm__vdcfarm1:

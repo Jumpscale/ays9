@@ -92,6 +92,12 @@ class AtYourServiceFactory:
                     dbkwargs = j.core.db.connection_pool.connection_kwargs
                     rediskwargs = {'host': dbkwargs['host'], 'port': dbkwargs['port']}
                 cfg.update({'redis': rediskwargs})
+            if 'host' not in cfg:
+                cfg.update({'host': '127.0.0.1'})
+            if 'port' not in cfg:
+                cfg.update({'port': 5000})
+
+            j.core.state.configSet('ays', cfg)
             self._config = cfg
         return self._config
 

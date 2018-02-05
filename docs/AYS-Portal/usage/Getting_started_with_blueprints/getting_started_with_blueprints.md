@@ -40,12 +40,11 @@ You can now see your new repository in the list of repositories. Click your newl
 
 Now that you have your repository ready, the next step is to create the blueprint for creating your virtual datacenter (VDC). Here is the blueprint we are going to use:  
 
+* You will need to configure OVC client firstly: [docs](https://github.com/openvcloud/ays_templates/blob/master/docs/OVC_Client/README.md)
 ```yaml
 g8client__dubai:
-  g8.url: 'gig.demo.greenitglobe.com'
-  g8.login: 'yves'
-  g8.password: '****'
-  g8.account: 'Demo Account'
+  instance: '{ovc_config_instance(i.e. main)}'
+  account: '{account}'
 
 vdc__demo1:
   g8.client.name: 'dubai'

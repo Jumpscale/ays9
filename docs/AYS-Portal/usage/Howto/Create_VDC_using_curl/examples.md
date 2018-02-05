@@ -41,7 +41,7 @@ curl -X DELETE -H "Authorization: bearer $JWT$" https://cl2.aydo2.com/api/ays/re
 
 ### Create blueprint for a g8client service
 
-curl -X POST -H "Authorization: bearer $JWT$" -H "Content-Type: application/json" -d '{"name":"uk.yaml","content":"g8client__uk:\n  url: uk-g8-1.demo.greenitglobe.com\n  login: *****\n  password: ******\n  account: *****"}' https://cl2.aydo2.com/api/ays/repository/yves/blueprint
+curl -X POST -H "Authorization: bearer $JWT$" -H "Content-Type: application/json" -d '{"name":"uk.yaml","content":"g8client__uk:\n  instance: main\n  account: *****"}' https://cl2.aydo2.com/api/ays/repository/yves/blueprint
 
 
 ### Delete g8client blueprint

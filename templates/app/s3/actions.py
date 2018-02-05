@@ -5,7 +5,8 @@ def input(job):
         g8clients = repo.servicesFind(actor='g8client')
         if g8clients:
             g8client = g8clients[0]
-            cl = j.clients.openvcloud.getFromService(g8client)
+            config_instance = "{}_{}".format(g8client.aysrepo.name, g8client.model.data.instance)
+            cl = j.clients.openvcloud.get(instance=config_instance, create=False, die=True, sshkey_path="/root/.ssh/ays_repos_key")
             if cl.locations:
                 location = cl.locations[0]['name']
             else:

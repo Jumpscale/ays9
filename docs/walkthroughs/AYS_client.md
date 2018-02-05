@@ -156,11 +156,11 @@ export JWT2
 ## Create a blueprint for creating a VDC
 
 Create a blueprint file:
+* You will need to configure OVC client firstly: [docs](https://github.com/openvcloud/ays_templates/blob/master/docs/OVC_Client/README.md)
 ```yaml
 g8client__g8:
-  url: 'be-gen-1.demo.greenitglobe.com'
-  jwt: '<JWT2>'
-  account: 'myaccount'
+  instance: '{ovc_config_instance(i.e. main)}'
+  account: '{account}'
 
 vdc__testvdc10:
   g8client: 'g8'

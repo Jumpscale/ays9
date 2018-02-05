@@ -1,8 +1,7 @@
+* You will need to configure OVC client firstly: [docs](https://github.com/openvcloud/ays_templates/blob/master/docs/OVC_Client/README.md)
 g8client__uk:
-  url: uk-g8-1.demo.greenitglobe.com
-  login: *****
-  password: *****
-  account: *****
+  instance: '{ovc_config_instance(i.e. main)}'
+  account: '{account}'
 
 uservdc__yves:
   g8client: uk

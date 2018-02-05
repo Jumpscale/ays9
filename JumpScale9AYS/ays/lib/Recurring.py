@@ -99,7 +99,7 @@ if __name__ == '__main__':
     loop = asyncio.get_event_loop()
 
     j.atyourservice.server.aysRepos._load()
-    repo = j.atyourservice.server.aysRepos.get('/opt/code/cockpit_repos/testrepo')
+    repo = j.atyourservice.server.aysRepos.get(j.dirs.VARDIR + '/ays_repos/testrepo')
     s = repo.serviceGet('node', 'demo')
     t = RecurringTask(s, 'monitor', 10, loop=loop)
     t.start()

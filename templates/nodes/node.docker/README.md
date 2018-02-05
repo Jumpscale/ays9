@@ -79,9 +79,7 @@ node.docker__ubuntutest:
 Replace \<with actual value \>
 ```yaml
 g8client__g8:
-  url: '<env url>'
-  login: '<user name>'
-  password: '<user password>'
+  instance: '{ovc_config_instance(i.e. main)}'
   account: '<account name>'
 
 vdc__myvdc:
