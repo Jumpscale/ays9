@@ -26,6 +26,7 @@ AYS_TESTRUNNER_REPO_GIT = 'https://github.com/ahussein/ays_testrunner.git'
 DEFAULT_TEST_TIMEOUT = 600 # 10 min timeout per test
 DEFAULT_IYO_BASEURL = "https://itsyou.online/api"
 DEFAULT_OVC_PORT = 443
+DEFAULT_ACCOUNT_NAME = 'aystestrunner'
 
 
 def configure_backend_clients(repo_info, config, logger=None):
@@ -621,10 +622,15 @@ class BaseRunner:
             backend_config = self._config.get('BACKEND_ENV', {})
             if backend_config:
                 if self._ovc_client is None:
-                    _, self._ovc_client = configure_backend_clients(repo_info=None, config=self._config, logger=self._logger)
+                    _, self._ovc_client = configure_backend_clients(repo_info=None, config=backend_config, logger=self._logger)
                 # DELETE ALL THE CREATED CLOUDSPACES
                 for cloudspace_info in self._ovc_client.api.cloudapi.cloudspaces.list():
                     self._ovc_client.api.cloudapi.cloudspaces.delete(cloudspaceId=cloudspace_info['id'])
+                
+                # DELETE TEST ACCOUNT
+                if DEFAULT_ACCOUNT_NAME in self._ovc_client.accounts:
+                    acc = self._ovc_client.account_get(name=DEFAULT_ACCOUNT_NAME, create=False)
+                    acc.delete()
         except Exception as err:
             self._logger.error('Failed to execute cleanup. Error {}'.format(err))
 
