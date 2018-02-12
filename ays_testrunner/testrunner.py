@@ -3,8 +3,8 @@ Test runner module for AYS9
 
 How to use it:
 from ays_testrunner.testrunner import AYSCoreTestRunner
-backend_config = {'URL': 'du-conv-2.demo.greenitglobe.com', 'LOGIN': 'aystestrunner@itsyouonline', 'PASSWORD': 'aystestrunner', 'ACCOUNT': 'aystestrunner', 'LOCATION': 'du-conv-2'}
-core = AYSCoreTestRunner('core', config={'bp_paths': ['/root/gig/code/github/jumpscale/ays9/tests/bp_test_templates/core/test_auto_behavior.yaml', "/tmp/grouptest"], 'BACKEND_ENV': backend_config,
+backend_config = {'URL': 'du-conv-2.demo.greenitglobe.com', 'IYO_APPID': '***', 'IYO_SECRET': '****', 'ACCOUNT': 'aystestrunner', 'LOCATION': 'du-conv-2'}
+core = AYSCoreTestRunner('core', config={'bp_paths': ['/opt/code/github/jumpscale/ays9/tests/bp_test_templates/core/test_auto_behavior.yaml', "/tmp/grouptest"], 'BACKEND_ENV': backend_config,
 'TEST_TIMEOUT': 300})
 core.run()
 """
@@ -21,10 +21,57 @@ AYS_CORE_BP_TESTS_PATH = [j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getPare
 
 AYS_NON_CORE_BP_TESTS_PATH = []
 
-# AYS_DEFAULT_PLACEHOLDERS = ['URL', 'LOGIN', 'ACCOUNT', 'PASSWORD', 'LOCATION']
 AYS_TESTRUNNER_REPO_NAME = 'ays_testrunner'
 AYS_TESTRUNNER_REPO_GIT = 'https://github.com/ahussein/ays_testrunner.git'
 DEFAULT_TEST_TIMEOUT = 600 # 10 min timeout per test
+DEFAULT_IYO_BASEURL = "https://itsyou.online/api"
+DEFAULT_OVC_PORT = 443
+
+
+def configure_backend_clients(repo_info, config, logger=None):
+    """
+    Configures IYO and OVC clients that will be used during running the tests
+
+    @param repo_info: repository information
+    @param config: backend configurations
+    @param logger: logger object to use for logging
+    """
+    if logger is None:
+        logger = j.logger.logging
+
+    required_configs = ['URL', 'IYO_APPID', 'IYO_SECRET']
+    missing_configs = []
+    for item in required_configs:
+        if item not in config:
+            missing_configs.append(item)
+    if missing_configs:
+        raise ValueError('The following configurations are missing while configuring backend clients: {}'.format(missing_configs))
+    
+    if repo_info is not None:
+        instance_name = '{}_aystestrunner'.format(repo_info['name'])
+    else:
+        instance_name = 'aystestrunner'
+
+    # configuring IYO client
+    logger.info('Configuring IYO client for repo {}'.format(repo_info['name']))
+    data = {
+        'application_id_': config['IYO_APPID'],
+        'secret_': config['IYO_SECRET'],
+        'baseurl': DEFAULT_IYO_BASEURL
+    }
+    iyo_client = j.clients.itsyouonline.get(instance=instance_name, data=data)
+        
+    # configure OVC client
+    logger.info('Configuring OVC client for repo {}'.format(repo_info['name']))
+    data = {
+        'address': config['URL'],
+        'port': DEFAULT_OVC_PORT
+    }
+    ovc_client = j.clients.openvcloud.get(instance=instance_name, data=data)
+
+    return iyo_client, ovc_client
+
+
 
 def check_status_code(res, expected_status_code=200, logger=None):
     """
@@ -40,13 +87,18 @@ def check_status_code(res, expected_status_code=200, logger=None):
         return res, True
     return res, False
 
-def ensure_test_repo(cli, repo_name, logger=None):
+def ensure_test_repo(cli, repo_name, logger=None, config=None):
     """
     Ensure a new repo for running tests is created with unique name
+    This will also make sure to create a new instance of the IYO and OVC client configurations for this repo
+
     """
 
     if logger is None:
         logger = j.logger.logging
+    
+    if config is None:
+        config = {}
 
     logger.debug('Ensuring test repo with name {}'.format(repo_name))
     result = None
@@ -71,6 +123,8 @@ def ensure_test_repo(cli, repo_name, logger=None):
                 result = res.json()
     else:
         logger.info('Failed to list Repositories. Error: {}'.format(res.text))
+    
+    configure_backend_clients(repo_info=result, config=config.get('BACKEND_ENV', {}), logger=logger)
 
     return result
 
@@ -176,7 +230,7 @@ def report_run(cli, repo_info, logger=None):
 
     return errors
 
-def collect_tests(paths, logger=None, setup=None, teardown=None, repo_info=None):
+def collect_tests(paths, logger=None, setup=None, teardown=None, repo_info=None, config=None):
     """
     Collects all test bp from the given paths
     This will only scan only one level of the paths and collect all the files that that ends with .yaml and .bp files
@@ -195,16 +249,16 @@ def collect_tests(paths, logger=None, setup=None, teardown=None, repo_info=None)
             continue
         if j.sal.fs.isFile(path):
             name = j.sal.fs.getBaseName(path)
-            result.append(AYSTest(name=name, path=path, setup=setup, teardown=teardown, repo_info=repo_info))
+            result.append(AYSTest(name=name, path=path, setup=setup, teardown=teardown, repo_info=repo_info, config=config))
             continue
         for dir_ in j.sal.fs.listDirsInDir(path):
             logger.debug('Creating group test for path {}'.format(dir_))
-            result.append(AYSGroupTest(name=j.sal.fs.getBaseName(dir_), path=dir_))
+            result.append(AYSGroupTest(name=j.sal.fs.getBaseName(dir_), path=dir_, config=config))
         for file_ in sorted([file__ for file__ in j.sal.fs.listFilesInDir(path) if not j.sal.fs.getBaseName(file__).startswith('_') and
                                                                                   (file__.endswith('{}yaml'.format(os.path.extsep)) or
                                                                                   file__.endswith('{}bp'.format(os.path.extsep)))]):
             logger.debug('Creating test for path {}'.format(file_))
-            result.append(AYSTest(name=j.sal.fs.getBaseName(file_), path=file_, setup=setup, teardown=teardown, repo_info=repo_info))
+            result.append(AYSTest(name=j.sal.fs.getBaseName(file_), path=file_, setup=setup, teardown=teardown, repo_info=repo_info, config=config))
     return result
 
 
@@ -213,17 +267,19 @@ class AYSGroupTest:
     Represet a group of test bps that depend on each other
     These tests will be executed in order(based on the file name)
     """
-    def __init__(self, name, path, logger=None):
+    def __init__(self, name, path, logger=None, config=None):
         """
         Initialize group test
 
         @param name: Name of the group
         @param path: Path to the hosting folder of the test bps
         @param logger: Logger object to use for logging
+        @param config: extra configurations dictionary
         """
         self._name = name
         self._path = path
         self._errors = []
+        self._config = config if config is not None else {}
         if logger is None:
             # FIXME: problem with using the js logger when pickling the object
             # self._logger = j.logger.get('aystestrunner.AYSTest.{}'.format(name))
@@ -233,12 +289,12 @@ class AYSGroupTest:
         # create a repo per group test
         try:
             self._cli = j.clients.atyourservice.get().api.ays
-            self._repo_info = ensure_test_repo(self._cli, AYS_TESTRUNNER_REPO_NAME, logger=self._logger)
+            self._repo_info = ensure_test_repo(self._cli, AYS_TESTRUNNER_REPO_NAME, logger=self._logger, config=config)
         except Exception as ex:
             self._repo_info = None
             self._errors.append('Failed to create new ays repository for test {}'.format(self._name))
             
-        self._tests = collect_tests(paths=[path], logger=self._logger, setup=self.setup, teardown=self.singletest_teardwon, repo_info=self._repo_info)
+        self._tests = collect_tests(paths=[path], logger=self._logger, setup=self.setup, teardown=self.singletest_teardwon, repo_info=self._repo_info, config=config)
 
 
     @property
@@ -336,7 +392,7 @@ class AYSTest:
     """
     Represents an AYS test bp
     """
-    def __init__(self, name, path, logger=None, setup=None, teardown=None, repo_info=None):
+    def __init__(self, name, path, logger=None, setup=None, teardown=None, repo_info=None, config=None):
         """
         Initialize the test
 
@@ -345,6 +401,7 @@ class AYSTest:
         @param logger: Logger object to use for logging
         @param setup: Setup function to be called before the test
         @param teardown: Teardown function to be called after the test
+        @param config: Extra configurations dictionary
         """
         self._path = path
         self._name = name
@@ -353,6 +410,7 @@ class AYSTest:
         self._cli = None
         self._starttime = None
         self._endtime = None
+        self._config = config if config is not None else {}
         if setup is not None:
             self.setup = setup
         if teardown is not None:
@@ -369,7 +427,7 @@ class AYSTest:
         try:
             self._cli = j.clients.atyourservice.get().api.ays
             if repo_info is None:
-                self._repo_info = ensure_test_repo(self._cli, AYS_TESTRUNNER_REPO_NAME, logger=self._logger)
+                self._repo_info = ensure_test_repo(self._cli, AYS_TESTRUNNER_REPO_NAME, logger=self._logger, config=config)
             else:
                 self._repo_info = repo_info
         except Exception as ex:
@@ -509,8 +567,8 @@ class BaseRunner:
         self._name = name
         self._failed_tests = {}
         self._tests = []
-
         self._default_bp_paths = []
+        self._ovc_client = None
 
 
     def _pre_process_tests(self):
@@ -533,7 +591,7 @@ class BaseRunner:
         """
         try:
             jobs = {}
-            self._tests = collect_tests(paths=self._config.get('bp_paths', self._default_bp_paths), logger=self._logger)
+            self._tests = collect_tests(paths=self._config.get('bp_paths', self._default_bp_paths), logger=self._logger, config=self._config)
             self._pre_process_tests()
             for test in self._tests:
                 self._logger.info('Running test {}'.format(test.name))
@@ -562,10 +620,11 @@ class BaseRunner:
         try:
             backend_config = self._config.get('BACKEND_ENV', {})
             if backend_config:
-                ovc_cli = j.clients.openvcloud.get(url=backend_config.get('URL'), login=backend_config.get('LOGIN'), password=backend_config.get('PASSWORD'))
+                if self._ovc_client is None:
+                    _, self._ovc_client = configure_backend_clients(repo_info=None, config=self._config, logger=self._logger)
                 # DELETE ALL THE CREATED CLOUDSPACES
-                for cloudspace_info in ovc_cli.api.cloudapi.cloudspaces.list():
-                    ovc_cli.api.cloudapi.cloudspaces.delete(cloudspaceId=cloudspace_info['id'])
+                for cloudspace_info in self._ovc_client.api.cloudapi.cloudspaces.list():
+                    self._ovc_client.api.cloudapi.cloudspaces.delete(cloudspaceId=cloudspace_info['id'])
         except Exception as err:
             self._logger.error('Failed to execute cleanup. Error {}'.format(err))
 
