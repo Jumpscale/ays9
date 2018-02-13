@@ -463,12 +463,12 @@ class AYSTest:
         Use a given configuration to replace the content of the bp after replacing all the placeholder with values
         from the configuration
         """
-        sed_base_command = 'sed -i s/\<{key}\>/{value}/g {path}'
+        sed_base_command = 'sed -i.processed s/\<{key}\>/{value}/g {path}'
         self._logger.info('Replacing placeholders for test blueprint {}'.format(self._path))
         for item, value in config.items():
             cmd = sed_base_command.format(key=item, value=value, path=self._path)
             try:
-                j.tools.prefab.local.core.run(cmd)
+                j.tools.prefab.local.core.run(cmd, showout=False)
             except:
                 self._logger.warning('Failed to replace placeholder {}'.format(item))
 
@@ -517,7 +517,7 @@ class AYSTest:
             if self._repo_info is None:
                 self._errors.append('Failed to create new ays repository for test {}'.format(self._name))
             else:
-                j.sal.fs.copyFile(self._path, os.path.join(self._repo_info['path'], 'blueprints', self._name))
+                j.sal.fs.moveFile('{}.processed'.format(self._path), os.path.join(self._repo_info['path'], 'blueprints', self._name))
                 # execute bp
                 self._errors.extend(execute_blueprint(self._cli, self._name, self._repo_info, logger=self._logger))
                 if not self._errors:
