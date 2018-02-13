@@ -16,6 +16,7 @@ from redis import Redis
 from rq import Queue
 import time
 import logging
+import requests
 
 AYS_CORE_BP_TESTS_PATH = [j.sal.fs.joinPaths(j.sal.fs.getParent(j.sal.fs.getParent(__file__)), 'tests', 'bp_test_templates', 'core')]
 
@@ -27,6 +28,7 @@ DEFAULT_TEST_TIMEOUT = 600 # 10 min timeout per test
 DEFAULT_IYO_BASEURL = "https://itsyou.online/api"
 DEFAULT_OVC_PORT = 443
 DEFAULT_ACCOUNT_NAME = 'aystestrunner'
+DEFAULT_AYS_CONFIGURE_JS_LOCATION_ENDPOINT = 'http://localhost:5000/ays/repository/{repo_name}/configure-jslocation'
 
 
 def configure_backend_clients(repo_info, config, logger=None):
@@ -37,6 +39,7 @@ def configure_backend_clients(repo_info, config, logger=None):
     @param config: backend configurations
     @param logger: logger object to use for logging
     """
+    errors = []
     if logger is None:
         logger = j.logger.logging
 
@@ -48,28 +51,50 @@ def configure_backend_clients(repo_info, config, logger=None):
     if missing_configs:
         raise ValueError('The following configurations are missing while configuring backend clients: {}'.format(missing_configs))
     
-    if repo_info is not None:
-        instance_name = '{}_aystestrunner'.format(repo_info['name'])
-    else:
-        instance_name = 'aystestrunner'
-
+    instance_name = 'aystestrunner'
+    instance_to_check = '{}_{}'.format(repo_info['name'], instance_name)
     # configuring IYO client
-    logger.info('Configuring IYO client for repo {}'.format(repo_info['name']))
-    data = {
-        'application_id_': config['IYO_APPID'],
-        'secret_': config['IYO_SECRET'],
-        'baseurl': DEFAULT_IYO_BASEURL
-    }
-    iyo_client = j.clients.itsyouonline.get(instance=instance_name, data=data)
+    if instance_to_check in j.clients.itsyouonline.list():
+        iyo_client = j.clients.itsyouonline.get(instance=instance_to_check)
+    else:
+        logger.info('Configuring IYO client for repo {}'.format(repo_info['name']))
+        data = {
+                "instance": instance_name, 
+                "jslocation": "j.clients.itsyouonline",
+                "data" :{
+                    "application_id_": config['IYO_APPID'],
+                    "secret_": config['IYO_SECRET'],
+                    "baseurl": DEFAULT_IYO_BASEURL
+                }
+        }
+        url = DEFAULT_AYS_CONFIGURE_JS_LOCATION_ENDPOINT.format(repo_name=repo_info['name'])
+        res = requests.post(url, json=data)
+        if res.status_code != 201:
+            errors.append('Failed to configure IYO client for repo {}'.format(repo_info['name']))
+        else:
+            iyo_client = j.clients.itsyouonline.get(instance=instance_to_check)
         
     # configure OVC client
-    logger.info('Configuring OVC client for repo {}'.format(repo_info['name']))
-    data = {
-        'address': config['URL'],
-        'port': DEFAULT_OVC_PORT
-    }
-    ovc_client = j.clients.openvcloud.get(instance=instance_name, data=data)
+    if instance_to_check in j.clients.openvcloud.list():
+        ovc_client = j.clients.openvcloud.get(instance=instance_to_check)
+    else:
+        logger.info('Configuring OVC client for repo {}'.format(repo_info['name']))
+        data = {
+                "instance": instance_name,
+                "jslocation": "j.clients.openvcloud",
+                "data" : {
+                    "address": config['URL'],
+                    "port": DEFAULT_OVC_PORT
+            }
+        }
+        res = requests.post(url, json=data)
+        if res.status_code != 201:
+            errors.append('Failed to configure OVC client for repo {}'.format(repo_info['name']))
+        else:
+            ovc_client = j.clients.openvcloud.get(instance=instance_to_check)
 
+    if errors:
+        raise RuntimeError('Errors while configuring clients for repo {}'.format(repo_info['name']))
     return iyo_client, ovc_client
 
 
@@ -116,16 +141,15 @@ def ensure_test_repo(cli, repo_name, logger=None, config=None):
             # generate new rpeo name
             suffix = random.randint(1, 10000)
             repo_name = '%s%s' % (repo_name, suffix)
-            result = ensure_test_repo(cli, repo_name)
+            result = ensure_test_repo(cli, repo_name, config=config)
         else:
             # create repo with that name
             res, ok = check_status_code(cli.createRepository(data={'name': repo_name, 'git_url': AYS_TESTRUNNER_REPO_GIT}), 201)
             if ok is True:
                 result = res.json()
+        configure_backend_clients(repo_info=result, config=config.get('BACKEND_ENV', {}), logger=logger)
     else:
         logger.info('Failed to list Repositories. Error: {}'.format(res.text))
-    
-    configure_backend_clients(repo_info=result, config=config.get('BACKEND_ENV', {}), logger=logger)
 
     return result
 
@@ -463,7 +487,7 @@ class AYSTest:
         Use a given configuration to replace the content of the bp after replacing all the placeholder with values
         from the configuration
         """
-        sed_base_command = 'sed -i.processed s/\<{key}\>/{value}/g {path}'
+        sed_base_command = 'sed s/\<{key}\>/{value}/g {path} > {path}.processed'
         self._logger.info('Replacing placeholders for test blueprint {}'.format(self._path))
         for item, value in config.items():
             cmd = sed_base_command.format(key=item, value=value, path=self._path)
@@ -511,26 +535,26 @@ class AYSTest:
         - Collect run results
         - Destroy repo
         """
-        self.setup()
-
-        try:
-            if self._repo_info is None:
-                self._errors.append('Failed to create new ays repository for test {}'.format(self._name))
-            else:
-                j.sal.fs.moveFile('{}.processed'.format(self._path), os.path.join(self._repo_info['path'], 'blueprints', self._name))
-                # execute bp
-                self._errors.extend(execute_blueprint(self._cli, self._name, self._repo_info, logger=self._logger))
-                if not self._errors:
-                    # create run and execute it
-                    self._errors.extend(create_run(self._cli, self._repo_info, logger=self._logger))
-                    # report run
-                    self._errors.extend(report_run(self._cli, self._repo_info, logger=self._logger))
-        except Exception as err:
-            self._errors.append('Test {} failed with error: {}'.format(self._name, err))
-
-        # only teardown if there is no errors, otherwise leave repo test for inspection 
         if not self._errors:
-            self.teardown()
+            self.setup() 
+            try:
+                if self._repo_info is None:
+                    self._errors.append('Failed to create new ays repository for test {}'.format(self._name))
+                else:
+                    j.sal.fs.moveFile('{}.processed'.format(self._path), os.path.join(self._repo_info['path'], 'blueprints', self._name))
+                    # execute bp
+                    self._errors.extend(execute_blueprint(self._cli, self._name, self._repo_info, logger=self._logger))
+                    if not self._errors:
+                        # create run and execute it
+                        self._errors.extend(create_run(self._cli, self._repo_info, logger=self._logger))
+                        # report run
+                        self._errors.extend(report_run(self._cli, self._repo_info, logger=self._logger))
+            except Exception as err:
+                self._errors.append('Test {} failed with error: {}'.format(self._name, err))
+
+            # only teardown if there is no errors, otherwise leave repo test for inspection 
+            if not self._errors:
+                self.teardown()
 
         return self._errors
 
@@ -621,8 +645,12 @@ class BaseRunner:
         try:
             backend_config = self._config.get('BACKEND_ENV', {})
             if backend_config:
+                # create a repo even though we do not really need it since the config manager requires a repo for configurating the backend client
+                # instances
+                repo_info = ensure_test_repo(cli=j.clients.atyourservice.get().api.ays, repo_name=AYS_TESTRUNNER_REPO_NAME, logger=self._logger,
+                                 config=self._config)
                 if self._ovc_client is None:
-                    _, self._ovc_client = configure_backend_clients(repo_info=None, config=backend_config, logger=self._logger)
+                    _, self._ovc_client = configure_backend_clients(repo_info=repo_info, config=backend_config, logger=self._logger)
                 # DELETE ALL THE CREATED CLOUDSPACES
                 for cloudspace_info in self._ovc_client.api.cloudapi.cloudspaces.list():
                     self._ovc_client.api.cloudapi.cloudspaces.delete(cloudspaceId=cloudspace_info['id'])
