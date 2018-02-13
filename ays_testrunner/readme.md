@@ -10,9 +10,9 @@ AYS tests consists of two kind of tests
 core tests can be found under https://github.com/Jumpscale/ays9/tree/master/tests/bp_test_templates/core
 - Non-Core tests : There are blueprints that test the provided templates e.g: creating a virtual machine template..
 non-core tests can be found under:
-  - https://github.com/Jumpscale/ays9/tree/master/tests/bp_test_templates/basic
-  - https://github.com/Jumpscale/ays9/tree/master/tests/bp_test_templates/advaced
-  - https://github.com/Jumpscale/ays9/tree/master/tests/bp_test_templates/extend
+  - https://github.com/openvcloud/ays_templates/tree/master/tests/test_blueprints/basic
+  - https://github.com/openvcloud/ays_templates/tree/master/tests/test_blueprints/advaced
+  - https://github.com/openvcloud/ays_templates/tree/master/tests/test_blueprints/extend
 
 ## Execution Types of tests:
 We have different types of executions for running the ays tests, these types are:
@@ -87,7 +87,7 @@ This will run all tests under https://github.com/Jumpscale/ays9/tree/master/test
 ### How to run non-core tests
 ```python
 from ays_testrunner.testrunner import AYSTestRunnerFactory
-backend_config = {'URL': 'du-conv-2.demo.greenitglobe.com', 'LOGIN': 'aystestrunner@itsyouonline', 'PASSWORD': '******', 'ACCOUNT': 'aystestrunner', 'LOCATION': 'du-conv-2'}
+backend_config = {'URL': 'du-conv-2.demo.greenitglobe.com', 'IYO_APPID': '***', 'IYO_SECRET': '****', 'ACCOUNT': 'aystestrunner', 'LOCATION': 'du-conv-2'}
 runner = AYSTestRunnerFactory.get(name='non-core', test_type='non-core', config={'BACKEND_ENV': backend_config, 'BACKEND_ENV_CLEANUP': True})
 runner.run()
 ```
