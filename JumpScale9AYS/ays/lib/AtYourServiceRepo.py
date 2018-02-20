@@ -705,8 +705,8 @@ class AtYourServiceRepo():
                 try:
                     local_prefab = j.tools.prefab.local
                     key_path = local_prefab.system.ssh.keygen(name='ays_repos_key').split(".pub")[0]
-                    if not j.clients.ssh.ssh_agent_check_key_is_loaded(key_path):
-                        j.clients.ssh.ssh_keys_load(key_path)
+                    if not key_path in j.clients.sshkey.list():
+                        j.clients.sshkey.key_load(key_path)
                     # Add host to known hosts if not exist
                     host, *_, port = j.clients.git.getGitRepoArgs(self.git.repo.remotes[0].url)
                     cmd = "grep {host} ~/.ssh/known_hosts || ssh-keyscan -p {port} {host} >> ~/.ssh/known_hosts"
