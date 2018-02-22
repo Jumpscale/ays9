@@ -18,8 +18,8 @@ class ays_tools(j.tools.code.classGetBase()):
         production = False
         try:
             cl = j.clients.ays.get(ays_uri)
-        except:
-            raise exceptions.ServiceUnavailable("AYS server isn't available.")
+        except Exception as e:
+            raise exceptions.ServiceUnavailable("AYS server isn't available, Exception: {}, ays_uri is {}".format(e, ays_uri))
 
         if isinstance(cfg, dict):
             # need to upgrade config
