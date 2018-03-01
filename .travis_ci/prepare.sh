@@ -4,7 +4,7 @@ set -e
 sudo ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
 export SSHKEYNAME=id_rsa
 
-export ZUTILSBRANCH=${ZUTILSBRANCH:-development}
+export ZUTILSBRANCH=${ZUTILSBRANCH:-master}
 
 curl https://raw.githubusercontent.com/Jumpscale/bash/$ZUTILSBRANCH/install.sh?$RANDOM > /tmp/install.sh;sudo -E bash /tmp/install.sh
 
