@@ -14,11 +14,6 @@ export ZBRANCH="master"
 curl https://raw.githubusercontent.com/Jumpscale/bash/${ZUTILSBRANCH}/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh
 ```
 
-Make the bash tools available:
-```bash
-source ~/.bash_profile
-```
-
 Install:
 ```bash
 ZInstall_js9_full
