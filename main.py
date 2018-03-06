@@ -18,7 +18,7 @@ def configure_logger(level):
     if level == 'DEBUG':
         click.echo("debug logging enabled")
     # configure jumpscale loggers
-    j.logger.set_level(level)
+    j.logger.loggers_level_set(level)
     # configure asyncio logger
     asyncio_logger = logging.getLogger('asyncio')
     asyncio_logger.handlers = []
@@ -56,8 +56,8 @@ def main(host, port, log, dev):
             # Generate/Load ays_repos ssh key which will be used to auto push repos changes
             local_prefab = j.tools.prefab.local
             key_path = local_prefab.system.ssh.keygen(name='ays_repos_key').split(".pub")[0]
-            j.tools.configmanager.keyname = 'ays_repos_key'
-            j.clients.sshkey.key_load(key_path)
+            key = j.clients.sshkey.get('ays_repo_key', data={'path': key_path})
+            key.load()
 
         j.atyourservice.server._start(loop=loop)
 
