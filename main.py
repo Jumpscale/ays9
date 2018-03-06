@@ -46,6 +46,7 @@ def main(host, port, log, dev):
     # load the app
     @sanic_app.listener('before_server_start')
     async def init_ays(sanic, loop):
+        j.clients.redis.core_start()
         loop.set_debug(debug)
         j.atyourservice.server.debug = debug
         j.atyourservice.server.dev_mode = dev
