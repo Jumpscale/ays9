@@ -55,7 +55,7 @@ def main(host, port, log, dev):
         if not dev:
             # Generate/Load ays_repos ssh key which will be used to auto push repos changes
             local_prefab = j.tools.prefab.local
-            key = j.clients.sshkey.get('ays_repos_key', data={'path': key_path}, interactive=False)
+            key = j.clients.sshkey.get('ays_repos_key', interactive=False)
             key.generate()
             key.load()
 
