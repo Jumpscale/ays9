@@ -9,11 +9,6 @@ export ZBRANCH="master"
 curl https://raw.githubusercontent.com/Jumpscale/bash/${ZUTILSBRANCH}/install.sh?$RANDOM > /tmp/install.sh;bash /tmp/install.sh
 ```
 
-Make the bash tools available:
-```bash
-source ~/.bash_profile
-```
-
 Then go for the option to create a Docker container with core + lib + prefab + ays + portal:
 ```bash
 ZInstall_portal9

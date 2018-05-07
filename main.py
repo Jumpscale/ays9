@@ -18,7 +18,7 @@ def configure_logger(level):
     if level == 'DEBUG':
         click.echo("debug logging enabled")
     # configure jumpscale loggers
-    j.logger.set_level(level)
+    j.logger.loggers_level_set(level)
     # configure asyncio logger
     asyncio_logger = logging.getLogger('asyncio')
     asyncio_logger.handlers = []
@@ -46,6 +46,7 @@ def main(host, port, log, dev):
     # load the app
     @sanic_app.listener('before_server_start')
     async def init_ays(sanic, loop):
+        j.clients.redis.core_start()
         loop.set_debug(debug)
         j.atyourservice.server.debug = debug
         j.atyourservice.server.dev_mode = dev
@@ -55,8 +56,9 @@ def main(host, port, log, dev):
         if not dev:
             # Generate/Load ays_repos ssh key which will be used to auto push repos changes
             local_prefab = j.tools.prefab.local
-            key_path = local_prefab.system.ssh.keygen(name='ays_repos_key').split(".pub")[0]
-            j.clients.ssh.ssh_keys_load(key_path)
+            key = j.clients.sshkey.get('ays_repos_key', interactive=False)
+            key.generate()
+            key.load()
 
         j.atyourservice.server._start(loop=loop)
 
